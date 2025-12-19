@@ -347,7 +347,7 @@ const serviceConfigs = [
     key: "ads",
     name: "广告拦截",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Advertising.png",
-    rules: ["RULE-SET,adblockmihomo,广告拦截"],
+    rules: ["RULE-SET,AWAvenue_Ads,广告拦截"],
     reject: true,
   },
 ];
