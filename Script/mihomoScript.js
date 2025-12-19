@@ -190,10 +190,10 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs",
     path: "./ruleset/youtube.mrs",
   },
-  adblockmihomo: {
+  AWAvenue_Ads: {
     ...ruleProviderCommonDomain,
-    url: "https://github.com/217heidai/adblockfilters/raw/refs/heads/main/rules/adblockmihomo.mrs",
-    path: "./ruleset/adblockmihomo.mrs",
+    url: "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs",
+    path: "./ruleset/AWAvenue-Ads-Rule-Clash.mrs",
   },
   google: {
     ...ruleProviderCommonDomain,
