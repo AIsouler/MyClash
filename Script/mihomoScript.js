@@ -198,7 +198,7 @@ const ruleProviders = {
   google: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs",
-    path: "./ruleset/google_site.mrs",
+    path: "./ruleset/google.mrs",
   },
   google_ip: {
     ...ruleProviderCommonIp,
@@ -208,7 +208,7 @@ const ruleProviders = {
   ai: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/JohnsonRan/CRules/mihomo/resources/rules/ai.mrs",
-    path: "./ruleset/AIs_merged.mrs",
+    path: "./ruleset/ai.mrs",
   },
   github: {
     ...ruleProviderCommonDomain,
