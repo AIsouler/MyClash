@@ -21,6 +21,7 @@ const ruleOptions = {
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
+  pixiv: true, // Pixiv绘画网站
   ads: true, // 常见的网络广告
 };
 
@@ -223,6 +224,11 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.mrs",
     path: "./ruleset/steam@cn.mrs",
   },
+  pixiv: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat//meta/geo/geosite/pixiv.mrs",
+    path: "./ruleset/pixiv.mrs",
+  },
   twitter: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs",
@@ -317,6 +323,12 @@ const serviceConfigs = [
       "RULE-SET,telegram,Telegram",
       "RULE-SET,telegram_ip,Telegram,no-resolve",
     ],
+  },
+  {
+    key: "pixiv",
+    name: "Pixiv",
+    icon: "https://play-lh.googleusercontent.com/Ls9opXo6-wfEWmbBU8heJaFS8HwWydssWE1J3vexIGvkF-UJDqcW7ZMD8w6dQABfygONd4z3Yt4TfRDZAPYq=w480-h960-rw",
+    rules: ["RULE-SET,pixiv,Pixiv"],
   },
   {
     key: "steam",
