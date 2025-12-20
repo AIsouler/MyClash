@@ -170,7 +170,7 @@ const ruleProviders = {
     type: "http",
     format: "text",
     behavior: "classical",
-    url: "https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/applications.list",
+    url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/applications.list",
     path: "./ruleset/applications.list",
     interval: 86400,
   },
@@ -256,7 +256,7 @@ const ruleProviders = {
   },
   gfw: {
     ...ruleProviderCommonDomain,
-    url: "https://github.com/DustinWin/ruleset_geodata/releases/download/mihomo-ruleset/gfw.mrs",
+    url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata//mihomo-ruleset/gfw.mrs",
     path: "./ruleset/gfw.mrs",
   },
   cn: {
