@@ -40,6 +40,7 @@ const rules = [
   "RULE-SET,applications,下载软件",
   "RULE-SET,private,DIRECT",
   "RULE-SET,private_ip,DIRECT,no-resolve",
+  "RULE-SET,steam_cn,DIRECT",
   "DOMAIN-SUFFIX,steamserver.net,DIRECT",
 ];
 
@@ -115,42 +116,37 @@ const excludeHighPercentage = true;
 const globalRatioLimit = 2;
 
 // DNS 配置
-const chinaDNS = [
-  "https://doh.pub/dns-query",
-  "https://dns.alidns.com/dns-query",
-];
-// const foreignDNS = [
-//   "https://dns.google/dns-query",
-//   "https://dns.cloudflare.com/dns-query",
-// ];
-// const defaultDNS = ["119.29.29.29", "223.5.5.5"];
 const dnsConfig = {
   enable: true,
   listen: ":1053",
-  ipv6: true,
   "cache-algorithm": "arc",
-  //"prefer-h3": true,
   "use-hosts": true,
   "use-system-hosts": true,
-  //"respect-rules": true,
   "enhanced-mode": "fake-ip",
   "fake-ip-range": "198.18.0.1/16",
-  "fake-ip-range6": "3fff::/20",
   "fake-ip-filter": [
     "*.lan",
     "+.market.xiaomi.com",
     "localhost.ptlogin2.qq.com",
     "lancache.steamcontent.com",
+    "rule-set:private",
+    "rule-set:cn",
     "rule-set:fakeip_filter",
   ],
-  nameserver: chinaDNS,
+  nameserver: ["https://dns.alidns.com/dns-query"],
   "direct-nameserver": ["system"],
-  "proxy-server-nameserver": chinaDNS,
+  "proxy-server-nameserver": ["https://doh.pub/dns-query"],
   "nameserver-policy": {
     "*": "system",
     "+.arpa": "system",
     "rule-set:gfw": "https://dns.google/dns-query#其他外网",
   },
+};
+
+const hostsConfig = {
+  "dns.alidns.com": ["223.5.5.5", "223.6.6.6"],
+  "doh.pub": ["1.12.12.21", "120.53.53.53"],
+  "dns.google": ["8.8.8.8", "8.8.4.4"],
 };
 
 // 通用配置
@@ -175,7 +171,7 @@ const groupBaseOption = {
   hidden: false,
 };
 
-// 预定义 Rule Providers
+// 定义 Rule Providers
 const ruleProviders = {
   applications: {
     type: "http",
@@ -287,7 +283,6 @@ const multiplierRegex =
   /(?<=[xX✕✖⨉倍率])([1-9]+(\.\d+)*|0{1}\.\d+)(?=[xX✕✖⨉倍率])*/i;
 
 // --- 2. 服务规则数据结构 ---
-// Icons 更新为 GitHub Raw
 const serviceConfigs = [
   {
     key: "ai",
@@ -335,7 +330,7 @@ const serviceConfigs = [
     key: "steam",
     name: "Steam",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Steam.png",
-    rules: ["RULE-SET,steam_cn,国内网站", "RULE-SET,steam,Steam"],
+    rules: ["RULE-SET,steam,Steam"],
   },
   {
     key: "twitter",
@@ -373,6 +368,7 @@ function main(config) {
   config["bind-address"] = "*";
   config["mode"] = "rule";
   config["dns"] = dnsConfig;
+  config["hosts"] = hostsConfig;
   config["profile"] = {
     "store-selected": true,
     "store-fake-ip": true,
@@ -381,10 +377,6 @@ function main(config) {
   config["tcp-concurrent"] = true;
   config["keep-alive-interval"] = 1800;
   config["find-process-mode"] = "strict";
-  config["geodata-mode"] = true;
-  config["geodata-loader"] = "memconservative";
-  config["geo-auto-update"] = true;
-  config["geo-update-interval"] = 24;
 
   config["sniffer"] = {
     enable: true,
@@ -414,7 +406,7 @@ function main(config) {
       "+.fbcdn.net",
       "fbcdn-a.akamaihd.net",
     ],
-    "skip-domain": ["Mijia Cloud", "+.oray.com"],
+    "skip-domain": ["Mijia Cloud", "+.oray.com", "+.push.apple.com"],
   };
 
   config["ntp"] = {
@@ -423,10 +415,14 @@ function main(config) {
     server: "cn.ntp.org.cn",
   };
   config["tun"] = {
+    enable: true,
     stack: "mixed",
+    "auto-route": true,
+    "auto-redirect": true,
+    "auto-detect-interface": true,
     "exclude-interface": ["NodeBabyLink"],
     "route-exclude-address": skipIps,
-    "dns-hijack": ["any:53", "tcp://any:53"],
+    "dns-hijack": ["udp://any:53", "tcp://any:53"],
   };
 
   config.proxies.push({
@@ -574,7 +570,6 @@ function main(config) {
       name: "国内网站",
       type: "select",
       proxies: ["直连", "默认节点", ...regionGroupNames],
-      url: "http://wifi.vivo.com.cn/generate_204",
       icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/StreamingCN.png",
     }
   );
