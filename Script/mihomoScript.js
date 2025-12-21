@@ -333,7 +333,11 @@ const serviceConfigs = [
     key: "pixiv",
     name: "Pixiv",
     icon: "https://play-lh.googleusercontent.com/Ls9opXo6-wfEWmbBU8heJaFS8HwWydssWE1J3vexIGvkF-UJDqcW7ZMD8w6dQABfygONd4z3Yt4TfRDZAPYq=w480-h960-rw",
-    rules: ["RULE-SET,pixiv,Pixiv"],
+    rules: [
+      "RULE-SET,pixiv,Pixiv",
+      "PROCESS-NAME,com.perol.pixez,Pixiv",
+      "PROCESS-NAME,com.perol.play.pixez,Pixiv",
+    ],
   },
   {
     key: "steam",
