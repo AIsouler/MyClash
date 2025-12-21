@@ -2,13 +2,13 @@
 
 ## 使用（以下方式任选其一）
 
-1.复制此链接导入到代理软件
+- 复制此链接导入到代理软件
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomoScript.js
 ```
 
-2.复制 [脚本全部代码](https://github.com/AIsouler/MyClash/blob/main/Script/mihomoScript.js)导入到代理软件
+- 复制 [脚本全部代码](https://github.com/AIsouler/MyClash/blob/main/Script/mihomoScript.js)导入到代理软件
 
 ## 脚本来源
 
