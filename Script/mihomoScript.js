@@ -263,11 +263,6 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata//mihomo-ruleset/gfw.mrs",
     path: "./ruleset/gfw.mrs",
   },
-  cn: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs",
-    path: "./ruleset/cn.mrs",
-  },
   cn_ip: {
     ...ruleProviderCommonIp,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs",
@@ -557,7 +552,6 @@ function main(config) {
   // 3.4 添加通用兜底策略组
   rules.push(
     "RULE-SET,gfw,其他外网",
-    "RULE-SET,cn,国内网站",
     "RULE-SET,cn_ip,国内网站",
     "MATCH,其他外网"
   );
