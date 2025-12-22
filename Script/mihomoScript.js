@@ -177,20 +177,30 @@ const groupBaseOption = {
 
 // 定义 Rule Providers
 const ruleProviders = {
+  AWAvenue_Ads: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs",
+    path: "./ruleset/AWAvenue-Ads-Rule-Clash.mrs",
+  },
   applications: {
     ...ruleProviderCommonClassicalTxt,
     url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/applications.list",
     path: "./ruleset/applications.list",
   },
+  fakeip_filter: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/fakeip-filter.mrs",
+    path: "./ruleset/fakeip-filter.mrs",
+  },
+  ai: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/JohnsonRan/CRules/mihomo/resources/rules/ai.mrs",
+    path: "./ruleset/ai.mrs",
+  },
   youtube: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs",
     path: "./ruleset/youtube.mrs",
-  },
-  AWAvenue_Ads: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs",
-    path: "./ruleset/AWAvenue-Ads-Rule-Clash.mrs",
   },
   google: {
     ...ruleProviderCommonDomain,
@@ -201,11 +211,6 @@ const ruleProviders = {
     ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs",
     path: "./ruleset/google_ip.mrs",
-  },
-  ai: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/JohnsonRan/CRules/mihomo/resources/rules/ai.mrs",
-    path: "./ruleset/ai.mrs",
   },
   github: {
     ...ruleProviderCommonDomain,
@@ -222,6 +227,21 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft@cn.mrs",
     path: "./ruleset/microsoft@cn.mrs",
   },
+  telegram: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs",
+    path: "./ruleset/telegram.mrs",
+  },
+  telegram_ip: {
+    ...ruleProviderCommonIpcidr,
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs",
+    path: "./ruleset/telegram_ip.mrs",
+  },
+  pixiv: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat//meta/geo/geosite/pixiv.mrs",
+    path: "./ruleset/pixiv.mrs",
+  },
   steam: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs",
@@ -232,11 +252,6 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.mrs",
     path: "./ruleset/steam@cn.mrs",
   },
-  pixiv: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat//meta/geo/geosite/pixiv.mrs",
-    path: "./ruleset/pixiv.mrs",
-  },
   twitter: {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs",
@@ -246,16 +261,6 @@ const ruleProviders = {
     ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs",
     path: "./ruleset/twitter_ip.mrs",
-  },
-  telegram: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs",
-    path: "./ruleset/telegram.mrs",
-  },
-  telegram_ip: {
-    ...ruleProviderCommonIpcidr,
-    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs",
-    path: "./ruleset/telegram_ip.mrs",
   },
   private: {
     ...ruleProviderCommonDomain,
@@ -281,11 +286,6 @@ const ruleProviders = {
     ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs",
     path: "./ruleset/cn_ip.mrs",
-  },
-  fakeip_filter: {
-    ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/wwqgtxx/clash-rules/release/fakeip-filter.mrs",
-    path: "./ruleset/fakeip-filter.mrs",
   },
 };
 
