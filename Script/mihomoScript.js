@@ -148,11 +148,23 @@ const ruleProviderCommonDomain = {
   interval: 86400,
   behavior: "domain",
 };
-const ruleProviderCommonIp = {
+const ruleProviderCommonIpcidr = {
   type: "http",
   format: "mrs",
   interval: 86400,
   behavior: "ipcidr",
+};
+const ruleProviderCommonClassicalTxt = {
+  type: "http",
+  format: "text",
+  interval: 86400,
+  behavior: "classical",
+};
+const ruleProviderCommonClassicalYaml = {
+  type: "http",
+  format: "yaml",
+  interval: 86400,
+  behavior: "classical",
 };
 const groupBaseOption = {
   interval: 300,
@@ -166,12 +178,9 @@ const groupBaseOption = {
 // 定义 Rule Providers
 const ruleProviders = {
   applications: {
-    type: "http",
-    format: "text",
-    behavior: "classical",
+    ...ruleProviderCommonClassicalTxt,
     url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/applications.list",
     path: "./ruleset/applications.list",
-    interval: 86400,
   },
   youtube: {
     ...ruleProviderCommonDomain,
@@ -189,7 +198,7 @@ const ruleProviders = {
     path: "./ruleset/google.mrs",
   },
   google_ip: {
-    ...ruleProviderCommonIp,
+    ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs",
     path: "./ruleset/google_ip.mrs",
   },
@@ -234,7 +243,7 @@ const ruleProviders = {
     path: "./ruleset/twitter.mrs",
   },
   twitter_ip: {
-    ...ruleProviderCommonIp,
+    ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs",
     path: "./ruleset/twitter_ip.mrs",
   },
@@ -244,7 +253,7 @@ const ruleProviders = {
     path: "./ruleset/telegram.mrs",
   },
   telegram_ip: {
-    ...ruleProviderCommonIp,
+    ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs",
     path: "./ruleset/telegram_ip.mrs",
   },
@@ -254,7 +263,7 @@ const ruleProviders = {
     path: "./ruleset/private.mrs",
   },
   private_ip: {
-    ...ruleProviderCommonIp,
+    ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs",
     path: "./ruleset/private_ip.mrs",
   },
@@ -263,8 +272,13 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata//mihomo-ruleset/gfw.mrs",
     path: "./ruleset/gfw.mrs",
   },
+  cn: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/YiXuanZX/rules/main/cn-additional-list.mrs",
+    path: "./ruleset/cn.mrs",
+  },
   cn_ip: {
-    ...ruleProviderCommonIp,
+    ...ruleProviderCommonIpcidr,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs",
     path: "./ruleset/cn_ip.mrs",
   },
@@ -552,6 +566,7 @@ function main(config) {
   // 3.4 添加通用兜底策略组
   rules.push(
     "RULE-SET,gfw,其他外网",
+    "RULE-SET,cn,国内网站",
     "RULE-SET,cn_ip,国内网站",
     "MATCH,其他外网"
   );
