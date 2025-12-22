@@ -8,7 +8,15 @@
 https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomoScript.js
 ```
 
-- 复制 [脚本全部代码](https://github.com/AIsouler/MyClash/blob/main/Script/mihomoScript.js)导入到代理软件
+- 复制 [脚本全部代码](https://github.com/AIsouler/MyClash/blob/main/Script/mihomoScript.js) 导入到代理软件
+
+## 效果图
+
+- 客户端为 [FlClash](https://github.com/chen08209/FlClash)
+
+|                                                                                                   |                                                                                                   |                                                                                                   |                                                                                                   |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_1.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_2.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_3.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_4.jpg) |
 
 ## 脚本来源
 
