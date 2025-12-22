@@ -36,8 +36,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 - [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)
 
-- [wwqgtxx/clash-rules](https://github.com/wwqgtxx/clash-rules)
-
 - [DustinWin/ruleset_geodata](https://github.com/DustinWin/ruleset_geodata)
 
 - [JohnsonRan/CRules](https://github.com/JohnsonRan/CRules)
