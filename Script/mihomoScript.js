@@ -27,10 +27,12 @@ const ruleOptions = {
 
 const skipIps = [
   "10.0.0.0/8",
-  "172.16.0.0/12",
-  "192.168.0.0/16",
+  "100.64.0.0/10",
   "169.254.0.0/16",
-  "127.0.0.0/8",
+  "172.16.0.0/12",
+  "192.0.0.0/24",
+  "192.168.0.0/16",
+  "198.18.0.0/15",
   "FC00::/7",
   "FE80::/10",
   "::1/128",
@@ -38,9 +40,10 @@ const skipIps = [
 
 // 初始规则
 const rules = [
-  "RULE-SET,applications,下载软件",
   "RULE-SET,private,DIRECT",
   "RULE-SET,private_ip,DIRECT,no-resolve",
+  "RULE-SET,AWAvenue_Ads,广告拦截",
+  "RULE-SET,applications,下载软件",
   "RULE-SET,steam_cn,DIRECT",
 ];
 
@@ -112,34 +115,6 @@ const regionDefinitions = [
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Australia.png",
   },
 ];
-const excludeHighPercentage = true;
-const globalRatioLimit = 2;
-
-// DNS 配置
-const dnsConfig = {
-  enable: true,
-  listen: ":1053",
-  "cache-algorithm": "arc",
-  "use-hosts": true,
-  "use-system-hosts": true,
-  "enhanced-mode": "fake-ip",
-  "fake-ip-range": "198.18.0.1/16",
-  "fake-ip-filter": ["rule-set:fakeip_filter"],
-  nameserver: ["https://dns.alidns.com/dns-query"],
-  "direct-nameserver": ["system"],
-  "proxy-server-nameserver": ["https://doh.pub/dns-query"],
-  "nameserver-policy": {
-    "*": "system",
-    "+.arpa": "system",
-    "rule-set:gfw": "https://dns.google/dns-query#其他外网",
-  },
-};
-
-const hostsConfig = {
-  "dns.alidns.com": ["223.5.5.5", "223.6.6.6"],
-  "doh.pub": ["1.12.12.21", "120.53.53.53"],
-  "dns.google": ["8.8.8.8", "8.8.4.4"],
-};
 
 // 通用配置
 const ruleProviderCommonDomain = {
@@ -289,10 +264,6 @@ const ruleProviders = {
   },
 };
 
-// 倍率正则预编译
-const multiplierRegex =
-  /(?<=[xX✕✖⨉倍率])([1-9]+(\.\d+)*|0{1}\.\d+)(?=[xX✕✖⨉倍率])*/i;
-
 // --- 2. 服务规则数据结构 ---
 const serviceConfigs = [
   {
@@ -366,10 +337,17 @@ const serviceConfigs = [
     key: "ads",
     name: "广告拦截",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Advertising.png",
-    rules: ["RULE-SET,AWAvenue_Ads,广告拦截"],
+    rules: [], // 规则写在了初始规则里面，优先匹配
     reject: true,
   },
 ];
+
+const excludeHighPercentage = true;
+const globalRatioLimit = 2;
+
+// 倍率正则预编译
+const multiplierRegex =
+  /(?<=[xX✕✖⨉倍率])([1-9]+(\.\d+)*|0{1}\.\d+)(?=[xX✕✖⨉倍率])*/i;
 
 // --- 3. 主入口 ---
 
@@ -391,17 +369,43 @@ function main(config) {
   config["allow-lan"] = true;
   config["bind-address"] = "*";
   config["mode"] = "rule";
-  config["dns"] = dnsConfig;
-  config["hosts"] = hostsConfig;
-  config["profile"] = {
-    "store-selected": true,
-    "store-fake-ip": true,
-  };
   config["unified-delay"] = true;
   config["tcp-concurrent"] = true;
   config["keep-alive-idle"] = 600;
   config["keep-alive-interval"] = 60;
   config["find-process-mode"] = "strict";
+
+  config["profile"] = {
+    "store-selected": true,
+    "store-fake-ip": true,
+  };
+
+  // DNS 配置
+  config["dns"] = {
+    enable: true,
+    listen: ":1053",
+    "cache-algorithm": "arc",
+    "use-hosts": true,
+    "use-system-hosts": true,
+    "enhanced-mode": "fake-ip",
+    "fake-ip-range": "198.18.0.1/16",
+    "fake-ip-filter": ["rule-set:fakeip_filter"],
+    nameserver: ["https://dns.alidns.com/dns-query"],
+    "direct-nameserver": ["system"],
+    "proxy-server-nameserver": ["https://doh.pub/dns-query"],
+    "nameserver-policy": {
+      "*": "system",
+      "+.arpa": "system",
+      "rule-set:gfw": "https://dns.google/dns-query#其他外网",
+    },
+  };
+
+  // hosts 配置
+  config["hosts"] = {
+    "dns.alidns.com": ["223.5.5.5", "223.6.6.6"],
+    "doh.pub": ["1.12.12.21", "120.53.53.53"],
+    "dns.google": ["8.8.8.8", "8.8.4.4"],
+  };
 
   config["sniffer"] = {
     enable: true,
@@ -430,6 +434,7 @@ function main(config) {
     "write-to-system": false,
     server: "cn.ntp.org.cn",
   };
+
   config["tun"] = {
     enable: true,
     stack: "mixed",
@@ -598,7 +603,6 @@ function main(config) {
 
   // 3.5 组装最终结果
   config["proxy-groups"] = [...functionalGroups, ...generatedRegionGroups];
-
   config["rules"] = rules;
   config["rule-providers"] = ruleProviders;
 
