@@ -194,7 +194,7 @@ const ruleProviders = {
   },
   ai: {
     ...ruleProviderCommonDomain,
-    url: "https://raw.githubusercontent.com/JohnsonRan/CRules/mihomo/resources/rules/ai.mrs",
+    url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/ai.mrs",
     path: "./ruleset/ai.mrs",
   },
   youtube: {
