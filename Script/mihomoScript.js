@@ -46,6 +46,7 @@ const rules = [
   "RULE-SET,applications,下载软件",
   "RULE-SET,steam_cn,DIRECT",
   "RULE-SET,epicgames,DIRECT",
+  "RULE-SET,nvidia_cn,DIRECT",
 ];
 
 // 地区定义
@@ -172,6 +173,11 @@ const ruleProviders = {
     ...ruleProviderCommonDomain,
     url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/epicgames.mrs",
     path: "./ruleset/epicgames.mrs",
+  },
+  nvidia_cn: {
+    ...ruleProviderCommonDomain,
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/nvidia@cn.mrs",
+    path: "./ruleset/nvidia@cn.mrs",
   },
   ai: {
     ...ruleProviderCommonDomain,
