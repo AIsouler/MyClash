@@ -541,7 +541,6 @@ function main(config) {
       rules.push(...svc.rules);
       if (svc.provider) {
         ruleProviders[svc.provider.key] = {
-          ...ruleProviderCommon,
           behavior: svc.provider.behavior,
           format: svc.provider.format,
           url: svc.provider.url,
