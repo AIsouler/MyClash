@@ -12,17 +12,41 @@ const enable = true;
  * true = 启用
  * false = 禁用
  */
-const ruleOptions = {
-  microsoft: true, // 微软服务
-  github: true, // Github服务
-  google: true, // Google服务
-  youtube: true, // YouTube
+const ruleOptionsEnable = {
   ai: true, // 国外AI
+  youtube: true, // YouTube
+  google: true, // Google服务
+  github: true, // Github服务
+  microsoft: true, // 微软服务
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
   pixiv: true, // Pixiv绘画网站
   ads: true, // 常见的网络广告
+};
+
+/**
+ * 节点组配置
+ * true = 启用
+ * false = 禁用
+ * 未启用的节点组将不会被生成，且该节点组的节点会被分类到其他节点组中
+ */
+const regionDefinitionsEnable = {
+  "🇭🇰 香港": true,
+  "🇺🇸 美国": true,
+  "🇯🇵 日本": true,
+  "🇰🇷 韩国": true,
+  "🇸🇬 新加坡": true,
+  "🇨🇳 中国大陆": true,
+  "🇹🇼 台湾省": true,
+  "🇬🇧 英国": true,
+  "🇩🇪 德国": true,
+  "🇲🇾 马来西亚": true,
+  "🇹🇷 土耳其": true,
+  "🇨🇦 加拿大": true,
+  "🇦🇺 澳大利亚": true,
+  "⛵ 低倍率节点": true,
+  "✈️ 高倍率节点": true,
 };
 
 const skipIps = [
@@ -53,10 +77,10 @@ const rules = [
   "RULE-SET,download,下载专用",
 ];
 
-// 排除小于 0.5 的低倍率节点
+// 排除倍率 ≤0.5 的低倍率节点
 const excludeLowMultiplier = "(?!.*0\\.[0-5])";
 
-// 排除高倍率节点
+// 排除倍率 ≥2 的高倍率节点
 // 使用 .source 可以直接获取正则内容的字符串，无需手动处理转义字符
 const excludeHighMultiplier =
   /(?!.*(?:(?:[*xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*xX✕✖⨉]))))/
@@ -567,6 +591,7 @@ function main(config) {
         proxies: [],
       })
   );
+
   const otherProxies = [];
 
   for (let i = 0; i < proxyCount; i++) {
@@ -584,7 +609,11 @@ function main(config) {
 
     // 尝试匹配地区
     for (const region of regionDefinitions) {
-      if (region.regex.test(name)) {
+      if (
+        region.regex.test(name) &&
+        region.name in regionDefinitionsEnable &&
+        regionDefinitionsEnable[region.name]
+      ) {
         regionGroups[region.name].proxies.push(name);
         matched = true;
         break;
@@ -637,7 +666,7 @@ function main(config) {
   });
 
   serviceConfigs.forEach((svc) => {
-    if (ruleOptions[svc.key]) {
+    if (ruleOptionsEnable[svc.key]) {
       rules.push(...svc.rules);
       if (svc.provider) {
         ruleProviders[svc.provider.key] = {
