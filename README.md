@@ -22,6 +22,8 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 - 规则采用 `rule-set` 模式，按需添加规则集，告别臃肿的 geodata
 
+- 规则以 `domain` 与 `ipcidr` 行为为主，相比 `classical` 查询效率更高
+
 - 自动识别节点倍率，并分别归类为独立节点组：
 
   - 高倍率节点（倍率 ≥2）
