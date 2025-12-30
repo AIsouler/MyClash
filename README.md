@@ -29,8 +29,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
   - 高倍率节点（倍率 ≥2）
   - 低倍率节点（倍率 ≤0.5）
 
-- 策略组使用 `select` 模式，节点组使用 `url-test` 模式，兼顾可控性与自动切换
-
 - 脚本内策略组、节点组均支持自定义控制是否启用
 
 ## 内置策略组
