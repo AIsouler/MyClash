@@ -632,7 +632,7 @@ function main(config) {
       generatedRegionGroups.push({
         ...groupBaseOption,
         name: r.name,
-        type: "url-test",
+        type: "select",
         tolerance: 50,
         icon: r.icon,
         proxies: groupData.proxies,
