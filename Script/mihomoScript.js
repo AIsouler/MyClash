@@ -691,7 +691,6 @@ function main(config) {
         name: svc.name,
         type: "select",
         proxies: groupProxies,
-        url: svc.url,
         icon: svc.icon,
       });
     }
