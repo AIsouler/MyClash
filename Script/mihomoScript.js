@@ -123,7 +123,7 @@ const regionDefinitions = [
   {
     name: "🇸🇬 新加坡",
     regex: new RegExp(
-      `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(新加坡|🇸🇬|sg|singapore)).*`,
+      `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(新加坡|狮城|🇸🇬|sg|singapore)).*`,
       "iu"
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png",
