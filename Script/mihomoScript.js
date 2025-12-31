@@ -668,20 +668,10 @@ function main(config) {
   serviceConfigs.forEach((svc) => {
     if (ruleOptionsEnable[svc.key]) {
       rules.push(...svc.rules);
-      if (svc.provider) {
-        ruleProviders[svc.provider.key] = {
-          behavior: svc.provider.behavior,
-          format: svc.provider.format,
-          url: svc.provider.url,
-          path: svc.provider.path,
-        };
-      }
 
       let groupProxies;
       if (svc.reject) {
         groupProxies = ["拦截", "直连", "默认节点"];
-      } else if (svc.key === "biliintl" || svc.key === "bahamut") {
-        groupProxies = ["默认节点", "直连", ...regionGroupNames];
       } else {
         groupProxies = ["默认节点", ...regionGroupNames, "直连"];
       }
