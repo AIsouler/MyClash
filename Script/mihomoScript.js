@@ -77,11 +77,11 @@ const rules = [
   "RULE-SET,download,下载专用",
 ];
 
-// 排除倍率 ≤0.5 的低倍率节点
-const excludeLowMultiplier = "(?!.*0\\.[0-5])";
-
-// 排除倍率 ≥2 的高倍率节点
 // 使用 .source 可以直接获取正则内容的字符串，无需手动处理转义字符
+// 排除倍率 ≤0.5 的节点
+const excludeLowMultiplier = /(?!.*0\.[0-5])/.source;
+
+// 排除倍率 ≥2 的节点
 const excludeHighMultiplier =
   /(?!.*(?:(?:[*xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*xX✕✖⨉]))))/
     .source;
@@ -466,13 +466,6 @@ const serviceConfigs = [
   },
 ];
 
-// const excludeHighPercentage = true;
-// const globalRatioLimit = 2;
-
-// // 倍率正则预编译
-// const multiplierRegex =
-//   /(?<=[xX✕✖⨉倍率])([1-9]+(\.\d+)*|0{1}\.\d+)(?=[xX✕✖⨉倍率])*/i;
-
 // --- 3. 主入口 ---
 
 function main(config) {
@@ -543,7 +536,6 @@ function main(config) {
       TLS: {
         ports: [443, 8443],
       },
-
       QUIC: {
         ports: [443, 8443],
       },
@@ -570,17 +562,11 @@ function main(config) {
     "dns-hijack": ["udp://any:53", "tcp://any:53"],
   };
 
-  config.proxies.push(
-    {
-      name: "直连",
-      type: "direct",
-      udp: true,
-    },
-    {
-      name: "拦截",
-      type: "reject",
-    }
-  );
+  config.proxies.push({
+    name: "直连",
+    type: "direct",
+    udp: true,
+  });
 
   // 3.2 高效代理分类 (单次遍历)
   const regionGroups = {};
@@ -598,14 +584,6 @@ function main(config) {
     const proxy = proxies[i];
     const name = proxy.name;
     let matched = false;
-
-    // // 检查倍率
-    // if (excludeHighPercentage) {
-    //   const match = multiplierRegex.exec(name);
-    //   if (match && parseFloat(match[1]) > globalRatioLimit) {
-    //     continue;
-    //   }
-    // }
 
     // 尝试匹配地区
     for (const region of regionDefinitions) {
@@ -671,7 +649,7 @@ function main(config) {
 
       let groupProxies;
       if (svc.reject) {
-        groupProxies = ["拦截", "直连", "默认节点"];
+        groupProxies = ["REJECT", "直连", "默认节点"];
       } else {
         groupProxies = ["默认节点", ...regionGroupNames, "直连"];
       }
