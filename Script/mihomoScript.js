@@ -66,7 +66,7 @@ const rules = [
 
 // 使用 .source 可以直接获取正则内容的字符串，无需手动处理转义字符
 // 排除倍率 ≤0.5 的节点
-const excludeLowMultiplier = /(?!.*0\.[0-5])/.source;
+const excludeLowMultiplier = /(?!.*(?<!\d)0\.[0-5]|.*(下载|低倍))/.source;
 
 // 排除倍率 ≥2 的节点
 const excludeHighMultiplier =
@@ -181,7 +181,7 @@ const regionDefinitions = [
   },
   {
     name: "⛵ 低倍率节点",
-    regex: /0\.[0-5]|0\.0|下载|低倍/u,
+    regex: /(?<!\d)0\.[0-5]|(?<!\d)0\.0|下载|低倍/u,
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Available_1.png",
   },
   {
