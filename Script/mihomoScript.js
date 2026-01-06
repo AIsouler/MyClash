@@ -49,22 +49,11 @@ const regionDefinitionsEnable = {
   "✈️ 高倍率节点": true,
 };
 
-// 初始规则
-const rules = [
-  "RULE-SET,private,DIRECT",
-  "RULE-SET,private_ip,DIRECT,no-resolve",
-  "RULE-SET,AWAvenue_Ads,广告拦截",
-  "RULE-SET,steam_cn,DIRECT",
-  "RULE-SET,epicgames,DIRECT",
-  "RULE-SET,nvidia_cn,DIRECT",
-  "PROCESS-NAME,nvcontainer.exe,DIRECT", // NVIDIA App 下载器
-  "RULE-SET,applications,DIRECT",
-  "DOMAIN-SUFFIX,githubusercontent.com,Github", // download 规则集包含此域名，但github直连下载速度比较慢，因此放在download前面优先匹配
-  "DOMAIN-SUFFIX,greasyfork.org,其他外网",
-  "RULE-SET,download,下载专用",
-];
+/**
+ * 排除低倍率和高倍率节点的正则表达式
+ * 使用 .source 可以直接获取正则内容的字符串，无需手动处理转义字符
+ */
 
-// 使用 .source 可以直接获取正则内容的字符串，无需手动处理转义字符
 // 排除倍率 ≤0.5 的节点
 const excludeLowMultiplier = /(?!.*(?<!\d)0\.[0-5]|.*(下载|低倍))/.source;
 
@@ -192,7 +181,17 @@ const regionDefinitions = [
   },
 ];
 
-// 通用配置
+// 策略组通用配置
+const groupBaseOption = {
+  interval: 600,
+  timeout: 5000,
+  url: "https://www.gstatic.com/generate_204",
+  lazy: true,
+  "max-failed-times": 3,
+  hidden: false,
+};
+
+// Rule Providers 通用配置
 const ruleProviderFormatYaml = { format: "yaml" };
 const ruleProviderFormatTxt = { format: "text" };
 const ruleProviderFormatMrs = { format: "mrs" };
@@ -211,14 +210,6 @@ const ruleProviderCommonClassical = {
   type: "http",
   interval: 86400,
   behavior: "classical",
-};
-const groupBaseOption = {
-  interval: 600,
-  timeout: 5000,
-  url: "https://www.gstatic.com/generate_204",
-  lazy: true,
-  "max-failed-times": 3,
-  hidden: false,
 };
 
 // 定义 Rule Providers
@@ -381,74 +372,51 @@ const serviceConfigs = [
     key: "ai",
     name: "国外AI",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png",
-    rules: ["RULE-SET,ai,国外AI"],
   },
   {
     key: "youtube",
     name: "YouTube",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png",
-    rules: ["RULE-SET,youtube,YouTube"],
   },
   {
     key: "google",
     name: "谷歌服务",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png",
-    rules: [
-      "RULE-SET,google,谷歌服务",
-      "RULE-SET,google_ip,谷歌服务,no-resolve",
-    ],
   },
   {
     key: "github",
     name: "Github",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png",
-    rules: ["RULE-SET,github,Github"],
   },
   {
     key: "microsoft",
     name: "微软服务",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png",
-    rules: ["RULE-SET,microsoft_cn,国内网站", "RULE-SET,microsoft,微软服务"],
   },
   {
     key: "telegram",
     name: "Telegram",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png",
-    rules: [
-      "RULE-SET,telegram,Telegram",
-      "RULE-SET,telegram_ip,Telegram,no-resolve",
-    ],
   },
   {
     key: "pixiv",
     name: "Pixiv",
     icon: "https://play-lh.googleusercontent.com/Ls9opXo6-wfEWmbBU8heJaFS8HwWydssWE1J3vexIGvkF-UJDqcW7ZMD8w6dQABfygONd4z3Yt4TfRDZAPYq=w480-h960-rw",
-    rules: [
-      "RULE-SET,pixiv,Pixiv",
-      "PROCESS-NAME,com.perol.pixez,Pixiv",
-      "PROCESS-NAME,com.perol.play.pixez,Pixiv",
-    ],
   },
   {
     key: "steam",
     name: "Steam",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Steam.png",
-    rules: ["RULE-SET,steam,Steam"],
   },
   {
     key: "twitter",
     name: "Twitter",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png",
-    rules: [
-      "RULE-SET,twitter,Twitter",
-      "RULE-SET,twitter_ip,Twitter,no-resolve",
-    ],
   },
   {
     key: "ads",
     name: "广告拦截",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Advertising.png",
-    rules: [], // 规则写在了初始规则里面，优先匹配
     reject: true,
   },
 ];
@@ -469,7 +437,131 @@ function main(config) {
     throw new Error("配置文件中未找到任何代理");
   }
 
-  // 3.1 覆盖基础配置
+  // 高效代理分类 (单次遍历)
+  const regionGroups = {};
+  regionDefinitions.forEach(
+    (r) =>
+      (regionGroups[r.name] = {
+        ...r,
+        proxies: [],
+      })
+  );
+
+  const otherProxies = [];
+
+  for (let i = 0; i < proxyCount; i++) {
+    const proxy = proxies[i];
+    const name = proxy.name;
+    let matched = false;
+
+    // 尝试匹配地区
+    for (const region of regionDefinitions) {
+      if (
+        region.regex.test(name) &&
+        region.name in regionDefinitionsEnable &&
+        regionDefinitionsEnable[region.name]
+      ) {
+        regionGroups[region.name].proxies.push(name);
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched) {
+      otherProxies.push(name);
+    }
+  }
+
+  const generatedRegionGroups = [];
+  regionDefinitions.forEach((r) => {
+    const groupData = regionGroups[r.name];
+    if (groupData.proxies.length > 0) {
+      generatedRegionGroups.push({
+        ...groupBaseOption,
+        name: r.name,
+        type: "url-test",
+        tolerance: 50,
+        icon: r.icon,
+        proxies: groupData.proxies,
+      });
+    }
+  });
+
+  const regionGroupNames = generatedRegionGroups.map((g) => g.name);
+
+  if (otherProxies.length > 0) {
+    generatedRegionGroups.push({
+      ...groupBaseOption,
+      name: "其他节点",
+      type: "select",
+      proxies: otherProxies,
+      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/World_Map.png",
+    });
+  }
+
+  // 构建功能策略组
+  const functionalGroups = [];
+
+  functionalGroups.push({
+    ...groupBaseOption,
+    name: "默认节点",
+    type: "select",
+    proxies: [...regionGroupNames, "其他节点", "直连"].filter(
+      (n) => n !== "其他节点" || otherProxies.length > 0
+    ),
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png",
+  });
+
+  serviceConfigs.forEach((svc) => {
+    if (ruleOptionsEnable[svc.key]) {
+      let groupProxies;
+      if (svc.reject) {
+        groupProxies = ["REJECT", "直连", "默认节点"];
+      } else {
+        groupProxies = ["默认节点", ...regionGroupNames, "直连"];
+      }
+
+      functionalGroups.push({
+        ...groupBaseOption,
+        name: svc.name,
+        type: "select",
+        proxies: groupProxies,
+        icon: svc.icon,
+      });
+    }
+  });
+
+  // 添加通用兜底策略组
+  functionalGroups.push(
+    {
+      ...groupBaseOption,
+      name: "下载专用",
+      type: "select",
+      proxies: ["直连", "默认节点", ...regionGroupNames],
+      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Download.png",
+    },
+    {
+      ...groupBaseOption,
+      name: "其他外网",
+      type: "select",
+      proxies: ["默认节点", ...regionGroupNames],
+      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Streaming!CN.png",
+    },
+    {
+      ...groupBaseOption,
+      name: "国内网站",
+      type: "select",
+      proxies: ["直连", "默认节点", ...regionGroupNames],
+      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/StreamingCN.png",
+    }
+  );
+
+  // --- 4. 覆盖基础配置 ---
+
+  // 组装最终结果
+  config["proxy-groups"] = [...functionalGroups, ...generatedRegionGroups];
+  config["rule-providers"] = ruleProviders;
+
   config["allow-lan"] = true;
   config["bind-address"] = "*";
   config["mode"] = "rule";
@@ -565,138 +657,47 @@ function main(config) {
     udp: true,
   });
 
-  // 3.2 高效代理分类 (单次遍历)
-  const regionGroups = {};
-  regionDefinitions.forEach(
-    (r) =>
-      (regionGroups[r.name] = {
-        ...r,
-        proxies: [],
-      })
-  );
+  config["rules"] = [
+    // 直连规则
+    "RULE-SET,private,DIRECT",
+    "RULE-SET,private_ip,DIRECT,no-resolve",
+    "RULE-SET,AWAvenue_Ads,广告拦截",
+    "RULE-SET,steam_cn,DIRECT",
+    "RULE-SET,epicgames,DIRECT",
+    "RULE-SET,nvidia_cn,DIRECT",
+    "RULE-SET,microsoft_cn,DIRECT",
+    "RULE-SET,applications,DIRECT",
 
-  const otherProxies = [];
+    // 特例规则
+    "PROCESS-NAME,nvcontainer.exe,DIRECT", // NVIDIA App 下载器
+    "PROCESS-NAME,com.perol.pixez,Pixiv", // Pixez
+    "PROCESS-NAME,com.perol.play.pixez,Pixiv", // Pixez Google Play 版
 
-  for (let i = 0; i < proxyCount; i++) {
-    const proxy = proxies[i];
-    const name = proxy.name;
-    let matched = false;
+    // 下载规则
+    "DOMAIN-SUFFIX,githubusercontent.com,Github", // download 规则集包含此域名，但github直连下载速度比较慢，因此放在download前面优先匹配
+    "DOMAIN-SUFFIX,greasyfork.org,其他外网",
+    "RULE-SET,download,下载专用",
 
-    // 尝试匹配地区
-    for (const region of regionDefinitions) {
-      if (
-        region.regex.test(name) &&
-        region.name in regionDefinitionsEnable &&
-        regionDefinitionsEnable[region.name]
-      ) {
-        regionGroups[region.name].proxies.push(name);
-        matched = true;
-        break;
-      }
-    }
+    // 代理规则
+    "RULE-SET,ai,国外AI",
+    "RULE-SET,youtube,YouTube",
+    "RULE-SET,google,谷歌服务",
+    "RULE-SET,google_ip,谷歌服务,no-resolve",
+    "RULE-SET,github,Github",
+    "RULE-SET,microsoft,微软服务",
+    "RULE-SET,telegram,Telegram",
+    "RULE-SET,telegram_ip,Telegram,no-resolve",
+    "RULE-SET,pixiv,Pixiv",
+    "RULE-SET,steam,Steam",
+    "RULE-SET,twitter,Twitter",
+    "RULE-SET,twitter_ip,Twitter,no-resolve",
 
-    if (!matched) {
-      otherProxies.push(name);
-    }
-  }
-
-  const generatedRegionGroups = [];
-  regionDefinitions.forEach((r) => {
-    const groupData = regionGroups[r.name];
-    if (groupData.proxies.length > 0) {
-      generatedRegionGroups.push({
-        ...groupBaseOption,
-        name: r.name,
-        type: "select",
-        tolerance: 50,
-        icon: r.icon,
-        proxies: groupData.proxies,
-      });
-    }
-  });
-
-  const regionGroupNames = generatedRegionGroups.map((g) => g.name);
-
-  if (otherProxies.length > 0) {
-    generatedRegionGroups.push({
-      ...groupBaseOption,
-      name: "其他节点",
-      type: "select",
-      proxies: otherProxies,
-      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/World_Map.png",
-    });
-  }
-
-  // 3.3 构建功能策略组
-  const functionalGroups = [];
-
-  functionalGroups.push({
-    ...groupBaseOption,
-    name: "默认节点",
-    type: "select",
-    proxies: [...regionGroupNames, "其他节点", "直连"].filter(
-      (n) => n !== "其他节点" || otherProxies.length > 0
-    ),
-    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png",
-  });
-
-  serviceConfigs.forEach((svc) => {
-    if (ruleOptionsEnable[svc.key]) {
-      rules.push(...svc.rules);
-
-      let groupProxies;
-      if (svc.reject) {
-        groupProxies = ["REJECT", "直连", "默认节点"];
-      } else {
-        groupProxies = ["默认节点", ...regionGroupNames, "直连"];
-      }
-
-      functionalGroups.push({
-        ...groupBaseOption,
-        name: svc.name,
-        type: "select",
-        proxies: groupProxies,
-        icon: svc.icon,
-      });
-    }
-  });
-
-  // 3.4 添加通用兜底策略组
-  rules.push(
+    // 兜底规则
     "RULE-SET,gfw,其他外网",
     "RULE-SET,cn,国内网站",
     "RULE-SET,cn_ip,国内网站",
-    "MATCH,其他外网"
-  );
-
-  functionalGroups.push(
-    {
-      ...groupBaseOption,
-      name: "下载专用",
-      type: "select",
-      proxies: ["直连", "默认节点", ...regionGroupNames],
-      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Download.png",
-    },
-    {
-      ...groupBaseOption,
-      name: "其他外网",
-      type: "select",
-      proxies: ["默认节点", ...regionGroupNames],
-      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Streaming!CN.png",
-    },
-    {
-      ...groupBaseOption,
-      name: "国内网站",
-      type: "select",
-      proxies: ["直连", "默认节点", ...regionGroupNames],
-      icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/StreamingCN.png",
-    }
-  );
-
-  // 3.5 组装最终结果
-  config["proxy-groups"] = [...functionalGroups, ...generatedRegionGroups];
-  config["rules"] = rules;
-  config["rule-providers"] = ruleProviders;
+    "MATCH,其他外网",
+  ];
 
   return config;
 }
