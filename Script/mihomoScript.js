@@ -22,7 +22,7 @@ const ruleOptionsEnable = {
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
   pixiv: true, // Pixiv绘画网站
-  ads: true, // 常见的网络广告
+  adblock: true, // 广告拦截
 };
 
 /**
@@ -193,7 +193,7 @@ const groupBaseOption = {
 
 // Rule Providers 通用配置
 const ruleProviderFormatYaml = { format: "yaml" };
-const ruleProviderFormatTxt = { format: "text" };
+const ruleProviderFormatText = { format: "text" };
 const ruleProviderFormatMrs = { format: "mrs" };
 
 const ruleProviderCommonDomain = {
@@ -222,13 +222,13 @@ const ruleProviders = {
   },
   applications: {
     ...ruleProviderCommonClassical,
-    ...ruleProviderFormatTxt,
+    ...ruleProviderFormatText,
     url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/applications.list",
     path: "./ruleset/applications.list",
   },
   download: {
     ...ruleProviderCommonDomain,
-    ...ruleProviderFormatTxt,
+    ...ruleProviderFormatText,
     url: "https://ruleset.skk.moe/Clash/domainset/download.txt",
     path: "./ruleset/download.mrs",
   },
@@ -414,7 +414,7 @@ const serviceConfigs = [
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png",
   },
   {
-    key: "ads",
+    key: "adblock",
     name: "广告拦截",
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Advertising.png",
     reject: true,
