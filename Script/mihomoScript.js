@@ -220,17 +220,17 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs",
     path: "./ruleset/AWAvenue_Ads.mrs",
   },
-  applications: {
+  DownloadApps: {
     ...ruleProviderCommonClassical,
     ...ruleProviderFormatText,
-    url: "https://raw.githubusercontent.com/DustinWin/ruleset_geodata/mihomo-ruleset/applications.list",
-    path: "./ruleset/applications.list",
+    url: "https://raw.githubusercontent.com/AIsouler/MyClash/main/rules/DownloadApps.txt",
+    path: "./ruleset/DownloadApps.txt",
   },
   download: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatText,
     url: "https://ruleset.skk.moe/Clash/domainset/download.txt",
-    path: "./ruleset/download.mrs",
+    path: "./ruleset/download.txt",
   },
   fakeip_filter: {
     ...ruleProviderCommonDomain,
@@ -658,38 +658,43 @@ function main(config) {
   });
 
   config["rules"] = [
-    // 直连规则
+    // 私有网络直连
     "RULE-SET,private,DIRECT",
     "RULE-SET,private_ip,DIRECT,no-resolve",
-    "RULE-SET,AWAvenue_Ads,广告拦截",
+
+    // 进程规则
+    "PROCESS-NAME,com.perol.pixez,Pixiv", // Pixez
+    "PROCESS-NAME,com.perol.play.pixez,Pixiv", // Pixez Google Play 版
+    "RULE-SET,DownloadApps,DIRECT",
+
+    // 国内直连
     "RULE-SET,steam_cn,DIRECT",
     "RULE-SET,epicgames,DIRECT",
     "RULE-SET,nvidia_cn,DIRECT",
     "RULE-SET,microsoft_cn,DIRECT",
-    "RULE-SET,applications,DIRECT",
 
-    // 特例规则
-    "PROCESS-NAME,nvcontainer.exe,DIRECT", // NVIDIA App 下载器
-    "PROCESS-NAME,com.perol.pixez,Pixiv", // Pixez
-    "PROCESS-NAME,com.perol.play.pixez,Pixiv", // Pixez Google Play 版
+    // 广告拦截
+    "RULE-SET,AWAvenue_Ads,广告拦截",
 
-    // 下载规则
+    // 下载相关
     "DOMAIN-SUFFIX,githubusercontent.com,Github", // download 规则集包含此域名，但github直连下载速度比较慢，因此放在download前面优先匹配
     "DOMAIN-SUFFIX,greasyfork.org,其他外网",
     "RULE-SET,download,下载专用",
 
-    // 代理规则
+    // 代理规则（域名）
     "RULE-SET,ai,国外AI",
     "RULE-SET,youtube,YouTube",
     "RULE-SET,google,谷歌服务",
-    "RULE-SET,google_ip,谷歌服务,no-resolve",
     "RULE-SET,github,Github",
     "RULE-SET,microsoft,微软服务",
     "RULE-SET,telegram,Telegram",
-    "RULE-SET,telegram_ip,Telegram,no-resolve",
     "RULE-SET,pixiv,Pixiv",
     "RULE-SET,steam,Steam",
     "RULE-SET,twitter,Twitter",
+
+    // 代理规则（IP）
+    "RULE-SET,google_ip,谷歌服务,no-resolve",
+    "RULE-SET,telegram_ip,Telegram,no-resolve",
     "RULE-SET,twitter_ip,Twitter,no-resolve",
 
     // 兜底规则
