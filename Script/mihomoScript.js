@@ -184,9 +184,9 @@ const regionDefinitions = [
 // 策略组通用配置
 const groupBaseOption = {
   interval: 600,
-  timeout: 5000,
+  timeout: 3000,
   url: "https://www.gstatic.com/generate_204",
-  lazy: true,
+  lazy: false,
   "max-failed-times": 3,
   hidden: false,
 };
@@ -480,7 +480,7 @@ function main(config) {
         ...groupBaseOption,
         name: r.name,
         type: "url-test",
-        tolerance: 50,
+        tolerance: 100,
         icon: r.icon,
         proxies: groupData.proxies,
       });
