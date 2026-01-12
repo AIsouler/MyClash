@@ -37,7 +37,6 @@ const regionDefinitionsEnable = {
   "🇯🇵 日本": true,
   "🇰🇷 韩国": true,
   "🇸🇬 新加坡": true,
-  "🇨🇳 中国大陆": true,
   "🇹🇼 台湾省": true,
   "🇬🇧 英国": true,
   "🇩🇪 德国": true,
@@ -105,20 +104,12 @@ const regionDefinitions = [
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png",
   },
   {
-    name: "🇨🇳 中国大陆",
-    regex: new RegExp(
-      `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(中国|🇨🇳|cn|china)).*`,
-      "iu"
-    ),
-    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China_Map.png",
-  },
-  {
     name: "🇹🇼 台湾省",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(台湾|🇹🇼|tw|taiwan|tai wan)).*`,
       "iu"
     ),
-    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China.png",
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png",
   },
   {
     name: "🇬🇧 英国",
