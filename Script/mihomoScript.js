@@ -658,6 +658,9 @@ function main(config) {
   });
 
   config["rules"] = [
+    // 阻断 YouTube UDP 流量
+    "AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT",
+
     // 私有网络直连
     "RULE-SET,private,DIRECT",
     "RULE-SET,private_ip,DIRECT,no-resolve",
@@ -665,7 +668,7 @@ function main(config) {
     // 进程规则
     "PROCESS-NAME,com.perol.pixez,Pixiv", // Pixez
     "PROCESS-NAME,com.perol.play.pixez,Pixiv", // Pixez Google Play 版
-    "RULE-SET,DownloadApps,DIRECT",
+    "RULE-SET,DownloadApps,DIRECT", // 常见磁力下载软件
 
     // 国内直连
     "RULE-SET,steam_cn,DIRECT",
