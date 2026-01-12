@@ -61,7 +61,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `日本`
 - `韩国`
 - `新加坡`
-- `中国大陆`
 - `台湾省`
 - `英国`
 - `德国`
