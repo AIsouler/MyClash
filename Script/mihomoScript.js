@@ -556,7 +556,6 @@ function main(config) {
   config["allow-lan"] = true;
   config["ipv6"] = true;
   config["bind-address"] = "*";
-  config["mode"] = "rule";
   config["unified-delay"] = true;
   config["tcp-concurrent"] = true;
   config["keep-alive-idle"] = 600;
