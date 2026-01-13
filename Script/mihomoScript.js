@@ -554,6 +554,7 @@ function main(config) {
   config["rule-providers"] = ruleProviders;
 
   config["allow-lan"] = true;
+  config["ipv6"] = true;
   config["bind-address"] = "*";
   config["mode"] = "rule";
   config["unified-delay"] = true;
@@ -570,12 +571,14 @@ function main(config) {
   // DNS 配置
   config["dns"] = {
     enable: true,
+    ipv6: true,
     listen: ":1053",
     "cache-algorithm": "arc",
     "use-hosts": true,
     "use-system-hosts": true,
     "enhanced-mode": "fake-ip",
     "fake-ip-range": "198.18.0.1/16",
+    "fake-ip-range6": "fc00::/18",
     "fake-ip-filter": ["rule-set:fakeip_filter"],
     nameserver: ["https://dns.alidns.com/dns-query"],
     "direct-nameserver": ["system"],
