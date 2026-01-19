@@ -67,7 +67,7 @@ const regionDefinitions = [
     name: "🇭🇰 香港",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(港|🇭🇰|hk|hongkong|hong kong)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png",
   },
@@ -75,7 +75,7 @@ const regionDefinitions = [
     name: "🇺🇸 美国",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?!.*aus)(?=.*(美|🇺🇸|us(?!t)|usa|america|united states)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png",
   },
@@ -83,7 +83,7 @@ const regionDefinitions = [
     name: "🇯🇵 日本",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(日本|🇯🇵|jp|japan)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png",
   },
@@ -91,7 +91,7 @@ const regionDefinitions = [
     name: "🇰🇷 韩国",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(韩|🇰🇷|kr|korea)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Korea.png",
   },
@@ -99,7 +99,7 @@ const regionDefinitions = [
     name: "🇸🇬 新加坡",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(新加坡|狮城|🇸🇬|sg|singapore)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png",
   },
@@ -107,7 +107,7 @@ const regionDefinitions = [
     name: "🇹🇼 台湾省",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(台湾|🇹🇼|tw|taiwan|tai wan)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png",
   },
@@ -115,7 +115,7 @@ const regionDefinitions = [
     name: "🇬🇧 英国",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(英|🇬🇧|uk|united kingdom|great britain)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_Kingdom.png",
   },
@@ -123,7 +123,7 @@ const regionDefinitions = [
     name: "🇩🇪 德国",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(德国|🇩🇪|de|germany)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Germany.png",
   },
@@ -131,7 +131,7 @@ const regionDefinitions = [
     name: "🇲🇾 马来西亚",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(马来|🇲🇾|my|malaysia)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Malaysia.png",
   },
@@ -139,7 +139,7 @@ const regionDefinitions = [
     name: "🇹🇷 土耳其",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(土耳其|🇹🇷|tk|turkey)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Turkey.png",
   },
@@ -147,7 +147,7 @@ const regionDefinitions = [
     name: "🇨🇦 加拿大",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(加拿大|🇨🇦|ca|canada)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Canada.png",
   },
@@ -155,7 +155,7 @@ const regionDefinitions = [
     name: "🇦🇺 澳大利亚",
     regex: new RegExp(
       `^${excludeLowMultiplier}${excludeHighMultiplier}(?=.*(澳大利亚|🇦🇺|au|australia|sydney)).*`,
-      "iu"
+      "iu",
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Australia.png",
   },
@@ -435,7 +435,7 @@ function main(config) {
       (regionGroups[r.name] = {
         ...r,
         proxies: [],
-      })
+      }),
   );
 
   const otherProxies = [];
@@ -470,8 +470,8 @@ function main(config) {
       generatedRegionGroups.push({
         ...groupBaseOption,
         name: r.name,
-        type: "url-test",
-        tolerance: 100,
+        type: "select",
+        //tolerance: 100,
         icon: r.icon,
         proxies: groupData.proxies,
       });
@@ -498,7 +498,7 @@ function main(config) {
     name: "默认节点",
     type: "select",
     proxies: [...regionGroupNames, "其他节点", "直连"].filter(
-      (n) => n !== "其他节点" || otherProxies.length > 0
+      (n) => n !== "其他节点" || otherProxies.length > 0,
     ),
     icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png",
   });
@@ -544,7 +544,7 @@ function main(config) {
       type: "select",
       proxies: ["直连", "默认节点", ...regionGroupNames],
       icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/StreamingCN.png",
-    }
+    },
   );
 
   // --- 4. 覆盖基础配置 ---
@@ -561,6 +561,11 @@ function main(config) {
   config["keep-alive-idle"] = 600;
   config["keep-alive-interval"] = 60;
   config["find-process-mode"] = "strict";
+
+  config["external-controller"] = "[::]:9090";
+  config["external-ui"] = "ui";
+  config["external-ui-url"] =
+    "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip";
 
   config["profile"] = {
     "store-selected": true,
