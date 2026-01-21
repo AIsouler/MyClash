@@ -217,12 +217,6 @@ const ruleProviders = {
     url: "https://raw.githubusercontent.com/AIsouler/MyClash/main/rules/DownloadApps.txt",
     path: "./ruleset/DownloadApps.txt",
   },
-  download: {
-    ...ruleProviderCommonDomain,
-    ...ruleProviderFormatText,
-    url: "https://ruleset.skk.moe/Clash/domainset/download.txt",
-    path: "./ruleset/download.txt",
-  },
   fakeip_filter: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
@@ -666,7 +660,7 @@ function main(config) {
     // 进程规则
     "PROCESS-NAME,com.perol.pixez,Pixiv", // Pixez
     "PROCESS-NAME,com.perol.play.pixez,Pixiv", // Pixez Google Play 版
-    "RULE-SET,DownloadApps,DIRECT", // 常见磁力下载软件
+    "RULE-SET,DownloadApps,下载专用", // 常见磁力下载软件
 
     // 国内直连
     "RULE-SET,steam_cn,DIRECT",
@@ -676,11 +670,6 @@ function main(config) {
 
     // 广告拦截
     "RULE-SET,AWAvenue_Ads,广告拦截",
-
-    // 下载相关
-    "DOMAIN-SUFFIX,githubusercontent.com,Github", // download 规则集包含此域名，但github直连下载速度比较慢，因此放在download前面优先匹配
-    "DOMAIN-SUFFIX,greasyfork.org,其他外网",
-    "RULE-SET,download,下载专用",
 
     // 代理规则（域名）
     "RULE-SET,ai,国外AI",
