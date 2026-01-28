@@ -22,6 +22,7 @@ const ruleOptionsEnable = {
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
   pixiv: true, // Pixiv绘画网站
+  emby: true, // Emby媒体服务
   adblock: true, // 广告拦截
 };
 
@@ -300,6 +301,12 @@ const ruleProviders = {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs',
     path: './ruleset/cn_ip.mrs',
   },
+  emby: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-emby.mrs',
+    path: './ruleset/emby.mrs',
+  },
 };
 
 // --- 2. 服务规则数据结构 ---
@@ -348,6 +355,11 @@ const serviceConfigs = [
     key: 'twitter',
     name: 'Twitter',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png',
+  },
+  {
+    key: 'emby',
+    name: 'Emby',
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png',
   },
   {
     key: 'adblock',
@@ -646,6 +658,7 @@ function main(config) {
     'RULE-SET,pixiv,Pixiv',
     'RULE-SET,steam,Steam',
     'RULE-SET,twitter,Twitter',
+    'RULE-SET,emby,Emby',
 
     // 代理规则（IP）
     'RULE-SET,google_ip,谷歌服务,no-resolve',
