@@ -45,6 +45,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Pixiv`
 - `Steam`
 - `Twitter`
+- `Emby`
 - `广告拦截`
 - `下载专用`
 - `其他外网`
