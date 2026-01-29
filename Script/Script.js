@@ -1,53 +1,5 @@
 // --- 1. 静态配置区域 ---
 
-/**
- * 整个脚本的总开关
- * true = 启用
- * false = 禁用
- */
-const enable = true;
-
-/**
- * 分流规则配置，会自动生成对应的策略组
- * true = 启用
- * false = 禁用
- */
-const ruleOptionsEnable = {
-  ai: true, // 国外AI
-  youtube: true, // YouTube
-  google: true, // Google服务
-  github: true, // Github服务
-  microsoft: true, // 微软服务
-  telegram: true, // Telegram通讯软件
-  twitter: true, // Twitter社交平台
-  steam: true, // Steam游戏平台
-  pixiv: true, // Pixiv绘画网站
-  adblock: true, // 广告拦截
-};
-
-/**
- * 节点组配置
- * true = 启用
- * false = 禁用
- * 未启用的节点组将不会被生成，且该节点组的节点会被分类到其他节点组中
- */
-const regionDefinitionsEnable = {
-  '🇭🇰 香港': true,
-  '🇺🇸 美国': true,
-  '🇯🇵 日本': true,
-  '🇰🇷 韩国': true,
-  '🇸🇬 新加坡': true,
-  '🇹🇼 台湾省': true,
-  '🇬🇧 英国': true,
-  '🇩🇪 德国': true,
-  '🇲🇾 马来西亚': true,
-  '🇹🇷 土耳其': true,
-  '🇨🇦 加拿大': true,
-  '🇦🇺 澳大利亚': true,
-  '⛵ 低倍率节点': true,
-  '✈️ 高倍率节点': true,
-};
-
 // 地区定义
 const regionDefinitions = [
   {
@@ -360,8 +312,6 @@ const serviceConfigs = [
 // --- 3. 主入口 ---
 
 function main(config) {
-  if (!enable) return config;
-
   const proxies = config?.proxies || [];
   const proxyCount = proxies.length;
   const proxyProviderCount =
@@ -395,7 +345,6 @@ function main(config) {
     const name = proxy.name;
 
     if (
-      regionDefinitionsEnable['⛵ 低倍率节点'] &&
       regionDefinitions.find((r) => r.name === '⛵ 低倍率节点').regex.test(name)
     ) {
       lowGroup.proxies.push(name);
@@ -403,7 +352,6 @@ function main(config) {
     }
 
     if (
-      regionDefinitionsEnable['✈️ 高倍率节点'] &&
       regionDefinitions.find((r) => r.name === '✈️ 高倍率节点').regex.test(name)
     ) {
       highGroup.proxies.push(name);
@@ -421,7 +369,7 @@ function main(config) {
       if (region.name === '⛵ 低倍率节点' || region.name === '✈️ 高倍率节点')
         continue;
 
-      if (region.regex.test(name) && regionDefinitionsEnable[region.name]) {
+      if (region.regex.test(name)) {
         regionGroups[region.name].proxies.push(name);
         matched = true;
         break;
@@ -475,22 +423,20 @@ function main(config) {
   });
 
   serviceConfigs.forEach((svc) => {
-    if (ruleOptionsEnable[svc.key]) {
-      let groupProxies;
-      if (svc.reject) {
-        groupProxies = ['REJECT', '直连', '默认节点'];
-      } else {
-        groupProxies = ['默认节点', ...regionGroupNames, '直连'];
-      }
-
-      functionalGroups.push({
-        ...groupBaseOption,
-        name: svc.name,
-        type: 'select',
-        proxies: groupProxies,
-        icon: svc.icon,
-      });
+    let groupProxies;
+    if (svc.reject) {
+      groupProxies = ['REJECT', '直连', '默认节点'];
+    } else {
+      groupProxies = ['默认节点', ...regionGroupNames, '直连'];
     }
+
+    functionalGroups.push({
+      ...groupBaseOption,
+      name: svc.name,
+      type: 'select',
+      proxies: groupProxies,
+      icon: svc.icon,
+    });
   });
 
   // 添加通用兜底策略组
