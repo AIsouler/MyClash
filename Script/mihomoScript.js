@@ -51,6 +51,22 @@ const regionDefinitionsEnable = {
   '✈️ 高倍率节点': true,
 };
 
+// rules预定义
+const rules = [
+  // 私有网络直连
+  'RULE-SET,private,DIRECT',
+  'RULE-SET,private_ip,DIRECT,no-resolve',
+
+  // 进程规则
+  'RULE-SET,DownloadApps,下载专用', // 常见磁力下载软件
+
+  // 国内直连
+  'RULE-SET,steam_cn,DIRECT',
+  'RULE-SET,epicgames,DIRECT',
+  'RULE-SET,nvidia_cn,DIRECT',
+  'RULE-SET,microsoft_cn,DIRECT',
+];
+
 // 地区定义
 const regionDefinitions = [
   {
@@ -327,56 +343,84 @@ const serviceConfigs = [
     key: 'ai',
     name: '国外AI',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png',
+    rules: ['RULE-SET,ai,国外AI'],
   },
   {
     key: 'youtube',
     name: 'YouTube',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/YouTube.png',
+    rules: [
+      // 阻断 YouTube UDP 流量
+      'AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT',
+      'RULE-SET,youtube,YouTube',
+    ],
   },
   {
     key: 'google',
     name: '谷歌服务',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png',
+    rules: [
+      'RULE-SET,google,谷歌服务',
+      'RULE-SET,google_ip,谷歌服务,no-resolve',
+    ],
   },
   {
     key: 'github',
     name: 'Github',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png',
+    rules: ['RULE-SET,github,Github'],
   },
   {
     key: 'microsoft',
     name: '微软服务',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png',
+    rules: ['RULE-SET,microsoft,微软服务'],
   },
   {
     key: 'telegram',
     name: 'Telegram',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png',
+    rules: [
+      'RULE-SET,telegram,Telegram',
+      'RULE-SET,telegram_ip,Telegram,no-resolve',
+    ],
   },
   {
     key: 'pixiv',
     name: 'Pixiv',
     icon: 'https://play-lh.googleusercontent.com/Ls9opXo6-wfEWmbBU8heJaFS8HwWydssWE1J3vexIGvkF-UJDqcW7ZMD8w6dQABfygONd4z3Yt4TfRDZAPYq=w480-h960-rw',
+    rules: [
+      'RULE-SET,pixiv,Pixiv',
+      'PROCESS-NAME,com.perol.pixez,Pixiv', // Pixez
+      'PROCESS-NAME,com.perol.play.pixez,Pixiv', // Pixez Google Play 版
+    ],
   },
   {
     key: 'steam',
     name: 'Steam',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Steam.png',
+    rules: ['RULE-SET,steam,Steam'],
   },
   {
     key: 'twitter',
     name: 'Twitter',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png',
+    rules: [
+      'RULE-SET,twitter,Twitter',
+      'RULE-SET,twitter_ip,Twitter,no-resolve',
+    ],
   },
   {
     key: 'emby',
     name: 'Emby',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png',
+    rules: ['RULE-SET,emby,Emby'],
   },
   {
     key: 'adblock',
     name: '广告拦截',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Advertising.png',
+    rules: ['RULE-SET,AWAvenue_Ads,广告拦截'],
     reject: true,
   },
 ];
@@ -500,6 +544,8 @@ function main(config) {
 
   serviceConfigs.forEach((svc) => {
     if (ruleOptionsEnable[svc.key]) {
+      rules.push(...svc.rules);
+
       let groupProxies;
       if (svc.reject) {
         groupProxies = ['REJECT', '直连', '默认节点'];
@@ -547,6 +593,15 @@ function main(config) {
   // 组装最终结果
   config['proxy-groups'] = [...functionalGroups, ...generatedRegionGroups];
   config['rule-providers'] = ruleProviders;
+  config['rules'] = [
+    ...rules,
+
+    // 兜底规则
+    'RULE-SET,gfw,其他外网',
+    'RULE-SET,cn,国内网站',
+    'RULE-SET,cn_ip,国内网站',
+    'MATCH,其他外网',
+  ];
 
   config['allow-lan'] = true;
   config['ipv6'] = true;
@@ -637,52 +692,6 @@ function main(config) {
     type: 'direct',
     udp: true,
   });
-
-  config['rules'] = [
-    // 阻断 YouTube UDP 流量
-    'AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT',
-
-    // 私有网络直连
-    'RULE-SET,private,DIRECT',
-    'RULE-SET,private_ip,DIRECT,no-resolve',
-
-    // 进程规则
-    'PROCESS-NAME,com.perol.pixez,Pixiv', // Pixez
-    'PROCESS-NAME,com.perol.play.pixez,Pixiv', // Pixez Google Play 版
-    'RULE-SET,DownloadApps,下载专用', // 常见磁力下载软件
-
-    // 国内直连
-    'RULE-SET,steam_cn,DIRECT',
-    'RULE-SET,epicgames,DIRECT',
-    'RULE-SET,nvidia_cn,DIRECT',
-    'RULE-SET,microsoft_cn,DIRECT',
-
-    // 广告拦截
-    'RULE-SET,AWAvenue_Ads,广告拦截',
-
-    // 代理规则（域名）
-    'RULE-SET,ai,国外AI',
-    'RULE-SET,youtube,YouTube',
-    'RULE-SET,google,谷歌服务',
-    'RULE-SET,github,Github',
-    'RULE-SET,microsoft,微软服务',
-    'RULE-SET,telegram,Telegram',
-    'RULE-SET,pixiv,Pixiv',
-    'RULE-SET,steam,Steam',
-    'RULE-SET,twitter,Twitter',
-    'RULE-SET,emby,Emby',
-
-    // 代理规则（IP）
-    'RULE-SET,google_ip,谷歌服务,no-resolve',
-    'RULE-SET,telegram_ip,Telegram,no-resolve',
-    'RULE-SET,twitter_ip,Twitter,no-resolve',
-
-    // 兜底规则
-    'RULE-SET,gfw,其他外网',
-    'RULE-SET,cn,国内网站',
-    'RULE-SET,cn_ip,国内网站',
-    'MATCH,其他外网',
-  ];
 
   return config;
 }
