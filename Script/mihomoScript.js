@@ -45,6 +45,8 @@ const regionDefinitionsEnable = {
   '🇹🇷 土耳其': true,
   '🇨🇦 加拿大': true,
   '🇦🇺 澳大利亚': true,
+  '🇷🇺 俄罗斯': true,
+  '🇫🇷 法国': true,
   '⛵ 低倍率节点': true,
   '✈️ 高倍率节点': true,
 };
@@ -108,8 +110,18 @@ const regionDefinitions = [
   },
   {
     name: '🇦🇺 澳大利亚',
-    regex: /(?=.*(澳大利亚|🇦🇺|au|australia|sydney))/iu,
+    regex: /(?=.*(澳大利亚|🇦🇺|au|australia))/iu,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Australia.png',
+  },
+  {
+    name: '🇷🇺 俄罗斯',
+    regex: /(?=.*(俄罗斯|🇷🇺|ru|russia))/iu,
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Russia.png',
+  },
+  {
+    name: '🇫🇷 法国',
+    regex: /(?=.*(法国|🇫🇷|fr|france))/iu,
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/France.png',
   },
   {
     name: '⛵ 低倍率节点',

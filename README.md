@@ -25,7 +25,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - 规则以 `domain` 与 `ipcidr` 行为为主，相比 `classical` 查询效率更高
 
 - 自动识别节点倍率，并分别归类为独立节点组：
-
   - 高倍率节点（倍率 ≥2）
   - 低倍率节点（倍率 ≤0.5）
 
@@ -69,6 +68,8 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `土耳其`
 - `加拿大`
 - `澳大利亚`
+- `俄罗斯`
+- `法国`
 - `低倍率节点`
 - `高倍率节点`
 - `其他节点`
