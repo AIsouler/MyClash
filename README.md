@@ -48,8 +48,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Emby`
 - `广告拦截`
 - `下载专用`
-- `其他外网`
-- `国内网站`
+- `直连`
 
 ## 内置节点组
 
@@ -96,5 +95,3 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)
 
 - [DustinWin/ruleset_geodata](https://github.com/DustinWin/ruleset_geodata)
-
-- [SukkaW/Surge](https://github.com/SukkaW/Surge)
