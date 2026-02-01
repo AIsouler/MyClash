@@ -382,6 +382,7 @@ function main(config) {
     }
   }
 
+  // 构建地区策略组
   const generatedRegionGroups = [];
   regionDefinitions.forEach((r) => {
     const groupData = regionGroups[r.name];
@@ -416,7 +417,7 @@ function main(config) {
     ...groupBaseOption,
     name: '默认节点',
     type: 'select',
-    proxies: [...regionGroupNames, '其他节点', '直连'].filter(
+    proxies: [...regionGroupNames, '其他节点'].filter(
       (n) => n !== '其他节点' || otherProxies.length > 0,
     ),
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png',
@@ -425,9 +426,9 @@ function main(config) {
   serviceConfigs.forEach((svc) => {
     let groupProxies;
     if (svc.reject) {
-      groupProxies = ['REJECT', '直连', '默认节点'];
+      groupProxies = ['REJECT', '直连'];
     } else {
-      groupProxies = ['默认节点', ...regionGroupNames, '直连'];
+      groupProxies = ['默认节点', ...regionGroupNames];
     }
 
     functionalGroups.push({
@@ -445,26 +446,35 @@ function main(config) {
       ...groupBaseOption,
       name: '下载专用',
       type: 'select',
-      proxies: ['直连', '默认节点', ...regionGroupNames],
+      proxies: ['直连', '默认节点'],
       icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Download.png',
     },
     {
       ...groupBaseOption,
-      name: '其他外网',
+      name: '直连',
       type: 'select',
-      proxies: ['默认节点', ...regionGroupNames],
-      icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Streaming!CN.png',
-    },
-    {
-      ...groupBaseOption,
-      name: '国内网站',
-      type: 'select',
-      proxies: ['直连', '默认节点', ...regionGroupNames],
-      icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/StreamingCN.png',
+      proxies: ['🇨🇳 直连（ipv4优先）', '🇨🇳 直连（ipv6优先）'],
+      url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
+      icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China_Map.png',
     },
   );
 
   // --- 4. 覆盖基础配置 ---
+
+  config.proxies.push(
+    {
+      name: '🇨🇳 直连（ipv4优先）',
+      type: 'direct',
+      'ip-version': 'ipv4-prefer',
+      udp: true,
+    },
+    {
+      name: '🇨🇳 直连（ipv6优先）',
+      type: 'direct',
+      'ip-version': 'ipv6-prefer',
+      udp: true,
+    },
+  );
 
   // 组装最终结果
   config['proxy-groups'] = [...functionalGroups, ...generatedRegionGroups];
@@ -507,7 +517,7 @@ function main(config) {
     'nameserver-policy': {
       '*': 'system',
       '+.arpa': 'system',
-      'rule-set:gfw': 'https://dns.google/dns-query#其他外网',
+      'rule-set:gfw': 'https://dns.google/dns-query#默认节点',
     },
   };
 
@@ -554,19 +564,13 @@ function main(config) {
     'dns-hijack': ['udp://any:53', 'tcp://any:53'],
   };
 
-  config.proxies.push({
-    name: '直连',
-    type: 'direct',
-    udp: true,
-  });
-
   config['rules'] = [
     // 阻断 YouTube UDP 流量
     'AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT',
 
     // 私有网络直连
-    'RULE-SET,private,DIRECT',
-    'RULE-SET,private_ip,DIRECT,no-resolve',
+    'RULE-SET,private,直连',
+    'RULE-SET,private_ip,直连,no-resolve',
 
     // 进程规则
     'PROCESS-NAME,com.perol.pixez,Pixiv', // Pixez
@@ -574,10 +578,10 @@ function main(config) {
     'RULE-SET,DownloadApps,下载专用', // 常见磁力下载软件
 
     // 国内直连
-    'RULE-SET,steam_cn,DIRECT',
-    'RULE-SET,epicgames,DIRECT',
-    'RULE-SET,nvidia_cn,DIRECT',
-    'RULE-SET,microsoft_cn,DIRECT',
+    'RULE-SET,steam_cn,直连',
+    'RULE-SET,epicgames,直连',
+    'RULE-SET,nvidia_cn,直连',
+    'RULE-SET,microsoft_cn,直连',
 
     // 广告拦截
     'RULE-SET,AWAvenue_Ads,广告拦截',
@@ -599,10 +603,10 @@ function main(config) {
     'RULE-SET,twitter_ip,Twitter,no-resolve',
 
     // 兜底规则
-    'RULE-SET,gfw,其他外网',
-    'RULE-SET,cn,国内网站',
-    'RULE-SET,cn_ip,国内网站',
-    'MATCH,其他外网',
+    'RULE-SET,gfw,默认节点',
+    'RULE-SET,cn,直连',
+    'RULE-SET,cn_ip,直连',
+    'MATCH,默认节点',
   ];
 
   return config;
