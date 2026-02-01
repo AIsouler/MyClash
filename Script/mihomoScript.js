@@ -15,6 +15,7 @@ const enable = true;
 const ruleOptionsEnable = {
   ai: true, // 国外AI
   youtube: true, // YouTube
+  googlefcm: true, // FCM服务
   google: true, // Google服务
   github: true, // Github服务
   microsoft: true, // 微软服务
@@ -227,6 +228,12 @@ const ruleProviders = {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs',
     path: './ruleset/youtube.mrs',
   },
+  googlefcm: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/googlefcm.mrs',
+    path: './ruleset/googlefcm.mrs',
+  },
   google: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
@@ -354,6 +361,12 @@ const serviceConfigs = [
       'AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT',
       'RULE-SET,youtube,YouTube',
     ],
+  },
+  {
+    key: 'googlefcm',
+    name: 'FCM服务',
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Rocket.png',
+    rules: ['RULE-SET,googlefcm,FCM服务'],
   },
   {
     key: 'google',
@@ -549,6 +562,8 @@ function main(config) {
       let groupProxies;
       if (svc.reject) {
         groupProxies = ['REJECT', '直连', '默认节点'];
+      } else if (svc.key === 'googlefcm') {
+        groupProxies = ['直连', '默认节点', ...regionGroupNames];
       } else {
         groupProxies = ['默认节点', ...regionGroupNames, '直连'];
       }
