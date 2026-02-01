@@ -37,6 +37,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `默认节点`
 - `国外AI`
 - `YouTube`
+- `FCM服务`
 - `谷歌服务`
 - `Github`
 - `微软服务`
