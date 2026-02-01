@@ -48,7 +48,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Emby`
 - `广告拦截`
 - `下载专用`
-- `直连`
+- `直连` （可自定义ip优先级，建议使用ipv4优先，防止出现一些问题）
 
 ## 内置节点组
 
