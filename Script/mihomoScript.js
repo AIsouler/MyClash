@@ -17,7 +17,7 @@ const ruleOptionsEnable = {
   youtube: true, // YouTube
   googlefcm: true, // FCM服务
   google: true, // Google服务
-  github: true, // Github服务
+  github: true, // GitHub服务
   microsoft: true, // 微软服务
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
@@ -379,9 +379,9 @@ const serviceConfigs = [
   },
   {
     key: 'github',
-    name: 'Github',
+    name: 'GitHub',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png',
-    rules: ['RULE-SET,github,Github'],
+    rules: ['RULE-SET,github,GitHub'],
   },
   {
     key: 'microsoft',
