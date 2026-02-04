@@ -273,7 +273,7 @@ const serviceConfigs = [
   },
   {
     key: 'github',
-    name: 'Github',
+    name: 'GitHub',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/GitHub.png',
   },
   {
@@ -590,7 +590,7 @@ function main(config) {
     'RULE-SET,ai,国外AI',
     'RULE-SET,youtube,YouTube',
     'RULE-SET,google,谷歌服务',
-    'RULE-SET,github,Github',
+    'RULE-SET,github,GitHub',
     'RULE-SET,microsoft,微软服务',
     'RULE-SET,telegram,Telegram',
     'RULE-SET,pixiv,Pixiv',
