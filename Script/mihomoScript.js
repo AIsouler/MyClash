@@ -272,14 +272,14 @@ const ruleProviders = {
   },
   telegram_ip: {
     ...ruleProviderCommonIpcidr,
-    ...ruleProviderFormatMrs,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs',
-    path: './ruleset/telegram_ip.mrs',
+    ...ruleProviderFormatText,
+    url: 'https://core.telegram.org/resources/cidr.txt',
+    path: './ruleset/telegram_ip.txt',
   },
   pixiv: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat//meta/geo/geosite/pixiv.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/pixiv.mrs',
     path: './ruleset/pixiv.mrs',
   },
   steam: {
