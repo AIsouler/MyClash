@@ -327,7 +327,7 @@ const ruleProviders = {
   cn: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://raw.githubusercontent.com/YiXuanZX/rules/main/cn-additional-list.mrs',
+    url: 'https://static-file-global.353355.xyz/rules/cn-additional-list.mrs',
     path: './ruleset/cn.mrs',
   },
   cn_ip: {
