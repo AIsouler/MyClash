@@ -492,7 +492,7 @@ function main(config) {
   config['external-controller'] = '[::]:9090';
   config['external-ui'] = 'ui';
   config['external-ui-url'] =
-    'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip';
+    'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
 
   config['profile'] = {
     'store-selected': true,
