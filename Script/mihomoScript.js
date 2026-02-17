@@ -72,83 +72,73 @@ const rules = [
 const regionDefinitions = [
   {
     name: '🇭🇰 香港',
-    regex: /(?=.*(港|🇭🇰|hk|hong\s*kong))/iu,
+    regex: /(?=.*(港|🇭🇰|HK|[Hh]ong\s*[Kk]ong))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png',
   },
   {
-    name: '🇺🇸 美国',
-    regex: /(?:(?!.*aus)(?=.*(美|🇺🇸|us(?!t)|usa|america|united\s*states)))/iu,
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png',
-  },
-  {
     name: '🇯🇵 日本',
-    regex: /(?=.*(日本|🇯🇵|jp|japan))/iu,
+    regex: /(?=.*(日本|🇯🇵|JP|[Jj]apan))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png',
   },
   {
-    name: '🇰🇷 韩国',
-    regex: /(?=.*(韩|🇰🇷|kr|korea))/iu,
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Korea.png',
+    name: '🇺🇸 美国',
+    regex: /(?=.*(美|🇺🇸|US|[Aa]merica|[Uu]nited\s*[Ss]tates))/u,
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png',
   },
   {
     name: '🇸🇬 新加坡',
-    regex: /(?=.*(新加坡|狮城|🇸🇬|sg|singapore))/iu,
+    regex: /(?=.*(新加坡|狮城|🇸🇬|SG|[Ss]ingapore))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png',
   },
   {
     name: '🇹🇼 台湾省',
-    regex: /(?=.*(台湾|🇹🇼|tw|tai\s*wan))/iu,
+    regex: /(?=.*(台湾|🇹🇼|TW|[Tt]ai\s*[Ww]an))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png',
   },
   {
+    name: '🇰🇷 韩国',
+    regex: /(?=.*(韩|🇰🇷|KR|[Kk]orea))/u,
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Korea.png',
+  },
+  {
     name: '🇬🇧 英国',
-    regex: /(?=.*(英|🇬🇧|uk|united\s*kingdom|britain))/iu,
+    regex: /(?=.*(英|🇬🇧|UK|[Uu]nited\s*[Kk]ingdom|[Bb]ritain))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_Kingdom.png',
   },
   {
     name: '🇩🇪 德国',
-    regex: /(?=.*(德国|🇩🇪|de|germany))/iu,
+    regex: /(?=.*(德国|🇩🇪|DE|[Gg]ermany))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Germany.png',
   },
   {
-    name: '🇲🇾 马来西亚',
-    regex: /(?=.*(马来|🇲🇾|my|malaysia))/iu,
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Malaysia.png',
-  },
-  {
-    name: '🇹🇷 土耳其',
-    regex: /(?=.*(土耳其|🇹🇷|tr|turkey))/iu,
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Turkey.png',
+    name: '🇫🇷 法国',
+    regex: /(?=.*(法国|🇫🇷|FR|[Ff]rance))/u,
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/France.png',
   },
   {
     name: '🇨🇦 加拿大',
-    regex: /(?=.*(加拿大|🇨🇦|ca|canada))/iu,
+    regex: /(?=.*(加拿大|🇨🇦|CA|[Cc]anada))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Canada.png',
   },
   {
     name: '🇦🇺 澳大利亚',
-    regex: /(?=.*(澳大利亚|🇦🇺|au|australia))/iu,
+    regex: /(?=.*(澳大利亚|🇦🇺|AU|[Aa]ustralia))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Australia.png',
   },
   {
     name: '🇷🇺 俄罗斯',
-    regex: /(?=.*(俄罗斯|🇷🇺|ru|russia))/iu,
+    regex: /(?=.*(俄罗斯|🇷🇺|RU|[Rr]ussia))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Russia.png',
   },
   {
-    name: '🇫🇷 法国',
-    regex: /(?=.*(法国|🇫🇷|fr|france))/iu,
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/France.png',
-  },
-  {
     name: '⛵ 低倍率节点',
-    regex: /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/iu,
+    regex: /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Available_1.png',
   },
   {
     name: '✈️ 高倍率节点',
     regex:
-      /(?:[*xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*xX✕✖⨉]))/iu,
+      /(?:[*xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*xX✕✖⨉]))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Airport.png',
   },
 ];
