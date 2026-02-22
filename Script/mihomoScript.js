@@ -132,7 +132,7 @@ const regionDefinitions = [
   },
   {
     name: '⛵ 低倍率节点',
-    regex: /^(?!.*(?:剩|期)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/u,
+    regex: /^(?!.*(?:剩|期|客户端|软件)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Available_1.png',
   },
   {
