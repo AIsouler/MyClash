@@ -76,11 +76,11 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 ## 效果展示
 
-- 客户端： [FlClash](https://github.com/chen08209/FlClash)
+- 客户端： [Bettbox](https://github.com/appshubcc/Bettbox)
 
-|                                                                                                   |                                                                                                   |                                                                                                   |                                                                                                   |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_1.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_2.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_3.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/mihomo/IMG_4.jpg) |
+|                                                                                            |                                                                                            |                                                                                            |                                                                                            |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/IMG_1.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/IMG_2.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/IMG_3.jpg) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Image/IMG_4.jpg) |
 
 ## 致谢
 
