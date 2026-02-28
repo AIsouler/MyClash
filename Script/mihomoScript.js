@@ -552,7 +552,7 @@ function main(config) {
 
       let groupProxies;
       if (svc.reject) {
-        groupProxies = ['REJECT', '直连'];
+        groupProxies = ['REJECT', 'REJECT-DROP', 'PASS', '直连'];
       } else if (svc.key === 'googlefcm') {
         groupProxies = ['直连', '默认节点', ...regionGroupNames];
       } else {
@@ -582,7 +582,11 @@ function main(config) {
       ...groupBaseOption,
       name: '直连',
       type: 'select',
-      proxies: ['🇨🇳 直连（ipv4优先）', '🇨🇳 直连（ipv6优先）'],
+      proxies: [
+        '🇨🇳 直连（IPv4优先）',
+        '🇨🇳 直连（IPv6优先）',
+        '🇨🇳 直连（双栈）',
+      ],
       url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
       icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China_Map.png',
     },
@@ -592,16 +596,18 @@ function main(config) {
 
   config.proxies.push(
     {
-      name: '🇨🇳 直连（ipv4优先）',
+      name: '🇨🇳 直连（IPv4优先）',
       type: 'direct',
       'ip-version': 'ipv4-prefer',
-      udp: true,
     },
     {
-      name: '🇨🇳 直连（ipv6优先）',
+      name: '🇨🇳 直连（IPv6优先）',
       type: 'direct',
       'ip-version': 'ipv6-prefer',
-      udp: true,
+    },
+    {
+      name: '🇨🇳 直连（双栈）',
+      type: 'direct',
     },
   );
 
