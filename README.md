@@ -1,6 +1,6 @@
 # MyClash
 
-mihomo（clashmeta）配置覆写脚本
+mihomo（clashMeta）配置覆写脚本
 
 ## 使用方式（任选其一）
 
@@ -48,7 +48,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Emby`
 - `广告拦截`
 - `下载专用`
-- `直连` （可自定义ip优先级，建议使用ipv4优先，防止出现一些问题）
+- `直连` （可自定义IP优先级，建议使用 `IPv4优先`，防止出现一些问题）
 
 ## 内置节点组
 
@@ -57,19 +57,17 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 > - _未匹配节点组或未启用节点组的节点，将统一归类至 「其他节点」_
 
 - `香港`
-- `美国`
 - `日本`
-- `韩国`
+- `美国`
 - `新加坡`
 - `台湾省`
+- `韩国`
 - `英国`
 - `德国`
-- `马来西亚`
-- `土耳其`
+- `法国`
 - `加拿大`
 - `澳大利亚`
 - `俄罗斯`
-- `法国`
 - `低倍率节点`
 - `高倍率节点`
 - `其他节点`
