@@ -1,5 +1,7 @@
 // --- 1. 静态配置区域 ---
 
+// 脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomoScript.js
+
 /**
  * 整个脚本的总开关
  * true = 启用
