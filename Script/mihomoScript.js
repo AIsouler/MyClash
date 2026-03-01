@@ -329,8 +329,14 @@ const ruleProviders = {
   emby: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-emby.mrs',
+    url: 'https://raw.githubusercontent.com/666OS/rules/release/mihomo/domain/Emby.mrs',
     path: './ruleset/emby.mrs',
+  },
+  emby_ip: {
+    ...ruleProviderCommonIpcidr,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/666OS/rules/release/mihomo/ip/Emby.mrs',
+    path: './ruleset/emby_ip.mrs',
   },
 };
 
@@ -417,7 +423,11 @@ const serviceConfigs = [
     key: 'emby',
     name: 'Emby',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png',
-    rules: ['RULE-SET,emby,Emby', 'DOMAIN-KEYWORD,emby,Emby'],
+    rules: [
+      'RULE-SET,emby,Emby',
+      'RULE-SET,emby_ip,Emby,no-resolve',
+      'DOMAIN-KEYWORD,emby,Emby',
+    ],
   },
   {
     key: 'adblock',
