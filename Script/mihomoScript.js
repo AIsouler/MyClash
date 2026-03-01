@@ -417,7 +417,7 @@ const serviceConfigs = [
     key: 'emby',
     name: 'Emby',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png',
-    rules: ['RULE-SET,emby,Emby'],
+    rules: ['RULE-SET,emby,Emby', 'DOMAIN-KEYWORD,emby,Emby'],
   },
   {
     key: 'adblock',
