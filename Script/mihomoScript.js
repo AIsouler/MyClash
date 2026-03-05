@@ -52,7 +52,7 @@ const regionDefinitionsEnable = {
   '✈️ 高倍率节点': true,
 };
 
-// rules预定义
+// rules 预定义
 const rules = [
   // 私有网络直连
   'RULE-SET,private,直连',
@@ -494,7 +494,7 @@ function main(config) {
     remainProxies.push(name);
   }
 
-  // 地区分类（无需倍率排除）
+  // 地区分类
   for (const name of remainProxies) {
     let matched = false;
 
