@@ -361,7 +361,7 @@ function main(config) {
     remainProxies.push(name);
   }
 
-  // 地区分类（无需倍率排除）
+  // 地区分类
   for (const name of remainProxies) {
     let matched = false;
 
