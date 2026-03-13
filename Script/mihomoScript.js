@@ -541,8 +541,8 @@ function main(config) {
       generatedRegionGroups.push({
         ...groupBaseOption,
         name: r.name,
-        type: 'select',
-        //tolerance: 100,
+        type: 'url-test',
+        tolerance: 100,
         icon: r.icon,
         proxies: groupData.proxies,
       });
