@@ -26,6 +26,7 @@ const ruleOptionsEnable = {
   steam: true, // Steam游戏平台
   pixiv: true, // Pixiv绘画网站
   emby: true, // Emby媒体服务
+  spotify: true, // Spotify音乐服务
   adblock: true, // 广告拦截
 };
 
@@ -342,6 +343,12 @@ const ruleProviders = {
     url: 'https://raw.githubusercontent.com/666OS/rules/release/mihomo/ip/Emby.mrs',
     path: './ruleset/emby_ip.mrs',
   },
+  spotify: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs',
+    path: './ruleset/spotify.mrs',
+  },
 };
 
 // --- 2. 服务规则数据结构 ---
@@ -432,6 +439,12 @@ const serviceConfigs = [
       'RULE-SET,emby_ip,Emby,no-resolve',
       'DOMAIN-KEYWORD,emby,Emby',
     ],
+  },
+  {
+    key: 'spotify',
+    name: 'Spotify',
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Spotify.png',
+    rules: ['RULE-SET,spotify,Spotify'],
   },
   {
     key: 'adblock',

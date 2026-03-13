@@ -52,6 +52,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Steam`
 - `Twitter`
 - `Emby`
+- `Spotify`
 - `广告拦截`
 - `下载专用`
 - `直连` （可自定义IP优先级，建议使用 `IPv4优先`，防止出现一些问题）
