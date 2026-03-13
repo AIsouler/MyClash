@@ -100,3 +100,5 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)
 
 - [DustinWin/ruleset_geodata](https://github.com/DustinWin/ruleset_geodata)
+
+- [Koolson/Qure](https://github.com/Koolson/Qure)
