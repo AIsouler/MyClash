@@ -13,7 +13,7 @@ const regionDefinitions = [
   },
   {
     name: '🇯🇵 日本',
-    regex: /(?=.*(日本|🇯🇵|JP|[Jj]apan))/u,
+    regex: /^(?!.*免费)(?=.*(日本|🇯🇵|JP|[Jj]apan))/u,
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png',
   },
   {
@@ -408,8 +408,8 @@ function main(config) {
       generatedRegionGroups.push({
         ...groupBaseOption,
         name: r.name,
-        type: 'select',
-        //tolerance: 100,
+        type: 'url-test',
+        tolerance: 100,
         icon: r.icon,
         proxies: groupData.proxies,
       });
