@@ -121,7 +121,7 @@ const ruleProviders = {
   DownloadApps: {
     ...ruleProviderCommonClassical,
     ...ruleProviderFormatText,
-    url: 'https://raw.githubusercontent.com/AIsouler/MyClash/main/rules/DownloadApps.txt',
+    url: 'https://raw.githubusercontent.com/AIsouler/MyClash/main/Rules/DownloadApps.txt',
     path: './ruleset/DownloadApps.txt',
   },
   fakeip_filter: {
