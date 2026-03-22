@@ -42,6 +42,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 > - _若不需要某个策略组，可在脚本中将对应开关设为 `false`_
 
 - `默认节点`
+- `全局自动选择`
 - `国外AI`
 - `YouTube`
 - `FCM服务`

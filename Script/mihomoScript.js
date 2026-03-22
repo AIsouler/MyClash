@@ -592,15 +592,26 @@ function main(config) {
   // 构建功能策略组
   const functionalGroups = [];
 
-  functionalGroups.push({
-    ...groupBaseOption,
-    name: '默认节点',
-    type: 'select',
-    proxies: [...regionGroupNames, '其他节点'].filter(
-      (n) => n !== '其他节点' || otherProxies.length > 0,
-    ),
-    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png',
-  });
+  functionalGroups.push(
+    {
+      ...groupBaseOption,
+      name: '默认节点',
+      type: 'select',
+      proxies: [...regionGroupNames, '全局自动选择', '其他节点'].filter(
+        (n) => n !== '其他节点' || otherProxies.length > 0,
+      ),
+      icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png',
+    },
+    {
+      ...groupBaseOption,
+      name: '全局自动选择',
+      type: 'url-test',
+      tolerance: 100,
+      'include-all': true,
+      'exclude-filter': '直连',
+      icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Auto.png',
+    },
+  );
 
   serviceConfigs.forEach((svc) => {
     if (ruleOptionsEnable[svc.key]) {
@@ -610,9 +621,14 @@ function main(config) {
       if (svc.reject) {
         groupProxies = ['REJECT', 'REJECT-DROP', 'PASS', '直连'];
       } else if (svc.key === 'googlefcm') {
-        groupProxies = ['直连', '默认节点', ...regionGroupNames];
+        groupProxies = [
+          '直连',
+          '默认节点',
+          '全局自动选择',
+          ...regionGroupNames,
+        ];
       } else {
-        groupProxies = ['默认节点', ...regionGroupNames];
+        groupProxies = ['默认节点', '全局自动选择', ...regionGroupNames];
       }
 
       functionalGroups.push({
