@@ -273,7 +273,7 @@ const serviceConfigs = [
   },
   {
     key: 'google',
-    name: '谷歌服务',
+    name: 'Google',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png',
   },
   {
@@ -283,7 +283,7 @@ const serviceConfigs = [
   },
   {
     key: 'microsoft',
-    name: '微软服务',
+    name: 'Microsoft',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png',
   },
   {
@@ -621,16 +621,16 @@ function main(config) {
     // 代理规则（域名）
     'RULE-SET,ai,国外AI',
     'RULE-SET,youtube,YouTube',
-    'RULE-SET,google,谷歌服务',
+    'RULE-SET,google,Google',
     'RULE-SET,github,GitHub',
-    'RULE-SET,microsoft,微软服务',
+    'RULE-SET,microsoft,Microsoft',
     'RULE-SET,telegram,Telegram',
     'RULE-SET,pixiv,Pixiv',
     'RULE-SET,steam,Steam',
     'RULE-SET,twitter,Twitter',
 
     // 代理规则（IP）
-    'RULE-SET,google_ip,谷歌服务,no-resolve',
+    'RULE-SET,google_ip,Google,no-resolve',
     'RULE-SET,telegram_ip,Telegram,no-resolve',
     'RULE-SET,twitter_ip,Twitter,no-resolve',
 

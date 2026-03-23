@@ -20,7 +20,7 @@ const ruleOptionsEnable = {
   googlefcm: true, // FCM服务
   google: true, // Google服务
   github: true, // GitHub服务
-  microsoft: true, // 微软服务
+  microsoft: true, // Microsoft服务
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
@@ -379,18 +379,15 @@ const serviceConfigs = [
   },
   {
     key: 'googlefcm',
-    name: 'FCM服务',
+    name: 'FCM',
     icon: 'https://raw.githubusercontent.com/MiToverG422/Qure/master/IconSet/Color/fcm.png',
-    rules: ['RULE-SET,googlefcm,FCM服务'],
+    rules: ['RULE-SET,googlefcm,FCM'],
   },
   {
     key: 'google',
-    name: '谷歌服务',
+    name: 'Google',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png',
-    rules: [
-      'RULE-SET,google,谷歌服务',
-      'RULE-SET,google_ip,谷歌服务,no-resolve',
-    ],
+    rules: ['RULE-SET,google,Google', 'RULE-SET,google_ip,Google,no-resolve'],
   },
   {
     key: 'github',
@@ -400,9 +397,9 @@ const serviceConfigs = [
   },
   {
     key: 'microsoft',
-    name: '微软服务',
+    name: 'Microsoft',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png',
-    rules: ['RULE-SET,microsoft,微软服务'],
+    rules: ['RULE-SET,microsoft,Microsoft'],
   },
   {
     key: 'telegram',

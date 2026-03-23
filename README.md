@@ -45,10 +45,10 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `全局自动选择`
 - `国外AI`
 - `YouTube`
-- `FCM服务`
-- `谷歌服务`
+- `FCM`
+- `Google`
 - `Github`
-- `微软服务`
+- `Microsoft`
 - `Telegram`
 - `Pixiv`
 - `Steam`
