@@ -100,7 +100,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 - [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)
 
-- [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)
+- [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters)
 
 - [DustinWin/ruleset_geodata](https://github.com/DustinWin/ruleset_geodata)
 

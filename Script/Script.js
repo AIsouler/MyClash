@@ -102,11 +102,11 @@ const ruleProviderCommonClassical = {
 
 // 定义 Rule Providers
 const ruleProviders = {
-  AWAvenue_Ads: {
+  adblockmihomolite: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash.mrs',
-    path: './ruleset/AWAvenue_Ads.mrs',
+    url: 'https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomolite.mrs',
+    path: './ruleset/adblockmihomolite.mrs',
   },
   DownloadApps: {
     ...ruleProviderCommonClassical,
@@ -616,7 +616,7 @@ function main(config) {
     'RULE-SET,microsoft_cn,直连',
 
     // 广告拦截
-    'RULE-SET,AWAvenue_Ads,广告拦截',
+    'RULE-SET,adblockmihomolite,广告拦截',
 
     // 代理规则（域名）
     'RULE-SET,ai,国外AI',
