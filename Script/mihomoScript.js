@@ -27,6 +27,8 @@ const ruleOptionsEnable = {
   pixiv: true, // Pixiv绘画网站
   emby: true, // Emby媒体服务
   spotify: true, // Spotify音乐服务
+  tiktok: true, // TikTok短视频平台
+  netflix: true, // Netflix视频服务
   adblock: true, // 广告拦截
 };
 
@@ -348,6 +350,24 @@ const ruleProviders = {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs',
     path: './ruleset/spotify.mrs',
   },
+  tiktok: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs',
+    path: './ruleset/tiktok.mrs',
+  },
+  netflix: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs',
+    path: './ruleset/netflix.mrs',
+  },
+  netflix_ip: {
+    ...ruleProviderCommonIpcidr,
+    ...ruleProviderFormatMrs,
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs',
+    path: './ruleset/netflix_ip.mrs',
+  },
 };
 
 // --- 2. 功能策略组数据结构 ---
@@ -451,6 +471,21 @@ const serviceConfigs = [
     name: 'Spotify',
     icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Spotify.png',
     rules: ['RULE-SET,spotify,Spotify'],
+  },
+  {
+    key: 'tiktok',
+    name: 'TikTok',
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok.png',
+    rules: ['RULE-SET,tiktok,TikTok'],
+  },
+  {
+    key: 'netflix',
+    name: 'Netflix',
+    icon: 'https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Netflix.png',
+    rules: [
+      'RULE-SET,netflix,Netflix',
+      'RULE-SET,netflix_ip,Netflix,no-resolve',
+    ],
   },
   {
     key: 'adblock',
