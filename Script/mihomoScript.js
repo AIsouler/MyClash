@@ -21,6 +21,7 @@ const ruleOptionsEnable = {
   google: true, // Google服务
   github: true, // GitHub服务
   microsoft: true, // Microsoft服务
+  apple: true, // Apple服务
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
   steam: true, // Steam游戏平台
@@ -45,13 +46,6 @@ const regionDefinitionsEnable = {
   美国: true,
   新加坡: true,
   台湾省: true,
-  韩国: true,
-  英国: true,
-  德国: true,
-  法国: true,
-  加拿大: true,
-  澳大利亚: true,
-  俄罗斯: true,
   低倍率节点: true,
   高倍率节点: true,
 };
@@ -81,7 +75,6 @@ const rules = [
   'RULE-SET,steam_cn,直连',
   'RULE-SET,epicgames,直连',
   'RULE-SET,nvidia_cn,直连',
-  'RULE-SET,microsoft_cn,直连',
   'DOMAIN-SUFFIX,fsend.cn,直连',
 ];
 
@@ -111,41 +104,6 @@ const regionDefinitions = [
     name: '台湾省',
     regex: /(?=.*(台湾|🇹🇼|TW|[Tt]ai\s*[Ww]an))/u,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Taiwan.png',
-  },
-  {
-    name: '韩国',
-    regex: /(?=.*(韩|🇰🇷|KR|[Kk]orea))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Korea.png',
-  },
-  {
-    name: '英国',
-    regex: /(?=.*(英|🇬🇧|UK|[Uu]nited\s*[Kk]ingdom|[Bb]ritain))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_Kingdom.png',
-  },
-  {
-    name: '德国',
-    regex: /(?=.*(德国|🇩🇪|DE|[Gg]ermany))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Germany.png',
-  },
-  {
-    name: '法国',
-    regex: /(?=.*(法国|🇫🇷|FR|[Ff]rance))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/France.png',
-  },
-  {
-    name: '加拿大',
-    regex: /(?=.*(加拿大|🇨🇦|CA|[Cc]anada))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Canada.png',
-  },
-  {
-    name: '澳大利亚',
-    regex: /(?=.*(澳大利亚|🇦🇺|AU|[Aa]ustralia))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Australia.png',
-  },
-  {
-    name: '俄罗斯',
-    regex: /(?=.*(俄罗斯|🇷🇺|RU|[Rr]ussia))/u,
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Russia.png',
   },
   {
     name: '低倍率节点',
@@ -254,12 +212,6 @@ const ruleProviders = {
     ...ruleProviderFormatMrs,
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs',
     path: './ruleset/microsoft.mrs',
-  },
-  microsoft_cn: {
-    ...ruleProviderCommonDomain,
-    ...ruleProviderFormatMrs,
-    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft@cn.mrs',
-    path: './ruleset/microsoft@cn.mrs',
   },
   telegram: {
     ...ruleProviderCommonDomain,
@@ -381,6 +333,12 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cloudflare.mrs',
     path: './ruleset/cloudflare_ip.mrs',
   },
+  apple: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs',
+    path: './ruleset/apple.mrs',
+  },
 };
 
 // --- 2. 功能策略组数据结构 ---
@@ -434,6 +392,12 @@ const serviceConfigs = [
     name: 'Microsoft',
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png',
     rules: ['RULE-SET,microsoft,Microsoft'],
+  },
+  {
+    key: 'apple',
+    name: 'Apple',
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Apple.png',
+    rules: ['RULE-SET,apple,Apple'],
   },
   {
     key: 'telegram',
@@ -635,26 +599,15 @@ function main(config) {
   // 构建功能策略组
   const functionalGroups = [];
 
-  functionalGroups.push(
-    {
-      ...groupBaseOption,
-      name: '默认节点',
-      type: 'select',
-      proxies: [...regionGroupNames, '全局自动选择', '其他节点'].filter(
-        (n) => n !== '其他节点' || otherProxies.length > 0,
-      ),
-      icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
-    },
-    {
-      ...groupBaseOption,
-      name: '全局自动选择',
-      type: 'url-test',
-      tolerance: 100,
-      'include-all': true,
-      'exclude-filter': '直连',
-      icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Auto.png',
-    },
-  );
+  functionalGroups.push({
+    ...groupBaseOption,
+    name: '默认节点',
+    type: 'select',
+    proxies: [...regionGroupNames, '其他节点'].filter(
+      (n) => n !== '其他节点' || otherProxies.length > 0,
+    ),
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
+  });
 
   serviceConfigs.forEach((svc) => {
     if (ruleOptionsEnable[svc.key]) {
@@ -663,22 +616,14 @@ function main(config) {
       let groupProxies;
       if (svc.reject) {
         groupProxies = ['REJECT', 'REJECT-DROP', 'PASS', '直连', '默认节点'];
+      } else if (svc.key === 'microsoft' || svc.key === 'apple') {
+        groupProxies = ['默认节点', '直连', 'PASS', ...regionGroupNames];
       } else if (svc.key === 'googlefcm') {
-        groupProxies = [
-          '直连',
-          '默认节点',
-          '全局自动选择',
-          ...regionGroupNames,
-        ];
+        groupProxies = ['直连', '默认节点', ...regionGroupNames];
       } else if (svc.key === 'spotify') {
-        groupProxies = [
-          '默认节点',
-          '全局自动选择',
-          '直连',
-          ...regionGroupNames,
-        ];
+        groupProxies = ['默认节点', '直连', ...regionGroupNames];
       } else {
-        groupProxies = ['默认节点', '全局自动选择', ...regionGroupNames];
+        groupProxies = ['默认节点', ...regionGroupNames];
       }
 
       functionalGroups.push({
@@ -784,6 +729,10 @@ function main(config) {
       '*': 'system',
       '+.arpa': 'system',
       'rule-set:gfw': 'https://dns.google/dns-query#默认节点',
+      'rule-set:microsoft,apple': [
+        'https://dns.alidns.com/dns-query',
+        'https://doh.pub/dns-query',
+      ],
     },
   };
 

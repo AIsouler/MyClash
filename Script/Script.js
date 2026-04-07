@@ -206,6 +206,12 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs',
     path: './ruleset/cn_ip.mrs',
   },
+  apple: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs',
+    path: './ruleset/apple.mrs',
+  },
 };
 
 // --- 2. 功能策略组数据结构 ---
@@ -245,6 +251,11 @@ const serviceConfigs = [
     key: 'microsoft',
     name: 'Microsoft',
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png',
+  },
+  {
+    key: 'apple',
+    name: 'Apple',
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Apple.png',
   },
   {
     key: 'telegram',
@@ -401,6 +412,8 @@ function main(config) {
     let groupProxies;
     if (svc.reject) {
       groupProxies = ['REJECT', 'REJECT-DROP', 'PASS', '直连', '默认节点'];
+    } else if (svc.key === 'microsoft' || svc.key === 'apple') {
+      groupProxies = ['默认节点', '直连', 'PASS', ...regionGroupNames];
     } else {
       groupProxies = ['默认节点', ...regionGroupNames];
     }
@@ -498,6 +511,10 @@ function main(config) {
       '*': 'system',
       '+.arpa': 'system',
       'rule-set:gfw': 'https://dns.google/dns-query#默认节点',
+      'rule-set:microsoft,apple': [
+        'https://dns.alidns.com/dns-query',
+        'https://doh.pub/dns-query',
+      ],
     },
   };
 
@@ -557,7 +574,6 @@ function main(config) {
     'RULE-SET,steam_cn,直连',
     'RULE-SET,epicgames,直连',
     'RULE-SET,nvidia_cn,直连',
-    'RULE-SET,microsoft_cn,直连',
     'DOMAIN-SUFFIX,fsend.cn,直连',
 
     // 进程规则
@@ -574,6 +590,7 @@ function main(config) {
     'RULE-SET,google,Google',
     'RULE-SET,github,GitHub',
     'RULE-SET,microsoft,Microsoft',
+    'RULE-SET,apple,Apple',
     'RULE-SET,telegram,Telegram',
     'RULE-SET,pixiv,Pixiv',
     'RULE-SET,steam,Steam',

@@ -72,6 +72,9 @@ dns:
     '*': 'system'
     '+.arpa': 'system'
     'rule-set:gfw': 'https://dns.google/dns-query#默认节点'
+    'rule-set:microsoft,apple':
+      - 'https://dns.alidns.com/dns-query'
+      - 'https://doh.pub/dns-query'
 
 hosts:
   'dns.alidns.com': ['223.5.5.5', '223.6.6.6']
@@ -162,10 +165,6 @@ rule-providers:
     <<: *rp_domain
     format: mrs
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs'
-  microsoft_cn:
-    <<: *rp_domain
-    format: mrs
-    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft@cn.mrs'
   telegram:
     <<: *rp_domain
     format: mrs
@@ -246,6 +245,10 @@ rule-providers:
     <<: *rp_ip
     format: mrs
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cloudflare.mrs'
+  apple:
+    <<: *rp_domain
+    format: mrs
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs'
 
 # --- 策略组 (Proxy Groups) ---
 
@@ -277,28 +280,14 @@ group_common_auto:
 # 通用代理节点组
 prox_common:
   &proxies {
-    proxies:
-      [
-        '默认节点',
-        '全局自动选择',
-        '香港',
-        '日本',
-        '美国',
-        '新加坡',
-        '其他节点',
-      ],
+    proxies: ['默认节点', '香港', '日本', '美国', '新加坡', '其他节点'],
   }
 
 proxy-groups:
   - name: '默认节点'
     <<: *group_common_select
-    proxies: ['香港', '日本', '美国', '新加坡', '全局自动选择', '其他节点']
+    proxies: ['香港', '日本', '美国', '新加坡', '其他节点']
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png'
-
-  - name: '全局自动选择'
-    <<: *group_common_auto
-    exclude-filter: '直连'
-    hidden: false
 
   # 分流策略组
   - name: '国外AI'
@@ -311,17 +300,7 @@ proxy-groups:
 
   - name: 'FCM'
     <<: *group_common_select
-    proxies:
-      [
-        '直连',
-        '默认节点',
-        '全局自动选择',
-        '香港',
-        '日本',
-        '美国',
-        '新加坡',
-        '其他节点',
-      ]
+    proxies: ['直连', '默认节点', '香港', '日本', '美国', '新加坡', '其他节点']
     icon: 'https://fastly.jsdelivr.net/gh/MiToverG422/Qure@master/IconSet/Color/fcm.png'
 
   - name: 'Google'
@@ -333,8 +312,16 @@ proxy-groups:
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/GitHub.png'
 
   - name: 'Microsoft'
-    <<: [*group_common_select, *proxies]
+    <<: *group_common_select
+    proxies:
+      ['默认节点', '直连', 'PASS', '香港', '日本', '美国', '新加坡', '其他节点']
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png'
+
+  - name: 'Apple'
+    <<: *group_common_select
+    proxies:
+      ['默认节点', '直连', 'PASS', '香港', '日本', '美国', '新加坡', '其他节点']
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Apple.png'
 
   - name: 'Telegram'
     <<: [*group_common_select, *proxies]
@@ -362,17 +349,7 @@ proxy-groups:
 
   - name: 'Spotify'
     <<: *group_common_select
-    proxies:
-      [
-        '默认节点',
-        '全局自动选择',
-        '直连',
-        '香港',
-        '日本',
-        '美国',
-        '新加坡',
-        '其他节点',
-      ]
+    proxies: ['默认节点', '直连', '香港', '日本', '美国', '新加坡', '其他节点']
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Spotify.png'
 
   - name: 'TikTok'
@@ -456,7 +433,6 @@ rules:
   - RULE-SET,steam_cn,直连
   - RULE-SET,epicgames,直连
   - RULE-SET,nvidia_cn,直连
-  - RULE-SET,microsoft_cn,直连
   - DOMAIN-SUFFIX,fsend.cn,直连
 
   # 进程规则
@@ -477,6 +453,7 @@ rules:
   - RULE-SET,google,Google
   - RULE-SET,github,GitHub
   - RULE-SET,microsoft,Microsoft
+  - RULE-SET,apple,Apple
   - RULE-SET,telegram,Telegram
   - RULE-SET,cloudflare,Cloudflare
   - RULE-SET,pixiv,Pixiv

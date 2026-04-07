@@ -49,6 +49,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Google`
 - `GitHub`
 - `Microsoft`
+- `Apple`
 - `Telegram`
 - `Cloudflare`
 - `Pixiv`
@@ -74,13 +75,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `美国`
 - `新加坡`
 - `台湾省`
-- `韩国`
-- `英国`
-- `德国`
-- `法国`
-- `加拿大`
-- `澳大利亚`
-- `俄罗斯`
 - `低倍率节点`
 - `高倍率节点`
 - `其他节点`
