@@ -381,10 +381,6 @@ function main(config) {
     }
   });
 
-  const regionGroupNames = generatedRegionGroups
-    .filter((g) => g.type === 'select')
-    .map((g) => g.name);
-
   if (otherProxies.length > 0) {
     generatedRegionGroups.push({
       ...groupBaseOption,
@@ -394,6 +390,10 @@ function main(config) {
       icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/World_Map.png',
     });
   }
+
+  const regionGroupNames = generatedRegionGroups
+    .filter((g) => g.type === 'select')
+    .map((g) => g.name);
 
   // 构建功能策略组
   const functionalGroups = [];
