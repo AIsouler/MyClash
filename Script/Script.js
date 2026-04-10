@@ -524,7 +524,7 @@ function main(config) {
       'rule-set:nvidia_cn',
       'rule-set:microsoft_cn',
     ],
-    'default-nameserver': ['114.114.114.114'],
+    'default-nameserver': ['223.5.5.5'],
     nameserver: ['1.1.1.1', '8.8.8.8'],
     'proxy-server-nameserver': ['https://doh.pub/dns-query#DIRECT'],
     'nameserver-policy': {
@@ -532,7 +532,7 @@ function main(config) {
       '+.arpa': 'system',
       '+.internal.crop.com': '10.0.0.1',
       'rule-set:private,cn,steam_cn,epicgames,nvidia_cn,microsoft_cn,microsoft,apple':
-        'system',
+        '223.5.5.5',
     },
   };
 
