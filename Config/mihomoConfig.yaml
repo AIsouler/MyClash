@@ -332,7 +332,17 @@ group_common_auto:
 # 通用代理节点组
 prox_common:
   &proxies {
-    proxies: ['默认代理', '香港', '日本', '美国', '新加坡', '其他节点'],
+    proxies:
+      [
+        '默认代理',
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '低倍率节点',
+        '高倍率节点',
+        '其他节点',
+      ],
   }
 
 proxy-groups:
@@ -352,7 +362,18 @@ proxy-groups:
 
   - name: 'FCM'
     <<: *group_common_select
-    proxies: ['直连', '默认代理', '香港', '日本', '美国', '新加坡', '其他节点']
+    proxies:
+      [
+        '直连',
+        '默认代理',
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '低倍率节点',
+        '高倍率节点',
+        '其他节点',
+      ]
     icon: 'https://fastly.jsdelivr.net/gh/MiToverG422/Qure@master/IconSet/Color/fcm.png'
 
   - name: 'Google'
@@ -365,12 +386,34 @@ proxy-groups:
 
   - name: 'Microsoft'
     <<: *group_common_select
-    proxies: ['默认代理', '直连', '香港', '日本', '美国', '新加坡', '其他节点']
+    proxies:
+      [
+        '默认代理',
+        '直连',
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '低倍率节点',
+        '高倍率节点',
+        '其他节点',
+      ]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png'
 
   - name: 'Apple'
     <<: *group_common_select
-    proxies: ['默认代理', '直连', '香港', '日本', '美国', '新加坡', '其他节点']
+    proxies:
+      [
+        '默认代理',
+        '直连',
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '低倍率节点',
+        '高倍率节点',
+        '其他节点',
+      ]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Apple.png'
 
   - name: 'Telegram'
@@ -399,7 +442,18 @@ proxy-groups:
 
   - name: 'Spotify'
     <<: *group_common_select
-    proxies: ['默认代理', '直连', '香港', '日本', '美国', '新加坡', '其他节点']
+    proxies:
+      [
+        '默认代理',
+        '直连',
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '低倍率节点',
+        '高倍率节点',
+        '其他节点',
+      ]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Spotify.png'
 
   - name: 'TikTok'
@@ -466,6 +520,18 @@ proxy-groups:
   - name: '新加坡-自动选择'
     <<: *group_common_auto
     filter: '(?=.*(新加坡|狮城|🇸🇬|SG|[Ss]ingapore))'
+
+  - name: '低倍率节点'
+    <<: *group_common_select
+    include-all: true
+    filter: '^(?!.*(?:剩|期|客户端|软件)).*(?:(?<!\d)0\.[0-5]|下载|低倍)'
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Available_1.png'
+
+  - name: '高倍率节点'
+    <<: *group_common_select
+    include-all: true
+    filter: '(?:[*×xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*×xX✕✖⨉]))'
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Airport.png'
 
   - name: '其他节点'
     <<: *group_common_select

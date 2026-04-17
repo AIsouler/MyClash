@@ -456,6 +456,19 @@ function main(config) {
     },
   );
 
+  // 构建 GLOBAL 全局策略组
+  const allGroupNames = [
+    ...functionalGroups.map((g) => g.name),
+    ...generatedRegionGroups.map((g) => g.name),
+  ];
+  const globalGroup = {
+    ...groupBaseOption,
+    name: 'GLOBAL',
+    type: 'select',
+    proxies: allGroupNames,
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
+  };
+
   // --- 4. 覆盖基础配置 ---
 
   config.proxies.push(
@@ -476,7 +489,11 @@ function main(config) {
   );
 
   // 组装最终结果
-  config['proxy-groups'] = [...functionalGroups, ...generatedRegionGroups];
+  config['proxy-groups'] = [
+    globalGroup,
+    ...functionalGroups,
+    ...generatedRegionGroups,
+  ];
   config['rule-providers'] = ruleProviders;
 
   config['allow-lan'] = true;
