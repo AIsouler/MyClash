@@ -8,33 +8,38 @@ const excludeFilter =
 const regionDefinitions = [
   {
     name: '香港',
-    regex: /(?=.*(港|🇭🇰|HK|[Hh]ong\s*[Kk]ong))/u,
+    regex: /(港|🇭🇰|\bHK\b|hong\s*kong)/iu,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Hong_Kong.png',
   },
   {
     name: '日本',
-    regex: /^(?!.*免费)(?=.*(日本|🇯🇵|JP|[Jj]apan))/u,
+    regex: /(日本|🇯🇵|\bJP\b|japan)/iu,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Japan.png',
   },
   {
     name: '美国',
-    regex: /(?=.*(美|🇺🇸|US|[Aa]merica|[Uu]nited\s*[Ss]tates))/u,
+    regex: /(美|🇺🇸|\bUS\b|america|united\s*states)/iu,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_States.png',
   },
   {
+    name: '英国',
+    regex: /(英国|🇬🇧|\bUK\b|united\s*kingdom|britain|england)/iu,
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/United_Kingdom.png',
+  },
+  {
     name: '新加坡',
-    regex: /(?=.*(新加坡|狮城|🇸🇬|SG|[Ss]ingapore))/u,
+    regex: /(新加坡|狮城|🇸🇬|\bSG\b|singapore)/iu,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Singapore.png',
   },
   {
     name: '低倍率节点',
-    regex: /^(?!.*(?:剩|期|客户端|软件)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/u,
+    regex: /^(?!.*(?:剩|期|客户端|软件))(?=.*(?:0\.[0-5]|下载|低倍)).*/u,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Available_1.png',
   },
   {
     name: '高倍率节点',
     regex:
-      /(?:[*×xX✕✖⨉]\s*(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?\s*(?:倍|[*×xX✕✖⨉]))/u,
+      /(?:[*×✕✖⨉]\s*(?:[2-9]\d*(?:\.\d+)?))|(?:(?:[2-9]\d*(?:\.\d+)?)\s*(?:倍|[*×✕✖⨉]))/iu,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Airport.png',
   },
 ];
