@@ -344,6 +344,11 @@ rule-providers:
     format: mrs
     url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/captcha_domain.mrs'
     path: './ruleset/captcha_domain.mrs'
+  instagram:
+    <<: *rp_domain
+    format: mrs
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/instagram.mrs'
+    path: './ruleset/instagram.mrs'
 
 # --- 策略组 (Proxy Groups) ---
 
@@ -511,6 +516,10 @@ proxy-groups:
     <<: [*group_common_select, *proxies]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Twitter.png'
 
+  - name: 'Instagram'
+    <<: [*group_common_select, *proxies]
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Instagram.png'
+
   - name: 'Emby'
     <<: [*group_common_select, *proxies]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Emby.png'
@@ -663,6 +672,7 @@ rules:
   - RULE-SET,pixiv,Pixiv
   - RULE-SET,steam,Steam
   - RULE-SET,twitter,Twitter
+  - RULE-SET,instagram,Instagram
   - RULE-SET,emby,Emby
   - DOMAIN-KEYWORD,emby,Emby
   - RULE-SET,spotify,Spotify

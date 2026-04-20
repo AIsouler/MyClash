@@ -57,6 +57,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 - `Pixiv`
 - `Steam`
 - `Twitter`
+- `Instagram`
 - `Emby`
 - `Spotify`
 - `TikTok`

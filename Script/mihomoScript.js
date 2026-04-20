@@ -25,6 +25,7 @@ const ruleOptionsEnable = {
   apple: true, // Apple服务
   telegram: true, // Telegram通讯软件
   twitter: true, // Twitter社交平台
+  instagram: true, // Instagram社交平台
   steam: true, // Steam游戏平台
   cloudflare: true, // Cloudflare服务
   pixiv: true, // Pixiv绘画网站
@@ -371,6 +372,12 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/captcha_domain.mrs',
     path: './ruleset/captcha.mrs',
   },
+  instagram: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/instagram.mrs',
+    path: './ruleset/instagram.mrs',
+  },
 };
 
 // 策略组通用配置
@@ -481,6 +488,12 @@ const serviceConfigs = [
       'RULE-SET,twitter,Twitter',
       'RULE-SET,twitter_ip,Twitter,no-resolve',
     ],
+  },
+  {
+    key: 'instagram',
+    name: 'Instagram',
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Instagram.png',
+    rules: ['RULE-SET,instagram,Instagram'],
   },
   {
     key: 'emby',
