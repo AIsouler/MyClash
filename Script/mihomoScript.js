@@ -1,4 +1,4 @@
-// --- 1. 静态配置区域 ---
+// --- 静态配置区域 ---
 
 // 脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomoScript.js
 
@@ -80,7 +80,7 @@ const rules = [
   'RULE-SET,cloudflare_cn,直连',
 ];
 
-// 定义节点组
+// 定义地区策略组
 const regionDefinitions = [
   {
     name: '香港',
@@ -373,8 +373,6 @@ const ruleProviders = {
   },
 };
 
-// --- 2. 功能策略组数据结构 ---
-
 // 策略组通用配置
 const groupBaseOption = {
   interval: 600,
@@ -385,6 +383,7 @@ const groupBaseOption = {
   hidden: false,
 };
 
+// 定义分流策略组和对应的规则
 const serviceConfigs = [
   {
     key: 'captcha',
@@ -524,7 +523,7 @@ const serviceConfigs = [
   },
 ];
 
-// --- 3. 主入口 ---
+// --- 主入口 ---
 
 function main(config) {
   if (!enable) return config;
@@ -536,6 +535,7 @@ function main(config) {
     );
   }
 
+  // 获取节点列表
   const proxies = config?.proxies || [];
   const proxyCount = proxies.length;
   const proxyProviderCount =
@@ -547,7 +547,7 @@ function main(config) {
     throw new Error('配置文件中未找到任何代理');
   }
 
-  // 高效代理分类 (单次遍历)
+  // 节点分类
   const regionGroups = {};
   regionDefinitions.forEach(
     (r) =>
@@ -557,11 +557,11 @@ function main(config) {
       }),
   );
 
-  // 节点组分类
   const lowGroup = regionGroups['低倍率节点'];
   const highGroup = regionGroups['高倍率节点'];
   const otherProxies = [];
 
+  // 节点分类（倍率）
   for (const proxy of proxies) {
     const name = proxy.name;
     if (
@@ -578,6 +578,7 @@ function main(config) {
       highGroup.proxies.push(name);
     }
 
+    // 节点分类（地区）
     let matched = false;
     for (const region of regionDefinitions) {
       if (region.name === '低倍率节点' || region.name === '高倍率节点')
@@ -634,18 +635,18 @@ function main(config) {
     });
   }
 
-  const regionGroupNames = generatedRegionGroups
+  // 筛选类型为 select 的策略组
+  const groupNamesOfSelect = generatedRegionGroups
     .filter((g) => g.type === 'select')
     .map((g) => g.name);
 
-  // 构建功能策略组
+  // 构建分流策略组
   const functionalGroups = [];
-
   functionalGroups.push({
     ...groupBaseOption,
     name: '默认代理',
     type: 'select',
-    proxies: [...regionGroupNames],
+    proxies: [...groupNamesOfSelect],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
   });
 
@@ -657,11 +658,11 @@ function main(config) {
       if (svc.reject) {
         groupProxies = ['REJECT', 'REJECT-DROP', 'PASS'];
       } else if (svc.direct) {
-        groupProxies = ['默认代理', '直连', ...regionGroupNames];
+        groupProxies = ['默认代理', '直连', ...groupNamesOfSelect];
       } else if (svc.key === 'googlefcm') {
-        groupProxies = ['直连', '默认代理', ...regionGroupNames];
+        groupProxies = ['直连', '默认代理', ...groupNamesOfSelect];
       } else {
-        groupProxies = ['默认代理', ...regionGroupNames];
+        groupProxies = ['默认代理', ...groupNamesOfSelect];
       }
 
       functionalGroups.push({
@@ -706,7 +707,7 @@ function main(config) {
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  // --- 4. 覆盖基础配置 ---
+  // --- 覆盖基础配置 ---
 
   config.proxies.push(
     {
@@ -725,7 +726,6 @@ function main(config) {
     },
   );
 
-  // 组装最终结果
   config['proxy-groups'] = [
     globalGroup,
     ...functionalGroups,
@@ -785,7 +785,6 @@ function main(config) {
     'cloudflare_cn',
   ];
 
-  // DNS 配置
   config['dns'] = {
     enable: true,
     ipv6: true,
@@ -820,7 +819,6 @@ function main(config) {
     'direct-nameserver-follow-policy': true,
   };
 
-  // hosts 配置
   config['hosts'] = {
     'dns.alidns.com': ['223.5.5.5', '223.6.6.6'],
     'doh.pub': ['1.12.12.12', '120.53.53.53'],

@@ -1,10 +1,10 @@
-// --- 1. 静态配置区域 ---
+// --- 静态配置区域 ---
 
 // 定义全局排除节点的正则表达式
 const excludeFilter =
   /群|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|超时|收藏|福利|邀请|好友|失联|选择|剩余|公益|发布|DIZTNA|通路|登录|禁止|定时|渠道|牢记|永久|余额|阁下|本站|刷新|导航|⚠️|@|Expire|http|com/u;
 
-// 定义节点组
+// 定义地区策略组
 const regionDefinitions = [
   {
     name: '香港',
@@ -232,8 +232,6 @@ const ruleProviders = {
   },
 };
 
-// --- 2. 功能策略组数据结构 ---
-
 // 策略组通用配置
 const groupBaseOption = {
   interval: 600,
@@ -244,6 +242,7 @@ const groupBaseOption = {
   hidden: false,
 };
 
+// 定义分流策略组
 const serviceConfigs = [
   {
     key: 'captcha',
@@ -311,7 +310,7 @@ const serviceConfigs = [
   },
 ];
 
-// --- 3. 主入口 ---
+// --- 主入口 ---
 
 function main(config) {
   // 排除匹配到的节点
@@ -321,6 +320,7 @@ function main(config) {
     );
   }
 
+  // 获取节点列表
   const proxies = config?.proxies || [];
   const proxyCount = proxies.length;
   const proxyProviderCount =
@@ -332,7 +332,7 @@ function main(config) {
     throw new Error('配置文件中未找到任何代理');
   }
 
-  // 高效代理分类 (单次遍历)
+  // 节点分类
   const regionGroups = {};
   regionDefinitions.forEach(
     (r) =>
@@ -342,11 +342,11 @@ function main(config) {
       }),
   );
 
-  // 节点组分类
   const lowGroup = regionGroups['低倍率节点'];
   const highGroup = regionGroups['高倍率节点'];
   const otherProxies = [];
 
+  // 节点分类（倍率）
   for (const proxy of proxies) {
     const name = proxy.name;
     if (
@@ -361,6 +361,7 @@ function main(config) {
       highGroup.proxies.push(name);
     }
 
+    // 节点分类（地区）
     let matched = false;
     for (const region of regionDefinitions) {
       if (region.name === '低倍率节点' || region.name === '高倍率节点')
@@ -417,18 +418,18 @@ function main(config) {
     });
   }
 
-  const regionGroupNames = generatedRegionGroups
+  // 筛选类型为 select 的策略组
+  const groupNamesOfSelect = generatedRegionGroups
     .filter((g) => g.type === 'select')
     .map((g) => g.name);
 
-  // 构建功能策略组
+  // 构建分流策略组
   const functionalGroups = [];
-
   functionalGroups.push({
     ...groupBaseOption,
     name: '默认代理',
     type: 'select',
-    proxies: [...regionGroupNames],
+    proxies: [...groupNamesOfSelect],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
   });
 
@@ -437,9 +438,9 @@ function main(config) {
     if (svc.reject) {
       groupProxies = ['REJECT', 'REJECT-DROP', 'PASS'];
     } else if (svc.direct) {
-      groupProxies = ['默认代理', '直连', ...regionGroupNames];
+      groupProxies = ['默认代理', '直连', ...groupNamesOfSelect];
     } else {
-      groupProxies = ['默认代理', ...regionGroupNames];
+      groupProxies = ['默认代理', ...groupNamesOfSelect];
     }
 
     functionalGroups.push({
@@ -483,7 +484,7 @@ function main(config) {
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  // --- 4. 覆盖基础配置 ---
+  // --- 覆盖基础配置 ---
 
   config.proxies.push(
     {
@@ -502,7 +503,6 @@ function main(config) {
     },
   );
 
-  // 组装最终结果
   config['proxy-groups'] = [
     globalGroup,
     ...functionalGroups,
@@ -550,7 +550,6 @@ function main(config) {
     'microsoft_cn',
   ];
 
-  // DNS 配置
   config['dns'] = {
     enable: true,
     ipv6: true,
@@ -585,7 +584,6 @@ function main(config) {
     'direct-nameserver-follow-policy': true,
   };
 
-  // hosts 配置
   config['hosts'] = {
     'dns.alidns.com': ['223.5.5.5', '223.6.6.6'],
     'doh.pub': ['1.12.12.12', '120.53.53.53'],

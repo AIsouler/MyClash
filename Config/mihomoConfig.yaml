@@ -48,7 +48,7 @@ profile:
   store-selected: true
   store-fake-ip: true
 
-# --- 代理节点 ---
+# 直连节点
 proxies:
   - { name: '🇨🇳 直连 | IPv4优先', type: direct, ip-version: ipv4-prefer }
   - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
@@ -152,6 +152,7 @@ rule_providers_common:
   rp_classical:
     &rp_classical { type: http, interval: 86400, behavior: classical }
 
+# 定义 Rule Providers
 rule-providers:
   adblockmihomolite:
     <<: *rp_domain
@@ -388,6 +389,7 @@ prox_common:
       ],
   }
 
+# 定义分流策略组
 proxy-groups:
   - name: '默认代理'
     <<: *group_common_select
@@ -554,7 +556,7 @@ proxy-groups:
     url: 'https://connectivitycheck.platform.hicloud.com/generate_204'
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png'
 
-  # 地区分组
+  # 定义地区策略组
   - name: '香港'
     <<: *group_common_select
     include-all: true
