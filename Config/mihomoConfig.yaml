@@ -24,11 +24,11 @@ proxy-providers:
   provider1:
     <<: [*p, *exclude]
     url: '此处填入机场订阅链接'
-    path: ./proxy_providers/provider1.txt
+    path: ./proxy_providers/provider1.yaml
 #  provider2:
 #   <<: [*p, *exclude]
 #   url: '此处填入机场订阅链接'
-#   path: ./proxy_providers/provider2.txt
+#   path: ./proxy_providers/provider2.yaml
 
 # --- 基础全局配置 ---
 
