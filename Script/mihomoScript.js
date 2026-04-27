@@ -15,7 +15,6 @@ const enable = true;
  * false = 禁用
  */
 const ruleOptionsEnable = {
-  captcha: true, // 人机验证，建议选择高质量节点，提高一次通过的概率
   ai: true, // 国外AI服务
   youtube: true, // YouTube
   googlefcm: true, // FCM服务
@@ -366,12 +365,6 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ntp.mrs',
     path: './ruleset/category-ntp.mrs',
   },
-  captcha: {
-    ...ruleProviderCommonDomain,
-    ...ruleProviderFormatMrs,
-    url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/captcha_domain.mrs',
-    path: './ruleset/captcha.mrs',
-  },
   instagram: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
@@ -392,13 +385,6 @@ const groupBaseOption = {
 
 // 定义分流策略组和对应的规则
 const serviceConfigs = [
-  {
-    key: 'captcha',
-    name: '人机验证',
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Bot.png',
-    rules: ['RULE-SET,captcha,人机验证'],
-    direct: true,
-  },
   {
     key: 'ai',
     name: 'AI',
@@ -825,7 +811,7 @@ function main(config) {
       '*': 'system',
       '+.arpa': 'system',
       '+.cn': [...chinaDNS],
-      [`rule-set:${[...direct_rules, 'microsoft', 'apple', 'spotify', 'captcha'].join(',')}`]:
+      [`rule-set:${[...direct_rules, 'microsoft', 'apple', 'spotify'].join(',')}`]:
         [...chinaDNS],
     },
     'direct-nameserver': ['system', '223.5.5.5', '119.29.29.29'],

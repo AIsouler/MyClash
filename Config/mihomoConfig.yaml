@@ -101,7 +101,7 @@ dns:
     '*': 'system'
     '+.arpa': 'system'
     '+.cn': *chinaDNS
-    'rule-set:private,cn,steam_cn,epicgames,nvidia_cn,cloudflare_cn,microsoft_cn,microsoft,googlefcm,apple,spotify,captcha': *chinaDNS
+    'rule-set:private,cn,steam_cn,epicgames,nvidia_cn,cloudflare_cn,microsoft_cn,microsoft,googlefcm,apple,spotify': *chinaDNS
   direct-nameserver: ['system', '223.5.5.5', '119.29.29.29']
   direct-nameserver-follow-policy: true
 
@@ -341,11 +341,6 @@ rule-providers:
     format: mrs
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ntp.mrs'
     path: './ruleset/category-ntp.mrs'
-  captcha:
-    <<: *rp_domain
-    format: mrs
-    url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/captcha_domain.mrs'
-    path: './ruleset/captcha_domain.mrs'
   instagram:
     <<: *rp_domain
     format: mrs
@@ -414,23 +409,6 @@ proxy-groups:
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png'
 
   # 分流策略组
-  - name: '人机验证'
-    <<: *group_common_select
-    proxies:
-      [
-        '默认代理',
-        '直连',
-        '香港',
-        '日本',
-        '美国',
-        '新加坡',
-        '台湾省',
-        '低倍率节点',
-        '高倍率节点',
-        '其他节点',
-      ]
-    icon: 'https://fastly.jsdelivr.net/gh/MiToverG422/Qure@master/IconSet/Color/Bot.png'
-
   - name: 'AI'
     <<: [*group_common_select, *proxies]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png'
@@ -661,7 +639,6 @@ rules:
   - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,youtube)),REJECT
 
   # 代理规则（域名）
-  - RULE-SET,captcha,人机验证
   - RULE-SET,ai,AI
   - RULE-SET,youtube,YouTube
   - RULE-SET,googlefcm,FCM

@@ -44,7 +44,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 > - _若不需要某个策略组，可在脚本中将对应开关设为 `false`_
 
 - `默认代理`
-- `人机验证`
 - `AI`
 - `YouTube`
 - `FCM`
