@@ -78,6 +78,7 @@ const rules = [
   'RULE-SET,nvidia_cn,直连',
   'RULE-SET,microsoft_cn,直连',
   'RULE-SET,cloudflare_cn,直连',
+  'DOMAIN,fsend.cn,直连',
 ];
 
 // 定义地区策略组
@@ -284,7 +285,7 @@ const ruleProviders = {
   cn: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://static-file-global.353355.xyz/rules/cn-additional-list.mrs',
+    url: 'https://fastly.jsdelivr.net/gh/wwqgtxx/clash-rules@release/direct.mrs',
     path: './ruleset/cn.mrs',
   },
   cn_ip: {
@@ -736,8 +737,6 @@ function main(config) {
 
     // 兜底规则
     'RULE-SET,gfw,默认代理',
-    'RULE-SET,cn,直连',
-    'DOMAIN-WILDCARD,*.cn,直连',
     'RULE-SET,cn_ip,直连',
     'MATCH,默认代理',
   ];
@@ -795,7 +794,6 @@ function main(config) {
     'fake-ip-range': '198.18.0.1/16',
     'fake-ip-range-v6': 'fc00::/18',
     'fake-ip-filter': [
-      '+.cn',
       'rule-set:category_ntp',
       'rule-set:fakeip_filter',
       'rule-set:connectivity_check',
@@ -810,7 +808,6 @@ function main(config) {
     'nameserver-policy': {
       '*': 'system',
       '+.arpa': 'system',
-      '+.cn': [...chinaDNS],
       [`rule-set:${[...direct_rules, 'microsoft', 'apple', 'spotify'].join(',')}`]:
         [...chinaDNS],
     },
