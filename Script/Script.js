@@ -190,6 +190,12 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gfw.mrs',
     path: './ruleset/gfw.mrs',
   },
+  geolocation_cn: {
+    ...ruleProviderCommonDomain,
+    ...ruleProviderFormatMrs,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-cn.mrs',
+    path: './ruleset/geolocation-cn.mrs',
+  },
   cn: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
@@ -475,16 +481,6 @@ function main(config) {
     'https://8.8.8.8/dns-query#代理',
   ];
 
-  // 直连规则集列表
-  const direct_rules = [
-    'private',
-    'cn',
-    'steam_cn',
-    'epicgames',
-    'nvidia_cn',
-    'microsoft_cn',
-  ];
-
   config['dns'] = {
     enable: true,
     ipv6: true,
@@ -496,10 +492,11 @@ function main(config) {
     'fake-ip-range': '198.18.0.1/16',
     'fake-ip-range-v6': 'fc00::/18',
     'fake-ip-filter': [
+      'rule-set:private',
       'rule-set:category_ntp',
       'rule-set:fakeip_filter',
       'rule-set:connectivity_check',
-      ...direct_rules.map((rule) => `rule-set:${rule}`),
+      'rule-set:geolocation_cn',
     ],
     'proxy-server-nameserver': [
       'https://doh.pub/dns-query#DIRECT',
@@ -510,7 +507,8 @@ function main(config) {
     'nameserver-policy': {
       '*': 'system',
       '+.arpa': 'system',
-      [`rule-set:${[...direct_rules].join(',')}`]: [...chinaDNS],
+      'rule-set:private': 'system',
+      'rule-set:cn,steam_cn,nvidia_cn,microsoft_cn': [...chinaDNS],
     },
     'direct-nameserver': ['system', '223.5.5.5', '119.29.29.29'],
     'direct-nameserver-follow-policy': true,

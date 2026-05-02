@@ -82,13 +82,7 @@ dns:
     - 'rule-set:category_ntp'
     - 'rule-set:fakeip_filter'
     - 'rule-set:connectivity_check'
-    - 'rule-set:cn'
-    - 'rule-set:googlefcm'
-    - 'rule-set:steam_cn'
-    - 'rule-set:epicgames'
-    - 'rule-set:nvidia_cn'
-    - 'rule-set:microsoft_cn'
-    - 'rule-set:cloudflare_cn'
+    - 'rule-set:geolocation_cn'
   proxy-server-nameserver:
     - 'https://doh.pub/dns-query#DIRECT'
     - 'https://dns.alidns.com/dns-query#DIRECT'
@@ -99,7 +93,8 @@ dns:
   nameserver-policy:
     '*': 'system'
     '+.arpa': 'system'
-    'rule-set:private,cn,steam_cn,epicgames,nvidia_cn,cloudflare_cn,microsoft_cn,microsoft,googlefcm,apple,spotify': *chinaDNS
+    'rule-set:private': 'system'
+    'rule-set:cn,steam_cn,nvidia_cn,microsoft_cn,cloudflare_cn': *chinaDNS
   direct-nameserver: ['system', '223.5.5.5', '119.29.29.29']
   direct-nameserver-follow-policy: true
 
@@ -269,6 +264,11 @@ rule-providers:
     format: mrs
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gfw.mrs'
     path: './ruleset/gfw.mrs'
+  geolocation_cn:
+    <<: *rp_domain
+    format: mrs
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/geolocation-cn.mrs'
+    path: './ruleset/geolocation-cn.mrs'
   cn:
     <<: *rp_domain
     format: mrs
