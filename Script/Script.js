@@ -145,7 +145,7 @@ const ruleProviders = {
   telegram_ip: {
     ...ruleProviderCommonIpcidr,
     ...ruleProviderFormatMrs,
-    url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/telegram_ip.mrs',
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs',
     path: './ruleset/telegram_ip.mrs',
   },
   steam: {
@@ -508,9 +508,9 @@ function main(config) {
       '*': 'system',
       '+.arpa': 'system',
       'rule-set:private': 'system',
-      'rule-set:cn,steam_cn,nvidia_cn,microsoft_cn': [...chinaDNS],
+      'rule-set:cn': [...chinaDNS],
     },
-    'direct-nameserver': ['system', '223.5.5.5', '119.29.29.29'],
+    'direct-nameserver': [...chinaDNS],
     'direct-nameserver-follow-policy': true,
   };
 

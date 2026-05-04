@@ -94,8 +94,8 @@ dns:
     '*': 'system'
     '+.arpa': 'system'
     'rule-set:private': 'system'
-    'rule-set:cn,steam_cn,nvidia_cn,microsoft_cn,cloudflare_cn': *chinaDNS
-  direct-nameserver: ['system', '223.5.5.5', '119.29.29.29']
+    'rule-set:cn': *chinaDNS
+  direct-nameserver: *chinaDNS
   direct-nameserver-follow-policy: true
 
 hosts:
@@ -222,7 +222,7 @@ rule-providers:
   telegram_ip:
     <<: *rp_ip
     format: mrs
-    url: 'https://fastly.jsdelivr.net/gh/echs-top/proxy@main/rules/mrs/telegram_ip.mrs'
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs'
     path: './ruleset/telegram_ip.mrs'
   pixiv:
     <<: *rp_domain
@@ -353,21 +353,21 @@ group_common_select:
     type: select,
     interval: 600,
     timeout: 3000,
+    max-failed-times: 3,
     url: 'https://g.cn/generate_204',
     lazy: true,
-    max-failed-times: 3,
   }
 
 group_common_auto:
   &group_common_auto {
+    type: url-test,
     interval: 600,
     timeout: 3000,
-    type: url-test,
-    tolerance: 100,
-    include-all: true,
+    max-failed-times: 3,
     url: 'https://g.cn/generate_204',
     lazy: true,
-    max-failed-times: 3,
+    tolerance: 100,
+    include-all: true,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Auto.png',
     hidden: true,
   }
@@ -406,7 +406,6 @@ proxy-groups:
       ]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png'
 
-  # 分流策略组
   - name: 'AI'
     <<: [*group_common_select, *proxies]
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png'
