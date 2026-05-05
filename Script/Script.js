@@ -154,11 +154,11 @@ const ruleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs',
     path: './ruleset/steam.mrs',
   },
-  steam_cn: {
+  games_cn: {
     ...ruleProviderCommonDomain,
     ...ruleProviderFormatMrs,
-    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam@cn.mrs',
-    path: './ruleset/steam@cn.mrs',
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-games@cn.mrs',
+    path: './ruleset/category-games@cn.mrs',
   },
   twitter: {
     ...ruleProviderCommonDomain,
@@ -576,7 +576,7 @@ function main(config) {
     'RULE-SET,private_ip,直连,no-resolve',
 
     // 国内直连
-    'RULE-SET,steam_cn,直连',
+    'RULE-SET,games_cn,直连',
     'RULE-SET,epicgames,直连',
     'RULE-SET,nvidia_cn,直连',
     'RULE-SET,microsoft_cn,直连',
