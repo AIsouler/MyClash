@@ -100,8 +100,8 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 - [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)
 
-- [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters)
+- [wwqgtxx/clash-rules](https://github.com/wwqgtxx/clash-rules)
 
-- [DustinWin/ruleset_geodata](https://github.com/DustinWin/ruleset_geodata)
+- [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters)
 
 - [Koolson/Qure](https://github.com/Koolson/Qure)

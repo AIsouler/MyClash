@@ -158,9 +158,9 @@ const ruleProviders = {
   },
   fakeip_filter: {
     ...ruleProviderCommonDomain,
-    ...ruleProviderFormatText,
-    url: 'https://fastly.jsdelivr.net/gh/juewuy/ShellCrash@dev/public/fake_ip_filter.list',
-    path: './ruleset/fakeip-filter.list',
+    ...ruleProviderFormatMrs,
+    url: 'https://fastly.jsdelivr.net/gh/wwqgtxx/clash-rules@release/fakeip-filter.mrs',
+    path: './ruleset/fakeip-filter.mrs',
   },
   epicgames: {
     ...ruleProviderCommonDomain,
