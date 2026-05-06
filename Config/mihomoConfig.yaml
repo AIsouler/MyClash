@@ -531,11 +531,6 @@ proxy-groups:
     proxies: ['REJECT', 'REJECT-DROP', 'PASS']
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Advertising.png'
 
-  - name: '下载专用'
-    <<: *group_common_select
-    proxies: ['直连', '默认代理']
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Download.png'
-
   - name: '直连'
     <<: *group_common_select
     proxies: ['🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先', '🇨🇳 直连 | 双栈']
@@ -608,8 +603,12 @@ proxy-groups:
   - name: '其他节点'
     <<: *group_common_select
     include-all: true
+    proxies: ['其他节点-自动选择']
     exclude-filter: '(?i)港|HK|🇭🇰|日本|JP|🇯🇵|美|US|🇺🇸|新加坡|SG|🇸🇬|台湾|TW|🇹🇼|直连'
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/World_Map.png'
+  - name: '其他节点-自动选择'
+    <<: *group_common_auto
+    exclude-filter: '(?i)港|HK|🇭🇰|日本|JP|🇯🇵|美|US|🇺🇸|新加坡|SG|🇸🇬|台湾|TW|🇹🇼|直连'
 
 # --- 路由规则 (Rules) ---
 rules:
@@ -626,7 +625,7 @@ rules:
   - DOMAIN,fsend.cn,直连
 
   # 进程规则
-  - RULE-SET,DownloadApps,下载专用 # 常见磁力下载软件
+  - RULE-SET,DownloadApps,直连 # 常见磁力下载软件
   - PROCESS-NAME,com.perol.pixez,Pixiv
   - PROCESS-NAME,com.perol.play.pixez,Pixiv
 

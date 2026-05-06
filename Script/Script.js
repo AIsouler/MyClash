@@ -222,14 +222,28 @@ const ruleProviders = {
   },
 };
 
-// 策略组通用配置
-const groupBaseOption = {
+// select策略组通用配置
+const selectBaseOption = {
+  type: 'select',
   interval: 600,
   timeout: 3000,
   url: 'https://g.cn/generate_204',
   lazy: true,
   'max-failed-times': 3,
   hidden: false,
+};
+
+// url-test策略组通用配置
+const urlTestBaseOption = {
+  type: 'url-test',
+  interval: 600,
+  timeout: 3000,
+  url: 'https://g.cn/generate_204',
+  lazy: true,
+  'max-failed-times': 3,
+  tolerance: 100,
+  icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Auto.png',
+  hidden: true,
 };
 
 // 定义分流策略组
@@ -340,20 +354,15 @@ function main(config) {
       // 构建 url-test 节点组
       const autoTestName = `${r.name}-自动选择`;
       generatedRegionGroups.push({
-        ...groupBaseOption,
+        ...urlTestBaseOption,
         name: autoTestName,
-        type: 'url-test',
-        tolerance: 100,
-        icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Auto.png',
         proxies: groupData.proxies,
-        hidden: true,
       });
 
       // 构建 select 节点组
       generatedRegionGroups.push({
-        ...groupBaseOption,
+        ...selectBaseOption,
         name: r.name,
-        type: 'select',
         icon: r.icon,
         proxies: [autoTestName, ...groupData.proxies],
       });
@@ -361,13 +370,19 @@ function main(config) {
   });
 
   if (otherProxies.length > 0) {
-    generatedRegionGroups.push({
-      ...groupBaseOption,
-      name: '其他节点',
-      type: 'select',
-      proxies: otherProxies,
-      icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/World_Map.png',
-    });
+    generatedRegionGroups.push(
+      {
+        ...urlTestBaseOption,
+        name: '其他节点-自动选择',
+        proxies: otherProxies,
+      },
+      {
+        ...selectBaseOption,
+        name: '其他节点',
+        proxies: ['其他节点-自动选择', ...otherProxies],
+        icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/World_Map.png',
+      },
+    );
   }
 
   // 筛选类型为 select 的策略组
@@ -378,9 +393,8 @@ function main(config) {
   // 构建分流策略组
   const functionalGroups = [];
   functionalGroups.push({
-    ...groupBaseOption,
+    ...selectBaseOption,
     name: '代理',
-    type: 'select',
     proxies: [...groupNamesOfSelect],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
   });
@@ -394,19 +408,17 @@ function main(config) {
     }
 
     functionalGroups.push({
-      ...groupBaseOption,
+      ...selectBaseOption,
       name: svc.name,
-      type: 'select',
-      proxies: groupProxies,
       icon: svc.icon,
+      proxies: groupProxies,
     });
   });
 
   // 添加其他策略组
   functionalGroups.push({
-    ...groupBaseOption,
+    ...selectBaseOption,
     name: '直连',
-    type: 'select',
     proxies: ['🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先', '🇨🇳 直连 | 双栈'],
     url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png',
@@ -418,9 +430,8 @@ function main(config) {
     ...generatedRegionGroups.map((g) => g.name),
   ];
   const globalGroup = {
-    ...groupBaseOption,
+    ...selectBaseOption,
     name: 'GLOBAL',
-    type: 'select',
     proxies: allGroupNames,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
