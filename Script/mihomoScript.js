@@ -771,8 +771,8 @@ function main(config) {
   // 国内外 DNS 定义
   const chinaDNS = [
     'system',
-    'https://dns.alidns.com/dns-query',
-    'https://doh.pub/dns-query',
+    'https://dns.alidns.com/dns-query#DIRECT',
+    'https://doh.pub/dns-query#DIRECT',
   ];
   const foreignDNS = [
     'https://1.1.1.1/dns-query#默认代理',
@@ -796,10 +796,7 @@ function main(config) {
       'rule-set:connectivity_check',
       'rule-set:geolocation_cn',
     ],
-    'proxy-server-nameserver': [
-      'https://doh.pub/dns-query#DIRECT',
-      'https://dns.alidns.com/dns-query#DIRECT',
-    ],
+    'proxy-server-nameserver': [...chinaDNS],
     'default-nameserver': ['223.5.5.5', '119.29.29.29'],
     nameserver: [...foreignDNS],
     'nameserver-policy': {
