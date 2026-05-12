@@ -513,7 +513,6 @@ function main(config) {
 
   // 国内外 DNS 定义
   const chinaDNS = [
-    'system',
     'https://dns.alidns.com/dns-query#DIRECT',
     'https://doh.pub/dns-query#DIRECT',
   ];

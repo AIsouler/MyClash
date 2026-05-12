@@ -57,7 +57,6 @@ proxies:
 # 国内外 DNS 定义
 chinaDNS:
   &chinaDNS [
-    'system',
     'https://dns.alidns.com/dns-query#DIRECT',
     'https://doh.pub/dns-query#DIRECT',
   ]

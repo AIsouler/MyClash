@@ -1,4 +1,3 @@
-
 // --- 静态配置区域 ---
 
 // 脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomoScript.js
@@ -793,7 +792,6 @@ function main(config) {
 
   // 国内外 DNS 定义
   const chinaDNS = [
-    'system',
     'https://dns.alidns.com/dns-query#DIRECT',
     'https://doh.pub/dns-query#DIRECT',
   ];
