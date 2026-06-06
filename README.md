@@ -29,7 +29,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/refs/heads/main/Script/mihomo
 
 ## 脚本说明
 
-- 仅适用于使用 [mihomo 内核](https://github.com/MetaCubeX/mihomo) 的代理客户端
+- 仅适用于使用 [mihomo 内核](https://github.com/MetaCubeX/mihomo/tree/Alpha) 的代理客户端
 
 - 仅适用于覆写机场提供的配置文件，请勿用于覆写自己编写的配置文件
 
