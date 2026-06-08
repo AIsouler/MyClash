@@ -32,12 +32,14 @@ proxy-providers:
   provider1:
     <<: [*proxy_providers_common, *global_exclude_filter]
     url: '此处填入机场订阅链接'
+    age-secret-key: '' # 此处填入机场订阅链接解密私钥，如果机场订阅链接需要解密才能使用，请将解密私钥填入引号中间，否则不要改动此项
     path: ./proxy_providers/provider1.yaml
     override:
       additional-suffix: '| provider1' # 给节点名称后面加后缀，防止不同订阅的节点重名导致出现问题
   # provider2:
   #   <<: [*proxy_providers_common, *global_exclude_filter]
   #   url: '此处填入机场订阅链接'
+  #   age-secret-key: '' # 此处填入机场订阅链接解密私钥，如果机场订阅链接需要解密才能使用，请将解密私钥填入引号中间，否则不要改动此项
   #   path: ./proxy_providers/provider2.yaml
   #   override:
   #     additional-suffix: '| provider2'
