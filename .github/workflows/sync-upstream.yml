@@ -24,13 +24,15 @@ jobs:
 
           git merge upstream/main --no-edit
 
+          sed -i 's/    '\''MATCH,默认代理'\''/    '\''MATCH,直连'\''/' Script/Script.js
+          sed -i 's/    '\''MATCH,默认代理'\''/    '\''MATCH,直连'\''/' Script/mihomoScript.js
           sed -i 's/  - MATCH,默认代理/  - MATCH,直连/' Config/mihomoConfig.yaml
           sed -i 's/  - MATCH,默认代理/  - MATCH,直连/' Config/mihomoConfigLite.yaml
 
           if git diff --quiet; then
             echo "No changes to commit"
           else
-            git add Config/mihomoConfig.yaml Config/mihomoConfigLite.yaml
+            git add Config/mihomoConfig.yaml Config/mihomoConfigLite.yaml Script/Script.js Script/mihomoScript.js
             git commit -m "chore: apply custom MATCH rule (DIRECT)"
             git push
           fi
