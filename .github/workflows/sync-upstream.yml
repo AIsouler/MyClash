@@ -1,0 +1,36 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync upstream and apply custom changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/AIsouler/MyClash.git
+          git fetch upstream main
+
+          git merge upstream/main --no-edit
+
+          sed -i 's/  - MATCH,默认代理/  - MATCH,直连/' Config/mihomoConfig.yaml
+          sed -i 's/  - MATCH,默认代理/  - MATCH,直连/' Config/mihomoConfigLite.yaml
+
+          if git diff --quiet; then
+            echo "No changes to commit"
+          else
+            git add Config/mihomoConfig.yaml Config/mihomoConfigLite.yaml
+            git commit -m "chore: apply custom MATCH rule (DIRECT)"
+            git push
+          fi
