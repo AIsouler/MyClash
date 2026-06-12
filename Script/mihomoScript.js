@@ -797,6 +797,21 @@ function main(config) {
 
   // --- DNS配置 ---
 
+  // 读取订阅中的 DNS 配置，保留订阅中的 proxy-server-nameserver 和 proxy-server-nameserver-policy
+  // 用以解决部分机场使用私有 DNS 导致无法解析节点的问题
+  const originalDns = config.dns || {};
+
+  // 过滤 proxy-server-nameserver 中常见的公共 DNS
+  const commonDnsRegex =
+    /(223\.5\.5\.5|223\.6\.6\.6|119\.29\.29\.29|114\.114\.114\.114|180\.76\.76\.76|1\.1\.1\.1|1\.0\.0\.1|8\.8\.8\.8|8\.8\.4\.4|alidns|doh\.pub|dot\.pub|dns\.baidu|dns\.google|cloudflare)/i;
+
+  const originalProxyServerNameserver = (
+    originalDns['proxy-server-nameserver'] || []
+  ).filter((dns) => !commonDnsRegex.test(String(dns)));
+
+  const originalProxyServerNameserverPolicy =
+    originalDns['proxy-server-nameserver-policy'] || {};
+
   // 国内外 DNS 定义
   const chinaDNS = [
     'https://dns.alidns.com/dns-query#DIRECT',
@@ -806,20 +821,6 @@ function main(config) {
     'https://dns.cloudflare.com/dns-query#默认代理',
     'https://dns.google/dns-query#默认代理',
   ];
-
-  // 读取订阅中的 DNS 配置
-  const originalDns = config.dns || {};
-
-  // 过滤 proxy-server-nameserver 中常见的公共 DNS
-  const commonDnsRegex =
-    /(223\.5\.5\.5|223\.6\.6\.6|119\.29\.29\.29|114\.114\.114\.114|180\.76\.76\.76|1\.1\.1\.1|1\.0\.0\.1|8\.8\.8\.8|8\.8\.4\.4|alidns|doh\.pub|dot\.pub|dns\.baidu|dns\.google|cloudflare)/i;
-
-  const subscriptionProxyServerNameserver = (
-    originalDns['proxy-server-nameserver'] || []
-  ).filter((dns) => !commonDnsRegex.test(String(dns)));
-
-  const subscriptionProxyServerNameserverPolicy =
-    originalDns['proxy-server-nameserver-policy'] || {};
 
   config['dns'] = {
     enable: true,
@@ -834,14 +835,11 @@ function main(config) {
     'fake-ip-filter': ['rule-set:private', 'rule-set:fakeip_filter'],
 
     // 合并订阅中的 proxy-server-nameserver
-    'proxy-server-nameserver': [
-      ...chinaDNS,
-      ...subscriptionProxyServerNameserver,
-    ],
+    'proxy-server-nameserver': [...chinaDNS, ...originalProxyServerNameserver],
 
     // 合并订阅中的 proxy-server-nameserver-policy
     'proxy-server-nameserver-policy': {
-      ...subscriptionProxyServerNameserverPolicy,
+      ...originalProxyServerNameserverPolicy,
     },
 
     'default-nameserver': ['223.5.5.5', '119.29.29.29'],
@@ -854,6 +852,7 @@ function main(config) {
 
   // --- 覆盖基础配置 ---
 
+  // 添加直连节点
   config.proxies.push(
     {
       name: '🇨🇳 直连 | IPv4优先',
