@@ -637,11 +637,7 @@ function createRegionGroup(name, icon, proxies) {
 // --- 主入口 ---
 
 function main(config) {
-  // 移除已废弃的属性
-  delete config['global-client-fingerprint'];
-
-  // 移除配置中不必要的 sub-rules 属性，避免产生冲突
-  delete config['sub-rules'];
+  const newConfig = {};
 
   // 排除匹配到的节点
   if (excludeFilterEnable && Array.isArray(config.proxies)) {
@@ -798,8 +794,9 @@ function main(config) {
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  // --- DNS配置 ---
+  // --- 添加基础配置 ---
 
+  // DNS配置
   // 读取订阅中的 DNS 配置，保留订阅中的 proxy-server-nameserver 和 proxy-server-nameserver-policy
   // 用以解决部分机场使用私有 DNS 导致无法解析节点的问题
   const originalDns = config.dns || {};
@@ -825,7 +822,7 @@ function main(config) {
     'https://dns.google/dns-query#默认代理',
   ];
 
-  config['dns'] = {
+  newConfig['dns'] = {
     enable: true,
     ipv6: true,
     listen: ':1053',
@@ -849,7 +846,7 @@ function main(config) {
   };
 
   // hosts 配置
-  config['hosts'] = {
+  newConfig['hosts'] = {
     'dns.alidns.com': ['223.5.5.5', '223.6.6.6'],
     'doh.pub': ['1.12.12.12', '120.53.53.53'],
     'dns.cloudflare.com': ['1.1.1.1', '1.0.0.1'],
@@ -863,10 +860,47 @@ function main(config) {
     '+.mcdn.bilivideo.cn': ['0.0.0.0'],
   };
 
-  // --- 覆盖基础配置 ---
+  newConfig['allow-lan'] = true;
+  newConfig['ipv6'] = true;
+  newConfig['bind-address'] = '*';
+  newConfig['unified-delay'] = true;
+  newConfig['tcp-concurrent'] = true;
+  newConfig['keep-alive-idle'] = 600;
+  newConfig['keep-alive-interval'] = 60;
+  newConfig['find-process-mode'] = 'strict';
 
-  // 添加直连节点
-  config.proxies.push(
+  newConfig['external-controller'] = '[::]:9090';
+  newConfig['external-ui'] = 'ui';
+  newConfig['external-ui-url'] =
+    'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
+
+  newConfig['profile'] = {
+    'store-selected': true,
+    'store-fake-ip': true,
+  };
+
+  newConfig['ntp'] = {
+    enable: true,
+    'write-to-system': false,
+    server: 'ntp.aliyun.com',
+    port: 123,
+    interval: 60,
+  };
+
+  newConfig['tun'] = {
+    enable: true,
+    stack: 'system',
+    mtu: 9000,
+    'auto-route': true,
+    'strict-route': true,
+    'auto-redirect': true,
+    'auto-detect-interface': true,
+    'dns-hijack': ['any:53', 'tcp://any:53'],
+  };
+
+  // 添加节点
+  newConfig.proxies = [...config.proxies];
+  newConfig.proxies.push(
     {
       name: '🇨🇳 直连 | IPv4优先',
       type: 'direct',
@@ -883,51 +917,14 @@ function main(config) {
     },
   );
 
-  config['proxy-groups'] = [
+  newConfig['proxy-groups'] = [
     globalGroup,
     ...functionalGroups,
     ...generatedRegionGroups,
   ];
-  config['rule-providers'] = finalRuleProviders;
+  newConfig['rule-providers'] = finalRuleProviders;
 
-  config['allow-lan'] = true;
-  config['ipv6'] = true;
-  config['bind-address'] = '*';
-  config['unified-delay'] = true;
-  config['tcp-concurrent'] = true;
-  config['keep-alive-idle'] = 600;
-  config['keep-alive-interval'] = 60;
-  config['find-process-mode'] = 'strict';
-
-  config['external-controller'] = '[::]:9090';
-  config['external-ui'] = 'ui';
-  config['external-ui-url'] =
-    'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
-
-  config['profile'] = {
-    'store-selected': true,
-    'store-fake-ip': true,
-  };
-
-  config['ntp'] = {
-    enable: true,
-    'write-to-system': false,
-    server: 'ntp.aliyun.com',
-    port: 123,
-    interval: 60,
-  };
-
-  config['tun'] = {
-    enable: true,
-    stack: 'system',
-    'auto-route': true,
-    'strict-route': true,
-    'auto-redirect': true,
-    'auto-detect-interface': true,
-    'dns-hijack': ['udp://any:53', 'tcp://any:53'],
-  };
-
-  config['rules'] = [
+  newConfig['rules'] = [
     ...finalRules,
 
     // 兜底规则
@@ -937,5 +934,5 @@ function main(config) {
     'MATCH,默认代理',
   ];
 
-  return config;
+  return newConfig;
 }
