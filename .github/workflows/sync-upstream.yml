@@ -19,10 +19,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git remote add upstream https://github.com/AIsouler/MyClash.git
+          git remote add upstream https://github.com/AIsouler/MyClash.git || git remote set-url upstream https://github.com/AIsouler/MyClash.git
           git fetch upstream main
 
-          git merge upstream/main --no-edit
+          git merge upstream/main --no-edit -X theirs
 
           sed -i 's/    '\''MATCH,默认代理'\''/    '\''MATCH,直连'\''/' Script/Script.js
           sed -i 's/    '\''MATCH,默认代理'\''/    '\''MATCH,直连'\''/' Script/mihomoScript.js
