@@ -26,22 +26,18 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 
 ## 覆写脚本
 
-### 使用方式
-
 > [!IMPORTANT]
 > **注意⚠️：该脚本仅适用于覆写机场提供的配置文件，请勿用于覆写自己编写的配置文件**
 
-#### 通过链接导入
+复制以下任意一个链接或者复制完整代码后按如图所示步骤导入到代理客户端，以 [Bettbox](https://github.com/appshubcc/Bettbox) 为例
 
-复制以下任意一个脚本链接后按如图所示步骤导入到代理客户端，以 [Bettbox](https://github.com/appshubcc/Bettbox) 为例
-
-- 全量版（包含全部分流策略组）
+- [mihomoScript.js（全量版）](/Script/mihomoScript.js)
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/mihomoScript.js
 ```
 
-- 精简版（仅包含小部分分流策略组）
+- [Script.js（精简版）](/Script/Script.js)
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
@@ -50,16 +46,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
 |                                                                                   |
 | --------------------------------------------------------------------------------- |
 | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/import.webp) |
-
-#### 通过复制代码导入
-
-部分代理客户端不支持链接导入，可以点击以下链接后复制脚本完整代码再导入到代理客户端
-
-点击以下链接即可查看脚本代码
-
-[mihomoScript.js（全量版）](/Script/mihomoScript.js)
-
-[Script.js（精简版）](/Script/Script.js)
 
 ## 配置和脚本说明
 
