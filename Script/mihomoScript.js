@@ -731,18 +731,18 @@ function main(config) {
   const originalPolicyNameserver = {};
 
   for (const policy of [
+    originalDnsConfig['proxy-server-nameserver-policy'] || {}, // 优先遍历此项配置
     originalDnsConfig['nameserver-policy'] || {},
-    originalDnsConfig['proxy-server-nameserver-policy'] || {},
   ]) {
     for (const [rule, dns] of Object.entries(policy)) {
       const dnsList = Array.isArray(dns) ? dns : [dns];
 
-      // 去重并过滤常见公共 DNS
-      const filteredDns = [...new Set(dnsList)].filter((item) => !commonDnsRegex.test(String(item)));
-
-      if (filteredDns.length > 0) {
-        originalPolicyNameserver[rule] = filteredDns;
+      // 只要有一个匹配公共 DNS，就跳过整个规则
+      if (dnsList.some((item) => commonDnsRegex.test(String(item)))) {
+        continue;
       }
+
+      originalPolicyNameserver[rule] = dns;
     }
   }
 
@@ -758,7 +758,7 @@ function main(config) {
     'use-system-hosts': true,
     'enhanced-mode': 'fake-ip',
     'fake-ip-range': '198.18.0.1/16',
-    'fake-ip-range-v6': 'fc00::/18',
+    'fake-ip-range6': 'fc00::/18',
     'fake-ip-filter': ['rule-set:private', 'rule-set:fakeip_filter'],
     'proxy-server-nameserver': [
       ...(originalProxyServerNameserver.length > 0 ? originalProxyServerNameserver : chinaDNS),
