@@ -85,7 +85,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - `自动选择`
 - `负载均衡`
 - `AI`
-- `Media` （YouTube+TikTok+Instagram+Netflix+HBO+Twitch+Disney+NicoNico+BBC+Pornhub）
+- `Media` （YouTube+Instagram+Netflix+HBO+Twitch+Disney+NicoNico+BBC+Pornhub）
 - `FCM`
 - `Google`
 - `GitHub`
