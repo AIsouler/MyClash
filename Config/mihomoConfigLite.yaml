@@ -46,6 +46,12 @@ proxy-providers:
 #   override:
 #     additional-prefix: 'p2 | '
 
+# 节点配置，可添加自定义节点
+proxies:
+  - { name: '🇨🇳 直连 | IPv4优先', type: direct, ip-version: ipv4-prefer }
+  - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
+  - { name: '🇨🇳 直连 | 双栈', type: direct }
+
 # --- 基础全局配置 ---
 
 allow-lan: true
@@ -123,12 +129,6 @@ tun:
   auto-redirect: true
   auto-detect-interface: true
   dns-hijack: ['any:53', 'tcp://any:53']
-
-# 直连节点
-proxies:
-  - { name: '🇨🇳 直连 | IPv4优先', type: direct, ip-version: ipv4-prefer }
-  - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
-  - { name: '🇨🇳 直连 | 双栈', type: direct }
 
 # --- 规则集 ---
 
