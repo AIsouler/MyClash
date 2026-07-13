@@ -33,7 +33,7 @@ proxy-providers:
     <<: [*proxy_providers_common, *global_exclude_filter]
     url: '' # 此处引号中间填入机场订阅链接
     age-secret-key: '' # 此处填入机场订阅链接解密私钥，如果机场订阅链接需要解密才能使用，请将解密私钥填入引号中间，否则不要改动此项
-    path: ./proxy_providers/provider1.yaml
+    path: ./proxy_provider/provider1.yaml
     override:
       additional-prefix: 'p1 | ' # 给节点名称添加前缀，防止不同订阅的节点重名导致出现问题
 
@@ -42,7 +42,7 @@ proxy-providers:
 #   <<: [*proxy_providers_common, *global_exclude_filter]
 #   url: ''
 #   age-secret-key: ''
-#   path: ./proxy_providers/provider2.yaml
+#   path: ./proxy_provider/provider2.yaml
 #   override:
 #     additional-prefix: 'p2 | '
 
