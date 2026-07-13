@@ -172,6 +172,7 @@ const groupBaseOption = {
   url: 'https://g.cn/generate_204',
   lazy: true,
   'max-failed-times': 3,
+  'empty-fallback': 'REJECT',
 };
 
 // select策略组通用配置
@@ -280,14 +281,13 @@ function main(config) {
   const newConfig = {};
 
   // 过滤节点列表
-  const filteredProxies = (config.proxies || []).filter((proxy) => !excludeFilter.test(proxy.name));
+  const filteredProxies = (config.proxies || []).filter((proxy) => {
+    const type = String(proxy.type ?? '').toLowerCase();
+    return type !== 'direct' && type !== 'reject' && !excludeFilter.test(proxy.name);
+  });
 
   // 验证节点列表是否存在代理节点
-  const isAllDirectOrReject = filteredProxies.every((p) => {
-    const type = p.type?.toLowerCase();
-    return type === 'direct' || type === 'reject';
-  });
-  if (!filteredProxies.length || isAllDirectOrReject) {
+  if (!filteredProxies.length) {
     throw new Error('配置文件中未找到任何代理节点，请使用机场提供的配置文件进行覆写');
   }
 
@@ -299,7 +299,6 @@ function main(config) {
 
   for (const proxy of filteredProxies) {
     let matched = false;
-
     for (const region of regionDefinitions) {
       if (region.regex.test(proxy.name)) {
         regionGroups[region.name].proxies.push(proxy.name);
@@ -474,7 +473,9 @@ function main(config) {
   // ---hosts 配置---
 
   // 收集所有节点域名
-  const proxyDomains = new Set(filteredProxies.map((proxy) => proxy.server.toLowerCase()));
+  const proxyDomains = new Set(
+    filteredProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
+  );
 
   // 提取订阅 hosts 中与节点域名对应的记录
   const originalHosts = config.hosts || {};
