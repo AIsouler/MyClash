@@ -114,6 +114,9 @@ hosts:
   '+.mcdn.bilivideo.cn': ['0.0.0.0']
   '+.edge.mountaintoys.cn': ['0.0.0.0']
 
+  # 解决 Telegram 短链域名被暂停解析
+  't.me': ['telegram.me']
+
 ntp:
   enable: true
   write-to-system: false

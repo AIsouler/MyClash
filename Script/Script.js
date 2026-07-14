@@ -501,6 +501,9 @@ function main(config) {
     '+.mcdn.bilivideo.cn': ['0.0.0.0'],
     '+.edge.mountaintoys.cn': ['0.0.0.0'],
 
+    // 解决 Telegram 短链域名被暂停解析
+    't.me': ['telegram.me'],
+
     // 保留机场用于节点解析的 hosts
     ...proxyHosts,
   };
