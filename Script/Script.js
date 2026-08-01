@@ -700,10 +700,10 @@ function main(config) {
     // 解决谷歌商店无法下载的问题
     'services.googleapis.cn': ['services.googleapis.com'],
 
-    // 屏蔽哔哩哔哩PCDN，解决访问视频卡顿问题
-    '+.mcdn.bilivideo.com': ['0.0.0.0'],
+    // 屏蔽哔哩哔哩PCDN，解决访问视频/直播卡顿问题
     '+.mcdn.bilivideo.cn': ['0.0.0.0'],
     '+.edge.mountaintoys.cn': ['0.0.0.0'],
+    '+.h2.smtcdns.net': ['0.0.0.0'],
 
     // 保留机场用于节点解析的 hosts
     ...proxyServerHosts,
