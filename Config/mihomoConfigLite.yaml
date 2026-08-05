@@ -68,6 +68,18 @@ proxies:
   - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
   - { name: '🇨🇳 直连 | 双栈', type: direct }
 
+# Tailscale 出站节点（将 auth-key 替换为你自己的 Tailscale Auth Key）
+  - name: TAILSCALE
+    type: tailscale
+    hostname: flclash-android
+    auth-key: tskey-auth-xxxx # 此处填入你的 Tailscale Auth Key
+    control-url: https://controlplane.tailscale.com
+    state-dir: ./tailscale
+    ephemeral: false
+    udp: true
+    accept-routes: true
+    ip-version: ipv4-prefer
+
 # 国内外 DNS 定义
 chinaDNS:
   &chinaDNS [
@@ -373,6 +385,16 @@ proxy-groups:
     url: 'https://connectivitycheck.platform.hicloud.com/generate_204'
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png'
 
+  # Tailscale 策略组
+  - name: 'Tailscale'
+    <<: *group_common_select
+    proxies:
+      [
+        'TAILSCALE',
+        '直连',
+      ]
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Network.png'
+
   # 定义地区策略组
   - name: '香港'
     <<: [*group_common_select, *HK_filter]
@@ -440,6 +462,11 @@ proxy-groups:
 
 # --- 路由规则 (Rules) ---
 rules:
+  # Tailscale 网段优先（置于最前）
+  - IP-CIDR,100.64.0.0/10,Tailscale,no-resolve
+  - IP-CIDR,100.100.100.100/32,Tailscale,no-resolve
+  - DOMAIN-SUFFIX,ts.net,Tailscale
+
   # 私有网络直连
   - RULE-SET,private,直连
   - RULE-SET,private_ip,直连,no-resolve
