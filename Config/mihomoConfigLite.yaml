@@ -68,7 +68,7 @@ proxies:
   - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
   - { name: '🇨🇳 直连 | 双栈', type: direct }
 
-# Tailscale 出站节点（将 auth-key 替换为你自己的 Tailscale Auth Key）
+  # Tailscale 出站节点（将 auth-key 替换为你自己的 Tailscale Auth Key）
   - name: TAILSCALE
     type: tailscale
     hostname: flclash-android
@@ -388,11 +388,7 @@ proxy-groups:
   # Tailscale 策略组
   - name: 'Tailscale'
     <<: *group_common_select
-    proxies:
-      [
-        'TAILSCALE',
-        '直连',
-      ]
+    proxies: ['TAILSCALE', '直连']
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Network.png'
 
   # 定义地区策略组
