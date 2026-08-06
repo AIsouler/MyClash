@@ -220,6 +220,21 @@ function hostsWildcardSubscription() {
   };
 }
 
+/** hosts 链式映射场景：节点域名 a → b → 最终 IP，中继条目应逐级解析生效 */
+function hostsChainSubscription() {
+  return {
+    hosts: {
+      'node-a1b2c3.example-node.biz': 'node-b1b2c3.example-apt.com',
+      'node-b1b2c3.example-apt.com': '10.0.0.88',
+      'www.unrelated.com': '10.0.0.9',
+    },
+    proxies: [
+      { name: '🇭🇰 香港 A', type: 'ss', server: 'hk1.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '🇺🇸 美国 B', type: 'vmess', server: 'node-a1b2c3.example-node.biz', port: 443, uuid: 'x', alterId: 0 },
+    ],
+  };
+}
+
 module.exports = {
   typicalSubscription,
   minimalSubscription,
@@ -228,4 +243,5 @@ module.exports = {
   allFilteredSubscription,
   hostsMappedSubscription,
   hostsWildcardSubscription,
+  hostsChainSubscription,
 };

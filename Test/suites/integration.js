@@ -180,6 +180,13 @@ function runIntegrationTests(h, api, meta, fx) {
     h.assertEqual(p.server, 'node-a1b2c3.example-apt.com', '节点 server 应改写为 hosts 映射的目标域名');
     h.assert(!('node-a1b2c3.example-node.biz' in out.hosts), '映射后的节点 hosts 不应复制到新配置');
   });
+  h.test('hosts 链式映射改写为最终目标', () => {
+    const out = api.main(fx.hostsChainSubscription());
+    const p = out.proxies.find((x) => x.name === '🇺🇸 美国 B');
+    h.assertEqual(p.server, '10.0.0.88', '链式映射应逐级解析到最终目标');
+    h.assert(!('node-a1b2c3.example-node.biz' in out.hosts), '映射后的节点 hosts 不应复制到新配置');
+    h.assert(!('node-b1b2c3.example-apt.com' in out.hosts), '中继 hosts 不应复制到新配置');
+  });
   h.test('hosts 精确映射优先于通配映射', () => {
     const out = api.main(fx.hostsWildcardSubscription());
     const p = out.proxies.find((x) => x.name === '🇭🇰 香港 A');

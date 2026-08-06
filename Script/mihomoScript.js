@@ -1090,35 +1090,43 @@ function hostSpecificity(pattern) {
 }
 
 /**
- * 根据订阅 hosts 映射改写节点 server，改写后无需再复制 hosts 进新配置
+ * 根据订阅 hosts 映射改写节点 server，改写后无需再复制 hosts 进新配置。
+ * 支持链式映射（如 a: b、b: c 时节点 a 改写为 c）；
+ * 回环映射（a: b、b: a）由内核校验拒绝，此处仅以已访问集合防御性终止
  */
-function applyHostsToProxies(proxies, hosts, originalProxyDomains) {
+function applyHostsToProxies(proxies, hosts) {
   if (!hosts || typeof hosts !== 'object') return proxies;
 
-  // 仅保留与节点域名相关的 hosts 条目（键命中节点域名的才可能参与改写），
-  // 并按匹配优先级排序（精确映射优先于通配映射）
+  // 全部有效条目按匹配优先级排序（链式解析需保留中继条目，故不按节点域名预过滤）
   const hostEntries = Object.entries(hosts)
     .filter(
-      ([domain, value]) =>
-        matchDomainPattern(domain, originalProxyDomains) &&
-        ((typeof value === 'string' && value.length > 0) || (Array.isArray(value) && value.length > 0)),
+      ([, value]) => (typeof value === 'string' && value.length > 0) || (Array.isArray(value) && value.length > 0),
     )
     .sort((a, b) => hostSpecificity(b[0]) - hostSpecificity(a[0]));
 
-  // 无相关 hosts 条目时直接返回，避免不必要的遍历
+  // 无任何有效条目时直接返回，避免不必要的遍历
   if (hostEntries.length === 0) return proxies;
 
-  // 解析单个节点域名
+  // 取映射目标（数组取首个非空字符串），无有效目标时返回 null
+  const targetOf = (value) => {
+    if (Array.isArray(value)) value = value.find((v) => typeof v === 'string' && v.length > 0);
+    return typeof value === 'string' && value.length > 0 ? value : null;
+  };
+
+  // 解析单个节点域名：沿链式映射逐级改写至最终目标，无匹配时原样返回
   const resolve = (server) => {
-    const domains = new Set([server.toLowerCase()]);
-    for (const [domain, value] of hostEntries) {
-      if (!matchDomainPattern(domain, domains)) continue;
-      const candidate = Array.isArray(value) ? value[0] : value;
-      if (typeof candidate === 'string' && candidate.length > 0) {
-        return candidate;
-      }
+    const seen = new Set();
+    let current = server.toLowerCase();
+    let result = server;
+    while (!seen.has(current)) {
+      seen.add(current);
+      const entry = hostEntries.find(([pattern]) => matchDomainPattern(pattern, new Set([current])));
+      const target = entry && targetOf(entry[1]);
+      if (!target) break;
+      result = target;
+      current = target.toLowerCase();
     }
-    return server;
+    return result;
   };
 
   return proxies.map((proxy) => {
@@ -1168,7 +1176,7 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   );
 
   // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
-  const mappedProxies = applyHostsToProxies(filteredProxies, config.hosts, originalProxyDomains);
+  const mappedProxies = applyHostsToProxies(filteredProxies, config.hosts);
 
   // 映射后的节点地址域名（改写后）
   const mappedProxyDomains = new Set(

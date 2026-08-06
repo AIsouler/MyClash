@@ -42,7 +42,7 @@ npm --prefix Test install
 ### 单元测试（纯函数）
 
 - `matchDomainPattern`：精确 / `+.` / `.` / `*.` / 中间通配符、大小写
-- `applyHostsToProxies`：hosts 映射改写节点 server（精确/通配/数组取值/优先级，单层替换）
+- `applyHostsToProxies`：hosts 映射改写节点 server（精确/通配/数组取值/优先级/链式映射，回环映射防御性终止）
 - `stripDnsSuffix`：# 策略组后缀处理（#direct 或 #direct&参数 整条保留，direct 后接其他字符仍剥离）
 - `getMatchedRegions`：香港 / 日本 / 美国 / 新加坡 / 台湾省（全量版）以及低/高倍率匹配
 - `normalizeProxyName`：自动补国旗、折叠空格、保持原名
@@ -66,7 +66,7 @@ Test/
 ├── lib/
 │   ├── loader.js           # vm 沙箱加载脚本并暴露 main / 内部函数 / ruleOptionsEnable
 │   ├── harness.js          # 轻量断言与 ✓/✗ 输出、汇总
-│   ├── fixtures.js         # 模拟订阅配置（典型/精简/空/仅type过滤/全部可过滤/hosts映射/通配映射）
+│   ├── fixtures.js         # 模拟订阅配置（典型/精简/空/仅type过滤/全部可过滤/hosts映射/通配映射/链式映射）
 │   ├── scripts.js          # 待测试脚本列表（单一来源，供 run-tests / 两个检查模块共用）
 │   ├── es2020-check.js     # ES2020 兼容性检查逻辑（espree 语法 + 内置 API 静态扫描）
 │   └── quickjs-check.js    # QuickJS 兼容性验证逻辑（语法解析/顶层执行/main 调用）

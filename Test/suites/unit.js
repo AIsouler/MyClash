@@ -67,13 +67,8 @@ function runUnitTests(h, api, meta) {
   h.test('无引用字段 → 原样返回', () => h.assertEqual(api.fixDialerProxy({ name: 'x' }, ...fixArgs).name, 'x'));
 
   h.section('单元测试 · applyHostsToProxies（hosts 映射改写节点 server）');
-  // 与 buildDnsAndHostsConfig 调用方式一致：由调用方传入节点原始域名集合
-  const apply = (proxies, hosts) =>
-    api.applyHostsToProxies(
-      proxies,
-      hosts,
-      new Set(proxies.filter((p) => typeof p.server === 'string').map((p) => p.server.toLowerCase())),
-    );
+  // 与 buildDnsAndHostsConfig 调用方式一致
+  const apply = (proxies, hosts) => api.applyHostsToProxies(proxies, hosts);
   const mkProxy = (server) => ({ name: 'x', server });
   h.test('精确映射改写为字符串', () => {
     const out = apply([mkProxy('node.example.com')], { 'node.example.com': '1.2.3.4' });
@@ -92,9 +87,24 @@ function runUnitTests(h, api, meta) {
     const out = apply([mkProxy('hk1.example.com')], { '+.example.com': '9.9.9.9', 'hk1.example.com': '1.1.1.1' });
     h.assertEqual(out[0].server, '1.1.1.1');
   });
-  h.test('映射目标为域名时仅做单层替换', () => {
+  h.test('链式映射逐级改写至最终目标', () => {
     const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.example.com', 'b.example.com': '1.2.3.4' });
+    h.assertEqual(out[0].server, '1.2.3.4');
+  });
+  h.test('链式映射中继可跨通配条目', () => {
+    const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.other.com', '+.other.com': '9.9.9.9' });
+    h.assertEqual(out[0].server, '9.9.9.9');
+  });
+  h.test('链式映射中途无后继时仅单层改写', () => {
+    const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.example.com' });
     h.assertEqual(out[0].server, 'b.example.com');
+  });
+  h.test('回环映射防御性终止（内核会拒绝此类配置）', () => {
+    const out = apply([mkProxy('a.example.com')], {
+      'a.example.com': 'b.example.com',
+      'b.example.com': 'a.example.com',
+    });
+    h.assert(['a.example.com', 'b.example.com'].includes(out[0].server), '回环映射不应死循环');
   });
   h.test('无 hosts 时节点原样保留', () => {
     const p = [mkProxy('a.example.com')];
@@ -117,6 +127,10 @@ function runUnitTests(h, api, meta) {
   h.test('大小写不敏感匹配', () => {
     const out = apply([mkProxy('NODE.Example.COM')], { 'node.example.com': '1.2.3.4' });
     h.assertEqual(out[0].server, '1.2.3.4');
+  });
+  h.test('无匹配时保留原 server（含大小写）', () => {
+    const out = apply([mkProxy('NODE.Example.COM')], { 'cdn.unrelated.com': '1.1.1.1' });
+    h.assertEqual(out[0].server, 'NODE.Example.COM');
   });
   h.test('*.通配映射命中同层级子域', () => {
     const out = apply([mkProxy('a.example.com'), mkProxy('a.b.example.com')], { '*.example.com': '9.9.9.9' });
