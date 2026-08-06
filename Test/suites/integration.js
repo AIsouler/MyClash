@@ -114,6 +114,28 @@ function runIntegrationTests(h, api, meta, fx) {
       'https://private.example-dns.com/dns-query',
     ]);
   });
+  h.test('私有 DNS 的 #direct 后缀被保留（忽略大小写）', () => {
+    const cfg = fx.typicalSubscription();
+    cfg.dns['nameserver'] = ['https://private.example-dns.com/dns-query#direct'];
+    cfg.dns['proxy-server-nameserver-policy']['hk1.example.com'] = ['https://private.example-dns.com/dns-query#DIRECT'];
+    const out = api.main(cfg);
+    h.assert(
+      out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query#direct'),
+      '应保留 #direct 后缀',
+    );
+    h.assertDeep(out.dns['proxy-server-nameserver-policy']['hk1.example.com'], [
+      'https://private.example-dns.com/dns-query#DIRECT',
+    ]);
+  });
+  h.test('私有 DNS 的 #direct&参数 后缀被整条保留', () => {
+    const cfg = fx.typicalSubscription();
+    cfg.dns['nameserver'] = ['https://private.example-dns.com/dns-query#direct&ecs=2.2.2.2'];
+    const out = api.main(cfg);
+    h.assert(
+      out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query#direct&ecs=2.2.2.2'),
+      '应整条保留 #direct 及附加参数',
+    );
+  });
   h.test('节点域名对应 nameserver-policy 被保留', () => {
     const out = api.main(fx.typicalSubscription());
     h.assertDeep(out.dns['proxy-server-nameserver-policy'], {
@@ -246,6 +268,17 @@ function runIntegrationTests(h, api, meta, fx) {
       h.assert(!out.rules.some((r) => r.includes('DST-PORT,443') && r.includes('REJECT')), '不应含 QUIC 规则');
     }),
   );
+  h.test('屏蔽国外QUIC=false → 不生成 cn_additional 规则集', () =>
+    withOptions(api, { 屏蔽国外QUIC: false }, () => {
+      const out = api.main(fx.minimalSubscription());
+      h.assert(!out['rule-providers'].cn_additional, 'cn_additional 规则集不应生成');
+      h.assert(out['rule-providers'].cn, 'cn 规则集仍应生成（供 nameserver-policy 使用）');
+    }),
+  );
+  h.test('屏蔽国外QUIC=true → 生成 cn_additional 规则集', () => {
+    const out = api.main(fx.minimalSubscription());
+    h.assert(out['rule-providers'].cn_additional, 'cn_additional 规则集应生成');
+  });
   h.test('关闭 AI 分流组 → 移除组/规则/规则集', () =>
     withOptions(api, { AI: false }, () => {
       const out = api.main(fx.minimalSubscription());

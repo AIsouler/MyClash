@@ -84,7 +84,9 @@ const directProxies = [
 const lowRateRegionName = '低倍率节点';
 const highRateRegionName = '高倍率节点';
 
-// 判断是否为倍率节点策略组
+/**
+ * 判断是否为倍率节点策略组
+ */
 function isRateRegion(regionName) {
   return regionName === lowRateRegionName || regionName === highRateRegionName;
 }
@@ -346,6 +348,9 @@ const serviceConfigs = [
 
 // ---判断域名规则是否匹配节点域名---
 
+/**
+ * 判断域名规则（精确/通配）是否匹配节点域名集合，忽略大小写
+ */
 function matchDomainPattern(pattern, domains) {
   pattern = pattern.toLowerCase();
 
@@ -384,6 +389,9 @@ function matchDomainPattern(pattern, domains) {
 
 const regionMatchCache = new Map();
 
+/**
+ * 获取节点名称匹配的地区策略组列表
+ */
 function getMatchedRegions(proxyName) {
   if (regionMatchCache.has(proxyName)) {
     return regionMatchCache.get(proxyName);
@@ -395,9 +403,13 @@ function getMatchedRegions(proxyName) {
   return regions;
 }
 
-// ---节点名称标准化---
+// ---节点过滤、重命名及验证---
 
 const flagRegex = /[\u{1F1E6}-\u{1F1FF}]{2}/u;
+
+/**
+ * 标准化节点名称：补全地区国旗、折叠多余空格，并预缓存匹配结果
+ */
 function normalizeProxyName(proxy) {
   const originalName = proxy.name;
 
@@ -407,7 +419,6 @@ function normalizeProxyName(proxy) {
   // 移除国旗和多余空格
   const nameWithoutFlag = originalName.replace(flagRegex, '').replace(/\s+/g, ' ').trim();
 
-  // 一次计算地区匹配结果，供国旗提取与缓存复用，避免重复执行正则
   const matchedRegions = getMatchedRegions(originalName);
 
   // 如果已有国旗则直接使用原国旗
@@ -423,9 +434,9 @@ function normalizeProxyName(proxy) {
   return normalizedName === originalName ? proxy : { ...proxy, name: normalizedName };
 }
 
-// ---节点过滤、重命名及验证---
-
-// 修复 dialer-proxy 引用：节点被重命名或移除后，更新/删除引用，避免内核报错
+/**
+ * 修复 dialer-proxy 引用：目标被重命名则更新，被移除或不存在则删除引用
+ */
 function fixDialerProxy(proxy, renameMap, normalizedProxyNames) {
   const target = proxy['dialer-proxy'];
   if (!target) return proxy;
@@ -446,6 +457,9 @@ function fixDialerProxy(proxy, renameMap, normalizedProxyNames) {
   return copy;
 }
 
+/**
+ * 过滤并标准化节点：剔除内置/信息节点、按配置过滤、去重、修复 dialer-proxy 引用，空列表时抛错
+ */
 function filterAndNormalizeProxies(config) {
   // 清空缓存，避免上次运行残留的旧名称
   regionMatchCache.clear();
@@ -463,10 +477,8 @@ function filterAndNormalizeProxies(config) {
 
     if (highRateRegex?.test(proxy.name)) return false;
 
-    // 未开启地区过滤时无需计算地区匹配
     if (!ruleOptionsEnable.过滤非地区节点) return true;
 
-    // 一次计算地区匹配结果，供过滤判断复用，避免重复调用
     const matchedRegions = getMatchedRegions(proxy.name);
     const isRegionProxy = matchedRegions.some(({ name }) => !isRateRegion(name));
 
@@ -516,6 +528,9 @@ function filterAndNormalizeProxies(config) {
 
 // ---构建地区组和倍率组---
 
+/**
+ * 构建地区策略组，可附带自动选择组
+ */
 function createRegionGroup(name, icon, proxies) {
   if (ruleOptionsEnable.生成地区自动选择组) {
     const urlTestName = `${name}-自动选择`;
@@ -545,6 +560,9 @@ function createRegionGroup(name, icon, proxies) {
   ];
 }
 
+/**
+ * 将节点按地区归类，构建地区策略组与“其他节点”组
+ */
 function buildRegionGroups(filteredProxies) {
   // 节点分类
   const regionGroups = Object.fromEntries(regionDefinitions.map(({ name }) => [name, []]));
@@ -565,7 +583,7 @@ function buildRegionGroups(filteredProxies) {
     }
   }
 
-  // 构建地区策略组（生成倍率组=false 时跳过低倍率/高倍率组，节点仍按地区或“其他节点”归类）
+  // 构建地区策略组
   const generatedRegionGroups = regionDefinitions
     .filter((r) => regionGroups[r.name].length > 0 && (ruleOptionsEnable.生成倍率组 || !isRateRegion(r.name)))
     .flatMap((r) => createRegionGroup(r.name, r.icon, regionGroups[r.name]));
@@ -585,10 +603,18 @@ function buildRegionGroups(filteredProxies) {
 
 // ---构建基础策略组和分流策略组---
 
+/**
+ * 构建基础/分流策略组、GLOBAL 组与规则集，并汇总分流规则
+ */
 function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
   const functionalGroups = [];
   const functionalRules = [];
   const finalRuleProviders = { ...baseRuleProviders };
+
+  // cn_additional 规则集仅服务于 “屏蔽国外QUIC” 规则，关闭该选项时无需生成
+  if (!ruleOptionsEnable.屏蔽国外QUIC) {
+    delete finalRuleProviders.cn_additional;
+  }
 
   // 获取所有节点名称
   const allProxiesNames = filteredProxies.map((p) => p.name);
@@ -744,7 +770,9 @@ const commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^
 const chinaDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
 const foreignDNS = ['https://dns.cloudflare.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理'];
 
-// hosts 匹配优先级：精确 > +. > . > *（同级按出现顺序）
+/**
+ * hosts 匹配优先级：精确 > +. > . > *（同级按出现顺序）
+ */
 function hostSpecificity(pattern) {
   if (pattern.startsWith('+.')) return 2;
   if (pattern.startsWith('.')) return 1;
@@ -752,9 +780,9 @@ function hostSpecificity(pattern) {
   return 3;
 }
 
-// 根据订阅 hosts 将节点 server 改写为映射后的地址（域名或 IP）
-// 部分机场通过 hosts 把节点域名映射到实际地址（如 "node.example.com": "real.example-apt.com" 或 IP），
-// 直接改写 server 后即无需再把机场 hosts 复制进新配置
+/**
+ * 根据订阅 hosts 映射改写节点 server，改写后无需再复制 hosts 进新配置
+ */
 function applyHostsToProxies(proxies, hosts, originalProxyDomains) {
   if (!hosts || typeof hosts !== 'object') return proxies;
 
@@ -791,13 +819,24 @@ function applyHostsToProxies(proxies, hosts, originalProxyDomains) {
   });
 }
 
-// 剥离 DNS 地址的 # 策略组后缀（如 https://xxx/dns-query#proxy → https://xxx/dns-query）
-// 订阅中的 DNS 常带 #策略组 后缀，而对应策略组在新配置中可能不存在，
-// 保留会导致内核报错，因此统一剥离
+/**
+ * 剥离 DNS 地址的 # 策略组后缀；# 后为 direct（忽略大小写，可带 & 参数）时整条保留，
+ * 避免误保留 directxxx 等策略组名引用
+ */
 function stripDnsSuffix(dns) {
-  return String(dns).split('#')[0];
+  const str = String(dns);
+  const hashIndex = str.indexOf('#');
+  if (hashIndex === -1) return str;
+
+  const suffix = str.slice(hashIndex + 1).toLowerCase();
+  if (suffix === 'direct' || suffix.startsWith('direct&')) return str;
+
+  return str.slice(0, hashIndex);
 }
 
+/**
+ * 构建 DNS 与 hosts：保留私有 DNS、节点域名 policy/fake-ip-filter，并按 hosts 改写节点 server
+ */
 function buildDnsAndHostsConfig(config, filteredProxies) {
   // 读取订阅中的 DNS 配置，保留订阅中的私有 DNS
   // 用以解决部分机场使用私有 DNS 导致无法解析节点的问题
@@ -892,6 +931,9 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
 
 // --- 主入口 ---
 
+/**
+ * 主入口：覆写机场订阅配置，生成完整 mihomo 配置
+ */
 function main(config) {
   const newConfig = {};
 

@@ -43,6 +43,7 @@ npm --prefix Test install
 
 - `matchDomainPattern`：精确 / `+.` / `.` / `*.` / 中间通配符、大小写
 - `applyHostsToProxies`：hosts 映射改写节点 server（精确/通配/数组取值/优先级，单层替换）
+- `stripDnsSuffix`：# 策略组后缀处理（#direct 或 #direct&参数 整条保留，direct 后接其他字符仍剥离）
 - `getMatchedRegions`：香港 / 日本 / 美国 / 新加坡 / 台湾省（全量版）以及低/高倍率匹配
 - `normalizeProxyName`：自动补国旗、折叠空格、保持原名
 - `fixDialerProxy`：重命名引用更新、引用目标不存在时移除、未变引用保留
@@ -52,7 +53,7 @@ npm --prefix Test install
 - 节点过滤（DIRECT/REJECT/rematch/信息节点）、标准化补国旗、dialer-proxy 修复
 - GLOBAL 策略组聚合所有策略组
 - DNS 与 hosts（私有 DNS 保留、公共 DNS 过滤、节点域名 policy/fake-ip-filter 保留、hosts 映射改写 server）
-- 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 分流组添加所有节点 / QUIC / 关闭分流组）
+- 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 分流组添加所有节点 / QUIC 及 cn_additional 规则集 / 关闭分流组）
 - 异常场景（空节点、仅 DIRECT/REJECT/rematch 类型、全部可过滤节点 → 抛错）
 
 ## 文件结构

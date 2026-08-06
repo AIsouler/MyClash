@@ -123,6 +123,36 @@ function runUnitTests(h, api, meta) {
     h.assertEqual(out[0].server, '9.9.9.9');
     h.assertEqual(out[1].server, 'a.b.example.com');
   });
+
+  h.section('单元测试 · stripDnsSuffix（DNS # 策略组后缀处理）');
+  h.test('无 # 后缀 → 原样返回', () =>
+    h.assertEqual(api.stripDnsSuffix('https://dns.example.com/dns-query'), 'https://dns.example.com/dns-query'),
+  );
+  h.test('非 direct 开头后缀 → 剥离', () =>
+    h.assertEqual(api.stripDnsSuffix('https://dns.example.com/dns-query#proxy'), 'https://dns.example.com/dns-query'),
+  );
+  h.test('#direct / #DIRECT 后缀 → 保留（忽略大小写）', () => {
+    h.assertEqual(
+      api.stripDnsSuffix('https://dns.example.com/dns-query#direct'),
+      'https://dns.example.com/dns-query#direct',
+    );
+    h.assertEqual(
+      api.stripDnsSuffix('https://dns.example.com/dns-query#DIRECT'),
+      'https://dns.example.com/dns-query#DIRECT',
+    );
+  });
+  h.test('#direct&ecs 参数后缀 → 整条保留', () =>
+    h.assertEqual(
+      api.stripDnsSuffix('https://dns.example.com/dns-query#direct&ecs=2.2.2.2'),
+      'https://dns.example.com/dns-query#direct&ecs=2.2.2.2',
+    ),
+  );
+  h.test('#directxxx 后缀 → 剥离（词边界）', () =>
+    h.assertEqual(
+      api.stripDnsSuffix('https://dns.example.com/dns-query#directxxx'),
+      'https://dns.example.com/dns-query',
+    ),
+  );
 }
 
 module.exports = { runUnitTests };
