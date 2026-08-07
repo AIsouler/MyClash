@@ -683,8 +683,8 @@ function normalizeProxyName(proxy) {
   // 提取节点原有国旗
   const flag = originalName.match(flagRegex)?.[0];
 
-  // 移除国旗和多余空格
-  const nameWithoutFlag = originalName.replace(flagRegex, '').replace(/\s+/g, ' ').trim();
+  // 有国旗时移除国旗，再移除多余空格
+  const nameWithoutFlag = (flag ? originalName.replace(flag, '') : originalName).replace(/\s+/g, ' ').trim();
 
   const matchedRegions = getMatchedRegions(originalName);
 
@@ -713,7 +713,7 @@ function fixDialerProxy(proxy, renameMap, normalizedProxyNames) {
     return { ...proxy, 'dialer-proxy': renameMap.get(target) };
   }
 
-  // 目标节点存活且未重命名 → 引用依然有效
+  // 目标节点被保留且未重命名 → 引用依然有效
   if (normalizedProxyNames.has(target)) {
     return proxy;
   }
@@ -755,35 +755,26 @@ function filterAndNormalizeProxies(config) {
   // 重命名映射：原名称 -> 标准化后的名称
   const renameMap = new Map();
 
-  // 标准化节点名称
-  const normalizedProxies = filteredRawProxies.map((proxy) => {
-    const normalized = normalizeProxyName(proxy);
-    if (normalized.name !== proxy.name) {
-      renameMap.set(proxy.name, normalized.name);
+  // 标准化节点名称并去重（保留首个同名节点）
+  const normalizedProxies = [];
+  const uniqueNames = new Set();
+
+  for (const rawProxy of filteredRawProxies) {
+    const normalized = normalizeProxyName(rawProxy);
+    if (normalized.name !== rawProxy.name) {
+      renameMap.set(rawProxy.name, normalized.name);
     }
-    return normalized;
-  });
-
-  // 检测是否有同名节点，无重名时跳过去重直接复用
-  const hasDuplicateNames = new Set(normalizedProxies.map((p) => p.name)).size !== normalizedProxies.length;
-
-  // 去重：仅在有重名时执行，保留首个同名节点，避免配置冲突
-  let deduplicatedProxies = normalizedProxies;
-  if (hasDuplicateNames) {
-    deduplicatedProxies = [];
-    const uniqueNames = new Set();
-    for (const proxy of normalizedProxies) {
-      if (uniqueNames.has(proxy.name)) continue;
-      uniqueNames.add(proxy.name);
-      deduplicatedProxies.push(proxy);
+    if (!uniqueNames.has(normalized.name)) {
+      uniqueNames.add(normalized.name);
+      normalizedProxies.push(normalized);
     }
   }
 
   // 标准化后的节点名称集合（用于判断 dialer-proxy 引用目标是否仍有效）
-  const normalizedProxyNames = new Set(deduplicatedProxies.map((p) => p.name));
+  const normalizedProxyNames = new Set(normalizedProxies.map((p) => p.name));
 
   // 修复 dialer-proxy 引用
-  const filteredProxies = deduplicatedProxies.map((proxy) => fixDialerProxy(proxy, renameMap, normalizedProxyNames));
+  const filteredProxies = normalizedProxies.map((proxy) => fixDialerProxy(proxy, renameMap, normalizedProxyNames));
 
   // 验证节点列表是否存在代理节点
   if (!filteredProxies.length) {
@@ -1054,11 +1045,11 @@ function matchDomainPattern(pattern, domains) {
 
   // 精确匹配
   if (!pattern.includes('*') && !pattern.startsWith('+.') && !pattern.startsWith('.')) {
-    return domains.has(pattern);
+    return typeof domains === 'string' ? domains.toLowerCase() === pattern : domains.has(pattern);
   }
 
-  // 通配匹配前统一转为数组，避免重复转换
-  const domainList = [...domains];
+  // 通配匹配：统一转为数组遍历（字符串时直接构建单元素数组，避免 Set 中转）
+  const domainList = typeof domains === 'string' ? [domains.toLowerCase()] : [...domains];
 
   // +.example.com
   if (pattern.startsWith('+.')) {
@@ -1114,7 +1105,7 @@ function applyHostsToProxies(proxies, hosts) {
     let result = server;
     while (!seen.has(current)) {
       seen.add(current);
-      const entry = hostEntries.find(([pattern]) => matchDomainPattern(pattern, new Set([current])));
+      const entry = hostEntries.find(([pattern]) => matchDomainPattern(pattern, current));
       const target = entry && targetOf(entry[1]);
       if (!target) break;
       result = target;
@@ -1181,16 +1172,19 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   const proxyDomains = new Set([...originalProxyDomains, ...mappedProxyDomains]);
 
   // 提取节点域名对应的 DNS 配置（剥离 # 策略组后缀）
-  const proxyServerPolicy = Object.fromEntries(
-    [originalDnsConfig['nameserver-policy'] || {}, originalDnsConfig['proxy-server-nameserver-policy'] || {}]
-      .flatMap(Object.entries)
-      .filter(([domain]) => matchDomainPattern(domain, proxyDomains))
-      .map(([domain, dns]) => [
-        domain,
-        Array.isArray(dns) ? dns.map(stripDnsSuffix).filter((d) => d.length > 0) : stripDnsSuffix(dns),
-      ])
-      .filter(([, dns]) => !(Array.isArray(dns) && dns.length === 0)),
-  );
+  const proxyServerPolicy = {};
+  for (const [domain, dns] of Object.entries({
+    ...originalDnsConfig['nameserver-policy'],
+    ...originalDnsConfig['proxy-server-nameserver-policy'],
+  })) {
+    if (!matchDomainPattern(domain, proxyDomains)) continue;
+
+    // 剥离 # 策略组后缀；数组过滤空字符串，空数组视为无效条目
+    const value = Array.isArray(dns) ? dns.map(stripDnsSuffix).filter((d) => d.length > 0) : stripDnsSuffix(dns);
+    if (Array.isArray(value) && value.length === 0) continue;
+
+    proxyServerPolicy[domain] = value;
+  }
 
   // 遍历原配置中的 fake-ip-filter，保留与节点域名匹配的条目
   // 部分机场的节点域名需走真实 IP 解析，避免 fake-ip 导致节点无法连接
