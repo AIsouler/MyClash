@@ -11,6 +11,10 @@ on:
       - '.prettierrc*'
   workflow_dispatch:
 
+concurrency:
+  group: format-and-test
+  cancel-in-progress: true
+
 jobs:
   format:
     permissions:
@@ -28,19 +32,15 @@ jobs:
           node-version: '24'
 
       - name: install tools
-        run: |
-          npm install -g prettier
+        run: npm install -g prettier
 
-      # 格式化 JS（覆写脚本 + Test 测试代码）
       - name: format js files
         run: |
           prettier Script/*.js --write
           prettier "Test/**/*.js" --write
 
-      # 格式化 YAML
       - name: format yaml files
-        run: |
-          prettier "**/*.{yml,yaml}" --write
+        run: prettier "**/*.{yml,yaml}" --write
 
       - name: commit and push changes
         run: |
@@ -61,11 +61,17 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+
+      - name: install dependencies
+        run: npm --prefix Test install
 
       - name: run tests
         run: node Test/run-tests.js
