@@ -1,4 +1,4 @@
-name: check_and_fix_format
+name: format_and_test
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_and_fix:
+  format:
     permissions:
       contents: write
 
@@ -55,6 +55,7 @@ jobs:
           )
 
   test:
+    needs: format
     runs-on: ubuntu-latest
 
     steps:
