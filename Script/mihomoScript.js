@@ -656,52 +656,12 @@ const serviceConfigs = [
   },
 ];
 
-// ---判断域名规则是否匹配节点域名---
+// ---节点过滤、重命名及验证---
 
 /**
- * 判断域名规则（精确/通配）是否匹配节点域名集合，忽略大小写
+ * 节点地区匹配缓存，避免重复执行正则
  */
-function matchDomainPattern(pattern, domains) {
-  pattern = pattern.toLowerCase();
-
-  // 精确匹配
-  if (!pattern.includes('*') && !pattern.startsWith('+.') && !pattern.startsWith('.')) {
-    return domains.has(pattern);
-  }
-
-  // 通配匹配前统一转为数组，避免重复转换
-  const domainList = [...domains];
-
-  // +.example.com
-  if (pattern.startsWith('+.')) {
-    const suffix = pattern.slice(2);
-    return domainList.some((domain) => domain === suffix || domain.endsWith(`.${suffix}`));
-  }
-
-  // .example.com
-  if (pattern.startsWith('.')) {
-    const suffix = pattern.slice(1);
-    return domainList.some((domain) => domain !== suffix && domain.endsWith(`.${suffix}`));
-  }
-
-  // *.example.com、example.*.com 等
-  const patternParts = pattern.split('.');
-  return domainList.some((domain) => {
-    const domainParts = domain.split('.');
-    return (
-      patternParts.length === domainParts.length &&
-      patternParts.every((part, index) => part === '*' || part === domainParts[index])
-    );
-  });
-}
-
-// ---节点地区匹配缓存，避免重复执行正则---
-
 const regionMatchCache = new Map();
-
-/**
- * 获取节点名称匹配的地区策略组列表
- */
 function getMatchedRegions(proxyName) {
   if (regionMatchCache.has(proxyName)) {
     return regionMatchCache.get(proxyName);
@@ -713,13 +673,10 @@ function getMatchedRegions(proxyName) {
   return regions;
 }
 
-// ---节点过滤、重命名及验证---
-
-const flagRegex = /[\u{1F1E6}-\u{1F1FF}]{2}/u;
-
 /**
  * 标准化节点名称：补全地区国旗、折叠多余空格，并预缓存匹配结果
  */
+const flagRegex = /[\u{1F1E6}-\u{1F1FF}]{2}/u;
 function normalizeProxyName(proxy) {
   const originalName = proxy.name;
 
@@ -1087,6 +1044,43 @@ function hostSpecificity(pattern) {
   if (pattern.startsWith('.')) return 1;
   if (pattern.includes('*')) return 0;
   return 3;
+}
+
+/**
+ * 判断域名规则（精确/通配）是否匹配节点域名集合，忽略大小写
+ */
+function matchDomainPattern(pattern, domains) {
+  pattern = pattern.toLowerCase();
+
+  // 精确匹配
+  if (!pattern.includes('*') && !pattern.startsWith('+.') && !pattern.startsWith('.')) {
+    return domains.has(pattern);
+  }
+
+  // 通配匹配前统一转为数组，避免重复转换
+  const domainList = [...domains];
+
+  // +.example.com
+  if (pattern.startsWith('+.')) {
+    const suffix = pattern.slice(2);
+    return domainList.some((domain) => domain === suffix || domain.endsWith(`.${suffix}`));
+  }
+
+  // .example.com
+  if (pattern.startsWith('.')) {
+    const suffix = pattern.slice(1);
+    return domainList.some((domain) => domain !== suffix && domain.endsWith(`.${suffix}`));
+  }
+
+  // *.example.com、example.*.com 等
+  const patternParts = pattern.split('.');
+  return domainList.some((domain) => {
+    const domainParts = domain.split('.');
+    return (
+      patternParts.length === domainParts.length &&
+      patternParts.every((part, index) => part === '*' || part === domainParts[index])
+    );
+  });
 }
 
 /**
