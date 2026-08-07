@@ -1267,13 +1267,14 @@ function main(config) {
   newConfig['bind-address'] = '*';
   newConfig['unified-delay'] = true;
   newConfig['tcp-concurrent'] = true;
+  newConfig['etag-support'] = true;
   newConfig['keep-alive-idle'] = 600;
   newConfig['keep-alive-interval'] = 60;
   newConfig['find-process-mode'] = 'strict';
 
   newConfig['external-controller'] = '127.0.0.1:9090';
   newConfig['external-ui'] = 'ui';
-  newConfig['external-ui-url'] = 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip';
+  newConfig['external-ui-url'] = 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip';
 
   newConfig['profile'] = {
     'store-selected': true,
