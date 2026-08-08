@@ -9,14 +9,22 @@ on:
       - '**/*.yaml'
       - '**/*.yml'
       - '.prettierrc*'
+  pull_request:
+    paths:
+      - 'Script/*'
+      - 'Test/**'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '.prettierrc*'
   workflow_dispatch:
 
 concurrency:
-  group: format-and-test
+  group: format-and-test-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   format:
+    if: github.event_name != 'pull_request'
     permissions:
       contents: write
 
@@ -34,13 +42,9 @@ jobs:
       - name: install tools
         run: npm install -g prettier
 
-      - name: format js files
+      - name: format files
         run: |
-          prettier Script/*.js --write
-          prettier "Test/**/*.js" --write
-
-      - name: format yaml files
-        run: prettier "**/*.{yml,yaml}" --write
+          git ls-files -z '*.js' '*.yml' '*.yaml' | xargs -0 -r prettier --write
 
       - name: commit and push changes
         run: |
@@ -49,20 +53,24 @@ jobs:
 
           git add .
 
-          git diff --cached --quiet || (
+          if git diff --cached --quiet; then
+            echo "no changes to commit"
+          else
             git commit -m "chore: auto format"
             git push
-          )
+          fi
 
   test:
     needs: format
+    if: always() && (needs.format.result == 'success' || needs.format.result == 'skipped')
     runs-on: ubuntu-latest
 
     steps:
       - name: checkout code
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           fetch-depth: 0
 
       - name: setup Node.js
