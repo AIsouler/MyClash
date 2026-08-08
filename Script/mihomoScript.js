@@ -94,17 +94,6 @@ const directProxies = [
   },
 ];
 
-// 倍率节点策略组名称
-const lowRateRegionName = '低倍率节点';
-const highRateRegionName = '高倍率节点';
-
-/**
- * 判断是否为倍率节点策略组
- */
-function isRateRegion(regionName) {
-  return regionName === lowRateRegionName || regionName === highRateRegionName;
-}
-
 // 定义地区策略组
 const regionDefinitions = [
   {
@@ -137,6 +126,13 @@ const regionDefinitions = [
     regex: /🇹🇼|台湾|(?<![A-Za-z])TWN?(?![A-Za-z])|taiwan/i,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Taiwan.png',
   },
+];
+
+// 定义倍率策略组
+const lowRateRegionName = '低倍率节点';
+const highRateRegionName = '高倍率节点';
+
+const rateRegionDefinitions = [
   {
     name: lowRateRegionName,
     regex: /^(?!.*(?:剩|期|客户端|软件)).*(?:(?<!\d)0\.[0-5]|下载|低倍)/,
@@ -149,6 +145,9 @@ const regionDefinitions = [
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Airport.png',
   },
 ];
+
+// 全部策略组定义（地区 + 倍率），统一用于节点匹配与归类
+const allRegionDefinitions = [...regionDefinitions, ...rateRegionDefinitions];
 
 // Rule Providers 通用配置
 const ruleProviderCommonDomain = {
@@ -659,7 +658,7 @@ const serviceConfigs = [
 // ---节点过滤、重命名及验证---
 
 /**
- * 节点地区匹配缓存，避免重复执行正则
+ * 节点匹配缓存，避免重复执行正则
  */
 const regionMatchCache = new Map();
 function getMatchedRegions(proxyName) {
@@ -667,7 +666,7 @@ function getMatchedRegions(proxyName) {
     return regionMatchCache.get(proxyName);
   }
 
-  const regions = regionDefinitions.filter((region) => region.regex.test(proxyName));
+  const regions = allRegionDefinitions.filter((region) => region.regex.test(proxyName));
   regionMatchCache.set(proxyName, regions);
 
   return regions;
@@ -693,7 +692,7 @@ function normalizeProxyName(proxy) {
   const regionFlag = flag || matchedRegions.find((region) => region.flag)?.flag;
   const normalizedName = regionFlag ? `${regionFlag} ${nameWithoutFlag}` : nameWithoutFlag;
 
-  // 预缓存标准化后的节点名称，供后续构建地区策略组复用
+  // 预缓存标准化后的节点名称，供后续构建策略组复用
   if (normalizedName !== originalName) {
     regionMatchCache.set(normalizedName, matchedRegions);
   }
@@ -732,7 +731,7 @@ function filterAndNormalizeProxies(config) {
   regionMatchCache.clear();
 
   const highRateRegex = ruleOptionsEnable.过滤高倍率节点
-    ? regionDefinitions.find((r) => r.name === highRateRegionName)?.regex
+    ? rateRegionDefinitions.find((r) => r.name === highRateRegionName)?.regex
     : null;
 
   const originalProxies = config.proxies || [];
@@ -746,8 +745,7 @@ function filterAndNormalizeProxies(config) {
 
     if (!ruleOptionsEnable.过滤非地区节点) return true;
 
-    const matchedRegions = getMatchedRegions(proxy.name);
-    const isRegionProxy = matchedRegions.some(({ name }) => !isRateRegion(name));
+    const isRegionProxy = getMatchedRegions(proxy.name).some((region) => regionDefinitions.includes(region));
 
     return isRegionProxy || !excludeFilter.test(proxy.name);
   });
@@ -819,31 +817,31 @@ function createRegionGroup(name, icon, proxies) {
 }
 
 /**
- * 将节点按地区归类，构建地区策略组与“其他节点”组
+ * 将节点按地区/倍率归类，构建地区策略组、倍率策略组与“其他节点”组
  */
 function buildRegionGroups(filteredProxies) {
   // 节点分类
-  const regionGroups = Object.fromEntries(regionDefinitions.map(({ name }) => [name, []]));
+  const regionGroups = Object.fromEntries(allRegionDefinitions.map(({ name }) => [name, []]));
   const otherProxies = [];
 
   for (const proxy of filteredProxies) {
-    let matched = false;
+    const matchedRegions = getMatchedRegions(proxy.name);
+    const isRegionProxy = matchedRegions.some((region) => regionDefinitions.includes(region));
 
-    for (const region of getMatchedRegions(proxy.name)) {
+    for (const region of matchedRegions) {
       regionGroups[region.name].push(proxy.name);
-      if (!isRateRegion(region.name)) {
-        matched = true;
-      }
     }
 
-    if (!matched) {
+    if (!isRegionProxy) {
       otherProxies.push(proxy.name);
     }
   }
 
-  // 构建地区策略组
-  const generatedRegionGroups = regionDefinitions
-    .filter((r) => regionGroups[r.name].length > 0 && (ruleOptionsEnable.生成倍率组 || !isRateRegion(r.name)))
+  // 构建 地区/倍率 策略组
+  const generatedRegionGroups = allRegionDefinitions
+    .filter(
+      (r) => regionGroups[r.name].length > 0 && (ruleOptionsEnable.生成倍率组 || !rateRegionDefinitions.includes(r)),
+    )
     .flatMap((r) => createRegionGroup(r.name, r.icon, regionGroups[r.name]));
 
   if (otherProxies.length > 0) {
