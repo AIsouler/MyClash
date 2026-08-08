@@ -10,8 +10,10 @@ function typicalSubscription() {
     mode: 'rule',
     dns: {
       enable: true,
-      nameserver: ['223.5.5.5', 'https://private.example-dns.com/dns-query'],
-      'proxy-server-nameserver': ['8.8.8.8', '1.1.1.1'],
+      // 设置 dns.listen 且 proxy-server-nameserver 仅含一个 DNS 且包含该值，用于触发 hosts 映射改写
+      listen: '198.18.0.1:53',
+      nameserver: ['223.5.5.5', '8.8.8.8', 'https://private.example-dns.com/dns-query'],
+      'proxy-server-nameserver': ['198.18.0.1:53'],
       'proxy-server-nameserver-policy': {
         'hk1.example.com': 'https://private.example-dns.com/dns-query',
         '+.example.com': ['https://other-dns.com/dns-query'],
@@ -170,6 +172,8 @@ function allFilteredSubscription() {
 function hostsMappedSubscription() {
   return {
     dns: {
+      listen: '198.18.0.1:53',
+      'proxy-server-nameserver': ['198.18.0.1:53'],
       'fake-ip-filter': ['+.example-apt.com', '+.unrelated-filter.com'],
     },
     hosts: {
@@ -193,6 +197,10 @@ function hostsMappedSubscription() {
 /** hosts 通配/多值映射场景：精确条目优先于通配条目，数组取值取首个元素 */
 function hostsWildcardSubscription() {
   return {
+    dns: {
+      listen: '198.18.0.1:53',
+      'proxy-server-nameserver': ['198.18.0.1:53'],
+    },
     hosts: {
       '+.premium.example.com': ['9.9.9.9', '9.9.9.8'],
       'hk1.premium.example.com': '1.1.1.1',
@@ -223,6 +231,10 @@ function hostsWildcardSubscription() {
 /** hosts 链式映射场景：节点域名 a → b → 最终 IP，中继条目应逐级解析生效 */
 function hostsChainSubscription() {
   return {
+    dns: {
+      listen: '198.18.0.1:53',
+      'proxy-server-nameserver': ['198.18.0.1:53'],
+    },
     hosts: {
       'node-a1b2c3.example-node.biz': 'node-b1b2c3.example-apt.com',
       'node-b1b2c3.example-apt.com': '10.0.0.88',

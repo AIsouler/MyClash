@@ -89,27 +89,33 @@ function runIntegrationTests(h, api, meta, fx) {
 
   // ---------------- DNS 与 hosts ----------------
   h.section('集成测试 · DNS 与 hosts');
-  h.test('启用 fake-ip 并保留机场私有 DNS', () => {
-    const out = api.main(fx.typicalSubscription());
+  h.test('合并提取 nameserver 与 proxy-server-nameserver 中的私有 DNS', () => {
+    const cfg = fx.typicalSubscription();
+    // 移除 listen 触发条件，避免 listen 地址被当作公共 DNS 过滤干扰本用例
+    delete cfg.dns.listen;
+    cfg.dns['nameserver'] = ['8.8.8.8', 'https://private.example-dns.com/dns-query#proxy'];
+    cfg.dns['proxy-server-nameserver'] = ['223.5.5.5', 'https://private-proxy.example-dns.com/dns-query#proxy'];
+    const out = api.main(cfg);
     h.assertEqual(out.dns.enable, true);
     h.assertEqual(out.dns['enhanced-mode'], 'fake-ip');
+    // 两个来源的私有 DNS 被合并保留（# 策略组后缀被剥离）
     h.assert(
       out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query'),
-      '应保留私有 DNS',
+      '应保留 nameserver 中的私有 DNS',
     );
-    h.assert(!out.dns['proxy-server-nameserver'].includes('223.5.5.5'), '公共 DNS 应被过滤');
-    h.assert(!out.dns['proxy-server-nameserver'].includes('8.8.8.8'), '公共 DNS 应被过滤');
+    h.assert(
+      out.dns['proxy-server-nameserver'].includes('https://private-proxy.example-dns.com/dns-query'),
+      '应保留 proxy-server-nameserver 中的私有 DNS',
+    );
+    // 两个来源的公共 DNS 均被过滤
+    h.assert(!out.dns['proxy-server-nameserver'].includes('8.8.8.8'), 'nameserver 公共 DNS 应被过滤');
+    h.assert(!out.dns['proxy-server-nameserver'].includes('223.5.5.5'), 'proxy-server-nameserver 公共 DNS 应被过滤');
+    h.assert(!out.dns['proxy-server-nameserver'].some((d) => d.includes('#')), '私有 DNS 不应含 # 后缀');
   });
   h.test('私有 DNS 的 # 策略组后缀被剥离', () => {
     const cfg = fx.typicalSubscription();
-    cfg.dns['nameserver'] = ['https://private.example-dns.com/dns-query#proxy'];
     cfg.dns['proxy-server-nameserver-policy']['hk1.example.com'] = ['https://private.example-dns.com/dns-query#proxy'];
     const out = api.main(cfg);
-    h.assert(
-      out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query'),
-      '应剥离 # 后缀并保留私有 DNS',
-    );
-    h.assert(!out.dns['proxy-server-nameserver'].some((d) => d.includes('#')), '私有 DNS 不应含 # 后缀');
     h.assertDeep(out.dns['proxy-server-nameserver-policy']['hk1.example.com'], [
       'https://private.example-dns.com/dns-query',
     ]);
@@ -136,11 +142,20 @@ function runIntegrationTests(h, api, meta, fx) {
       '应整条保留 #direct 及附加参数',
     );
   });
-  h.test('节点域名对应 nameserver-policy 被保留', () => {
-    const out = api.main(fx.typicalSubscription());
+  h.test('节点域名对应 nameserver-policy 与 proxy-server-nameserver-policy 被保留', () => {
+    const cfg = fx.typicalSubscription();
+    // 补充 nameserver-policy 来源，验证其与 proxy-server-nameserver-policy 合并后一起保留
+    cfg.dns['nameserver-policy'] = {
+      'jp1.example.com': 'https://private-ns.example-dns.com/dns-query',
+      'unrelated-ns.com': 'https://foo-ns.com/dns-query',
+    };
+    const out = api.main(cfg);
     h.assertDeep(out.dns['proxy-server-nameserver-policy'], {
+      // 来自 proxy-server-nameserver-policy
       'hk1.example.com': 'https://private.example-dns.com/dns-query',
       '+.example.com': ['https://other-dns.com/dns-query'],
+      // 来自 nameserver-policy
+      'jp1.example.com': 'https://private-ns.example-dns.com/dns-query',
     });
   });
   h.test('节点 hosts 映射改写为 server，不再复制 hosts', () => {
@@ -207,6 +222,37 @@ function runIntegrationTests(h, api, meta, fx) {
     h.assert(!('hk1.premium.example.com' in out.hosts), '映射条目不应出现在 hosts');
     h.assert(!('+.premium.example.com' in out.hosts), '通配映射条目不应出现在 hosts');
     h.assert(!('www.unrelated.com' in out.hosts), '无关 hosts 应被过滤');
+  });
+  h.test('proxy-server-nameserver 长度不为 1 时跳过 hosts 改写', () => {
+    const cfg = fx.typicalSubscription();
+    // 长度不为 1（含多个 DNS，其中一个包含 listen 值）→ 不触发改写
+    cfg.dns['proxy-server-nameserver'] = ['8.8.8.8', '198.18.0.1:53'];
+    const out = api.main(cfg);
+    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p.server, 'hk1.example.com', 'proxy-server-nameserver 长度不为 1 时节点 server 不应被改写');
+  });
+  h.test('proxy-server-nameserver 未包含 dns.listen 时跳过 hosts 改写', () => {
+    const cfg = fx.typicalSubscription();
+    // 长度为 1 但不包含 listen 值 → 不触发改写
+    cfg.dns['proxy-server-nameserver'] = ['8.8.8.8'];
+    const out = api.main(cfg);
+    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p.server, 'hk1.example.com', '未命中触发条件时节点 server 不应被改写');
+  });
+  h.test('未设置 dns.listen 时跳过 hosts 改写', () => {
+    const cfg = fx.typicalSubscription();
+    delete cfg.dns.listen;
+    const out = api.main(cfg);
+    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p.server, 'hk1.example.com', '未设置 dns.listen 时节点 server 不应被改写');
+  });
+  h.test('dns.listen 为空字符串时跳过 hosts 改写', () => {
+    const cfg = fx.typicalSubscription();
+    cfg.dns.listen = '';
+    const out = api.main(cfg);
+    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p.server, 'hk1.example.com', 'listen 为空字符串时节点 server 不应被改写');
+    h.assert(!out.dns['proxy-server-nameserver'].includes(''), '不应将空串当作私有 DNS 保留');
   });
   h.test('无 dns/hosts 输入时生成默认配置', () => {
     const cfg = fx.typicalSubscription();

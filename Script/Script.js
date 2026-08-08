@@ -686,9 +686,6 @@ const commonDnsList = [
   '156.154.70.1',
   '156.154.71.1',
 
-  // 非公共DNS，但部分机场会使用这个
-  '127.0.0.1',
-
   // 关键词（国内）
   'alidns',
   'doh.pub',
@@ -710,7 +707,7 @@ const commonDnsList = [
 ];
 
 // 预编译为单个正则，避免逐个遍历数组进行子串匹配
-const commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+let commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
 
 // 国内外 DNS 定义
 const chinaDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
@@ -833,6 +830,38 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   // 用以解决部分机场使用私有 DNS 导致无法解析节点的问题
   const originalDnsConfig = config.dns || {};
 
+  // 仅当原配置 proxy-server-nameserver 有且仅有一个 DNS，且该 DNS 包含非空的 listen 时，
+  // 才根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP），否则跳过改写
+  const proxyServerNameservers = originalDnsConfig['proxy-server-nameserver'] || [];
+  const shouldRewriteByHosts =
+    proxyServerNameservers.length === 1 &&
+    typeof originalDnsConfig['listen'] === 'string' &&
+    originalDnsConfig['listen'].length > 0 &&
+    proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(originalDnsConfig['listen'].toLowerCase()));
+
+  // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
+  const mappedProxies = shouldRewriteByHosts ? applyHostsToProxies(filteredProxies, config.hosts) : filteredProxies;
+
+  // 原节点域名（改写前）
+  const originalProxyDomains = new Set(
+    filteredProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
+  );
+
+  // 合并改写前/后的节点域名；未执行 hosts 改写时两者一致，直接复用原域名集合避免冗余操作
+  const proxyDomains = shouldRewriteByHosts
+    ? new Set([
+        ...originalProxyDomains,
+        ...mappedProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
+      ])
+    : originalProxyDomains;
+
+  // 命中触发条件时，将 listen 值加入公共 DNS 列表并重建匹配正则，
+  // 使其在私有 DNS 提取时被当作公共 DNS 过滤，避免 listen 地址被误留为私有 DNS
+  if (shouldRewriteByHosts) {
+    commonDnsList.push(String(originalDnsConfig['listen']));
+    commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+  }
+
   const isCommonDns = (dns) => commonDnsRegex.test(String(dns).toLowerCase());
 
   // 提取私有 DNS（先剥离 # 策略组后缀，再判断是否为公共 DNS）
@@ -843,22 +872,6 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
         .filter((dns) => dns.length > 0 && !isCommonDns(dns)),
     ),
   ];
-
-  // 原节点域名（改写前）
-  const originalProxyDomains = new Set(
-    filteredProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
-  );
-
-  // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
-  const mappedProxies = applyHostsToProxies(filteredProxies, config.hosts);
-
-  // 映射后的节点地址域名（改写后）
-  const mappedProxyDomains = new Set(
-    mappedProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
-  );
-
-  // 合并原节点域名与映射后域名
-  const proxyDomains = new Set([...originalProxyDomains, ...mappedProxyDomains]);
 
   // 提取节点域名对应的 DNS 配置（剥离 # 策略组后缀）
   const proxyServerPolicy = {};

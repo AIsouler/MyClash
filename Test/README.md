@@ -52,7 +52,7 @@ npm --prefix Test install
 
 - 节点过滤（DIRECT/REJECT/rematch/信息节点）、标准化补国旗、dialer-proxy 修复
 - GLOBAL 策略组聚合所有策略组
-- DNS 与 hosts（私有 DNS 保留、公共 DNS 过滤、节点域名 policy/fake-ip-filter 保留、hosts 映射改写 server）
+- DNS 与 hosts（私有 DNS 保留、公共 DNS 过滤、节点域名 policy/fake-ip-filter 保留、hosts 映射改写 server；仅当 `proxy-server-nameserver` 有且仅有一个条目且包含 `listen` 值时才触发改写，未命中时跳过改写）
 - 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 分流组添加所有节点 / QUIC 及 cn_additional 规则集 / 关闭分流组）
 - 异常场景（空节点、仅 DIRECT/REJECT/rematch 类型、全部可过滤节点 → 抛错）
 
