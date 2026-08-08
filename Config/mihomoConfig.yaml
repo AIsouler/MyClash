@@ -56,7 +56,6 @@ log-level: info
 bind-address: '*'
 unified-delay: true
 tcp-concurrent: true
-keep-alive-idle: 600
 keep-alive-interval: 60
 find-process-mode: strict
 external-controller: '127.0.0.1:9090'
