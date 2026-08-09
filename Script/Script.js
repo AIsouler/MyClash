@@ -41,7 +41,6 @@ const ruleOptionsEnable = {
 const prefixRules = [
   // 私有网络直连
   'RULE-SET,private,直连',
-  'RULE-SET,private_ip,直连,no-resolve',
 
   // 国内直连
   'RULE-SET,games_cn,直连', // 已包含 steam 下载域名
@@ -1013,6 +1012,7 @@ function main(config) {
     'RULE-SET,gfw,默认代理',
     'RULE-SET,geolocation-cn,直连',
     'RULE-SET,cn_ip,直连',
+    'RULE-SET,private_ip,直连',
     'MATCH,漏网之鱼',
   ];
 
