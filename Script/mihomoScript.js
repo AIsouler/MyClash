@@ -1014,8 +1014,8 @@ const commonDnsList = [
   'system',
 ];
 
-// 预编译为单个正则，避免逐个遍历数组进行子串匹配
-let commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+// 预编译为单个正则，避免逐个遍历数组进行子串匹配；i 标志统一忽略大小写
+let commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
 
 // 国内外 DNS 定义
 const chinaDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
@@ -1039,11 +1039,13 @@ function matchDomainPattern(pattern, domains) {
 
   // 精确匹配
   if (!pattern.includes('*') && !pattern.startsWith('+.') && !pattern.startsWith('.')) {
-    return typeof domains === 'string' ? domains.toLowerCase() === pattern : domains.has(pattern);
+    return typeof domains === 'string'
+      ? domains.toLowerCase() === pattern
+      : [...domains].some((d) => d.toLowerCase() === pattern);
   }
 
   // 通配匹配：统一转为数组遍历（字符串时直接构建单元素数组，避免 Set 中转）
-  const domainList = typeof domains === 'string' ? [domains.toLowerCase()] : [...domains];
+  const domainList = typeof domains === 'string' ? [domains.toLowerCase()] : [...domains].map((d) => d.toLowerCase());
 
   // +.example.com
   if (pattern.startsWith('+.')) {
@@ -1116,7 +1118,7 @@ function applyHostsToProxies(proxies, hosts) {
 }
 
 /**
- * 剥离 DNS 地址的 # 策略组后缀；# 后为 direct（忽略大小写，可带 & 参数）时整条保留，
+ * 剥离 DNS 地址的 # 策略组后缀；# 后为 direct（忽略大小写与首尾空白，可带 & 参数）时整条保留，
  * 避免误保留 directxxx 等策略组名引用
  */
 function stripDnsSuffix(dns) {
@@ -1124,7 +1126,10 @@ function stripDnsSuffix(dns) {
   const hashIndex = str.indexOf('#');
   if (hashIndex === -1) return str;
 
-  const suffix = str.slice(hashIndex + 1).toLowerCase();
+  const suffix = str
+    .slice(hashIndex + 1)
+    .toLowerCase()
+    .trim();
   if (suffix === 'direct' || suffix.startsWith('direct&')) return str;
 
   return str.slice(0, hashIndex);
@@ -1141,11 +1146,12 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   // 仅当原配置 proxy-server-nameserver 有且仅有一个 DNS，且该 DNS 包含非空的 listen 时，
   // 才根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP），否则跳过改写
   const proxyServerNameservers = originalDnsConfig['proxy-server-nameserver'] || [];
+  const listenValue = originalDnsConfig['listen'];
   const shouldRewriteByHosts =
     proxyServerNameservers.length === 1 &&
-    typeof originalDnsConfig['listen'] === 'string' &&
-    originalDnsConfig['listen'].length > 0 &&
-    proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(originalDnsConfig['listen'].toLowerCase()));
+    typeof listenValue === 'string' &&
+    listenValue.length > 0 &&
+    proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(listenValue.toLowerCase()));
 
   // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
   const mappedProxies = shouldRewriteByHosts ? applyHostsToProxies(filteredProxies, config.hosts) : filteredProxies;
@@ -1166,16 +1172,16 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   // 命中触发条件时，将 listen 值加入公共 DNS 列表并重建匹配正则，
   // 使其在私有 DNS 提取时被当作公共 DNS 过滤，避免 listen 地址被误留为私有 DNS
   if (shouldRewriteByHosts) {
-    commonDnsList.push(String(originalDnsConfig['listen']));
-    commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+    commonDnsList.push(String(listenValue));
+    commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
   }
 
-  const isCommonDns = (dns) => commonDnsRegex.test(String(dns).toLowerCase());
+  const isCommonDns = (dns) => commonDnsRegex.test(String(dns));
 
   // 提取私有 DNS（先剥离 # 策略组后缀，再判断是否为公共 DNS）
   const privateDNS = [
     ...new Set(
-      [...(originalDnsConfig['nameserver'] || []), ...(originalDnsConfig['proxy-server-nameserver'] || [])]
+      [...(originalDnsConfig['nameserver'] || []), ...proxyServerNameservers]
         .map(stripDnsSuffix)
         .filter((dns) => dns.length > 0 && !isCommonDns(dns)),
     ),
