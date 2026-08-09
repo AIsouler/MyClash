@@ -44,13 +44,13 @@
 
 复制以下任意一个链接或者复制完整代码后按如图所示步骤导入到代理客户端，以 [Bettbox](https://github.com/appshubcc/Bettbox) 为例
 
-- [mihomoScript.js（全量版）](/Script/mihomoScript.js)
+- [mihomoScript.js（全量版）](/Script/mihomoScript.js)，复制下面这个链接使用👇👇👇
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/mihomoScript.js
 ```
 
-- [Script.js（精简版）](/Script/Script.js) （仅包含少量分流策略组）
+- [Script.js（精简版）](/Script/Script.js)，仅包含少量分流策略组，复制下面这个链接使用👇👇👇
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
@@ -75,13 +75,13 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/Script.js
 
 复制以下任意一个链接或者复制完整代码后导入代理客户端
 
-- [mihomoConfig.yaml（全量版）](/Config/mihomoConfig.yaml)
+- [mihomoConfig.yaml（全量版）](/Config/mihomoConfig.yaml)，复制下面这个链接使用👇👇👇
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfig.yaml
 ```
 
-- [mihomoConfigLite.yaml（精简版）](/Config/mihomoConfigLite.yaml)（仅包含少量分流策略组）
+- [mihomoConfigLite.yaml（精简版）](/Config/mihomoConfigLite.yaml)，仅包含少量分流策略组，复制下面这个链接使用👇👇👇
 
 ```txt
 https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.yaml
