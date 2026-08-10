@@ -90,6 +90,9 @@ const prefixRules = [
 // ];
 const customizeProxies = [];
 
+// 链式代理启用时，自定义节点的 dialer-proxy 引用目标
+const dialerProxyName = '链式中转';
+
 // 定义全局排除节点的正则表达式，用于排除非地区节点
 const excludeFilter =
   /群|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|访问|支持|教程|关注|更新|作者|加入|超时|收藏|福利|邀请|好友|失联|选择|剩余|公益|发布|DIZTNA|通路|登录|禁止|定时|渠道|牢记|永久|余额|阁下|本站|刷新|导航|建议|重置|以下|⚠️|@|\bexpire\b|\bhttps?:\/\/|\.com|\btraffic\b/iu;
@@ -926,8 +929,8 @@ function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies)
 
     let customProxy = name === normalized.name ? normalized : { ...normalized, name };
     // 链式代理启用时强制添加/覆盖 dialer-proxy，使自定义节点经“链式中转”策略组中转
-    if (chainEnabled && customProxy['dialer-proxy'] !== '链式中转') {
-      customProxy = { ...customProxy, 'dialer-proxy': '链式中转' };
+    if (chainEnabled && customProxy['dialer-proxy'] !== dialerProxyName) {
+      customProxy = { ...customProxy, 'dialer-proxy': dialerProxyName };
     }
     customProxies.push(customProxy);
   }
@@ -970,8 +973,11 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
   // 自定义节点信息（未配置自定义节点时为空）
   const { customProxyNames = [], customGroup = null } = customizeInfo || {};
 
+  // 筛选后的节点名称列表（不含自定义节点）
+  const filteredProxyNames = filteredProxies.map((p) => p.name);
+
   // 获取所有节点名称（自定义节点优先，便于在基础策略组中查看）
-  const allProxiesNames = [...customProxyNames, ...filteredProxies.map((p) => p.name)];
+  const allProxiesNames = [...customProxyNames, ...filteredProxyNames];
 
   // 筛选类型为 select 的地区策略组
   const groupNamesOfSelect = generatedRegionGroups.filter((g) => g.type === 'select').map((g) => g.name);
@@ -1064,8 +1070,8 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     chainEnabled && customGroup
       ? {
           ...selectBaseOption,
-          name: '链式中转',
-          proxies: filteredProxies.map((p) => p.name),
+          name: dialerProxyName,
+          proxies: filteredProxyNames,
           icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Bypass.png',
         }
       : null;
