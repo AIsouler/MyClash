@@ -66,6 +66,29 @@ const prefixRules = [
   'DOMAIN-SUFFIX,hdslb.com,直连',
 ];
 
+// 此处添加自定义节点，填入下方[]内（可选，留空则不生成“自建节点”策略组）
+// 自定义节点不参与节点过滤与 hosts 改写；与订阅节点（标准化后）重名时自动添加“自建-”前缀
+// 示例：
+// const customizeProxies = [
+//   {
+//     name: '自建-日本-01',
+//     type: 'vmess',
+//     server: '5.6.7.8',
+//     port: 443,
+//     uuid: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+//     alterId: 0,
+//     cipher: 'auto',
+//     tls: true,
+//     servername: 'example.com',
+//     network: 'ws',
+//     'ws-opts': {
+//       path: '/path',
+//       headers: { Host: 'example.com' },
+//     },
+//   },
+// ];
+const customizeProxies = [];
+
 // 定义全局排除节点的正则表达式，用于排除非地区节点
 const excludeFilter =
   /群|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|访问|支持|教程|关注|更新|作者|加入|超时|收藏|福利|邀请|好友|失联|选择|剩余|公益|发布|DIZTNA|通路|登录|禁止|定时|渠道|牢记|永久|余额|阁下|本站|刷新|导航|建议|重置|以下|⚠️|@|\bexpire\b|\bhttps?:\/\/|\.com|\btraffic\b/iu;
@@ -856,12 +879,59 @@ function buildRegionGroups(filteredProxies) {
   return generatedRegionGroups;
 }
 
+// ---构建自定义节点组---
+
+/**
+ * 处理自定义节点：标准化名称、与订阅节点重名时添加“自建-”前缀、内部去重，
+ * 并构建“自建节点”策略组。
+ * 自定义节点不参与订阅节点过滤，也不参与 hosts 改写及 DNS 域名处理。
+ */
+function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies) {
+  // 未配置自定义节点时直接返回空结果
+  if (!customizeList.length) {
+    return { customProxies: [], customProxyNames: [], customGroup: null };
+  }
+
+  // 订阅节点标准化后的名称集合，用于重名判断
+  const usedNames = new Set(filteredProxies.map((p) => p.name));
+
+  // 标准化自定义节点并解决重名冲突（与订阅节点重名或自定义节点间重名）
+  const customProxies = [];
+  for (const proxy of customizeList) {
+    const normalized = normalizeProxyName(proxy);
+
+    // 重名时添加“自建-”前缀并重新标准化（国旗自动回到最前），直至名称唯一；
+    // 标准化会重建“国旗 + 空格 + 名称”格式，这里去掉前缀“自建-”后多余的空格
+    let name = normalized.name;
+    while (usedNames.has(name)) {
+      name = normalizeProxyName({ name: `自建-${name}` }).name.replace('自建- ', '自建-');
+    }
+    usedNames.add(name);
+
+    customProxies.push(name === normalized.name ? normalized : { ...normalized, name });
+  }
+
+  // “自建节点”策略组
+  const customGroup = {
+    ...selectBaseOption,
+    name: '自建节点',
+    proxies: customProxies.map((p) => p.name),
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Server.png',
+  };
+
+  return {
+    customProxies,
+    customProxyNames: customProxies.map((p) => p.name),
+    customGroup,
+  };
+}
+
 // ---构建基础策略组和分流策略组---
 
 /**
  * 构建基础/分流策略组、GLOBAL 组与规则集，并汇总分流规则
  */
-function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
+function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customizeInfo) {
   const functionalGroups = [];
   const functionalRules = [];
   const finalRuleProviders = { ...baseRuleProviders };
@@ -871,8 +941,11 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
     delete finalRuleProviders.cn_additional;
   }
 
-  // 获取所有节点名称
-  const allProxiesNames = filteredProxies.map((p) => p.name);
+  // 自定义节点信息（未配置自定义节点时为空）
+  const { customProxyNames = [], customGroup = null } = customizeInfo || {};
+
+  // 获取所有节点名称（自定义节点优先，便于在基础策略组中查看）
+  const allProxiesNames = [...customProxyNames, ...filteredProxies.map((p) => p.name)];
 
   // 筛选类型为 select 的地区策略组
   const groupNamesOfSelect = generatedRegionGroups.filter((g) => g.type === 'select').map((g) => g.name);
@@ -880,10 +953,13 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
   // 获取基础策略组名称
   const baseGroupNames = baseGroups.filter((g) => ruleOptionsEnable[g.name]).map((g) => g.name);
 
+  // 自建节点策略组名称（未配置自定义节点时为空数组）
+  const customGroupNames = customGroup ? [customGroup.name] : [];
+
   functionalGroups.push({
     ...selectBaseOption,
     name: '默认代理',
-    proxies: [...groupNamesOfSelect, ...baseGroupNames],
+    proxies: [...groupNamesOfSelect, ...baseGroupNames, ...customGroupNames],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Proxy.png',
   });
 
@@ -911,8 +987,15 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
       groupProxies = ['REJECT', 'REJECT-DROP', 'PASS'];
     } else {
       groupProxies = !ruleOptionsEnable.分流组添加所有节点
-        ? ['默认代理', ...baseGroupNames, ...groupNamesOfSelect, ...(svc.direct ? ['直连'] : [])]
-        : ['默认代理', ...baseGroupNames, ...groupNamesOfSelect, ...allProxiesNames, ...(svc.direct ? ['直连'] : [])];
+        ? ['默认代理', ...customGroupNames, ...baseGroupNames, ...groupNamesOfSelect, ...(svc.direct ? ['直连'] : [])]
+        : [
+            '默认代理',
+            ...customGroupNames,
+            ...baseGroupNames,
+            ...groupNamesOfSelect,
+            ...allProxiesNames,
+            ...(svc.direct ? ['直连'] : []),
+          ];
     }
 
     functionalGroups.push({
@@ -943,6 +1026,11 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups) {
       hidden: ruleOptionsEnable.隐藏地区手动选择组,
     },
   );
+
+  // 添加自建节点策略组（未配置自定义节点时跳过）
+  if (customGroup) {
+    functionalGroups.push(customGroup);
+  }
 
   // 构建 GLOBAL 全局策略组
   const globalGroup = {
@@ -1258,19 +1346,23 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
 function main(config) {
   const newConfig = {};
 
-  // 节点过滤、重命名及验证
+  // 节点过滤、重命名及验证（仅订阅节点）
   const filteredProxies = filterAndNormalizeProxies(config);
+
+  // 处理自定义节点（标准化、解决重名、构建“自建节点”策略组）
+  const { customProxies, customProxyNames, customGroup } = buildCustomizeGroups(filteredProxies);
 
   // 构建地区组和倍率组
   const generatedRegionGroups = buildRegionGroups(filteredProxies);
 
-  // 构建基础策略组和分流策略组
+  // 构建基础策略组和分流策略组（含“自建节点”策略组）
   const { globalGroup, functionalGroups, functionalRules, finalRuleProviders } = buildFunctionalGroups(
     filteredProxies,
     generatedRegionGroups,
+    { customProxyNames, customGroup },
   );
 
-  // dns和hosts相关处理（返回已应用 hosts 映射的节点列表）
+  // dns和hosts相关处理（仅订阅节点参与 hosts 改写，返回已应用 hosts 映射的节点列表）
   const { dns, hosts, proxies: mappedProxies } = buildDnsAndHostsConfig(config, filteredProxies);
 
   newConfig['dns'] = dns;
@@ -1313,7 +1405,7 @@ function main(config) {
     'dns-hijack': ['any:53', 'tcp://any:53'],
   };
 
-  newConfig['proxies'] = [...mappedProxies, ...directProxies];
+  newConfig['proxies'] = [...customProxies, ...mappedProxies, ...directProxies];
   newConfig['proxy-groups'] = [globalGroup, ...functionalGroups, ...generatedRegionGroups];
   newConfig['rule-providers'] = finalRuleProviders;
 

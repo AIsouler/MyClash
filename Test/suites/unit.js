@@ -48,6 +48,51 @@ function runUnitTests(h, api, meta) {
   h.test('多余空格被折叠', () => h.assertEqual(api.normalizeProxyName({ name: '日本  大阪' }).name, '🇯🇵 日本 大阪'));
   h.test('无法识别地区保持原名', () => h.assertEqual(api.normalizeProxyName({ name: '随机' }).name, '随机'));
 
+  h.section('单元测试 · buildCustomizeGroups（自定义节点组）');
+  const mkCustomProxy = (name) => ({
+    name,
+    type: 'ss',
+    server: 'x.example.com',
+    port: 443,
+    cipher: 'aes-256-gcm',
+    password: 'x',
+  });
+  const custom = (...names) => names.map(mkCustomProxy);
+  h.test('未配置自定义节点 → 不生成自建节点组', () => {
+    const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01')], []);
+    h.assert(!r.customGroup, '不应生成自建节点组');
+    h.assertEqual(r.customProxies.length, 0);
+    h.assertEqual(r.customProxyNames.length, 0);
+  });
+  h.test('自定义节点标准化并构建自建节点组', () => {
+    const r = api.buildCustomizeGroups([], custom('香港 自建'));
+    h.assertDeep(r.customProxyNames, ['🇭🇰 香港 自建']);
+    h.assertEqual(r.customGroup.name, '自建节点');
+    h.assertEqual(r.customGroup.type, 'select');
+    h.assertDeep(r.customGroup.proxies, ['🇭🇰 香港 自建']);
+  });
+  h.test('与订阅节点标准化后重名 → 添加自建- 前缀（国旗在前且无多余空格）', () => {
+    const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01 | 中转')], custom('香港 01 | 中转'));
+    h.assertDeep(r.customProxyNames, ['🇭🇰 自建-香港 01 | 中转']);
+  });
+  h.test('未与订阅节点重名 → 保持原名', () => {
+    const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01')], custom('自建独享'));
+    h.assertDeep(r.customProxyNames, ['自建独享']);
+  });
+  h.test('自定义节点间重名 → 前缀去重', () => {
+    const r = api.buildCustomizeGroups([], custom('自建独享', '自建独享'));
+    h.assertEqual(r.customProxyNames.length, 2);
+    h.assert(r.customProxyNames.includes('自建独享'), '首个节点保留原名');
+    h.assert(r.customProxyNames.includes('自建-自建独享'), '重名节点加前缀去重');
+  });
+  h.test('前缀后仍重名 → 继续加前缀直至唯一（国旗在前且无多余空格）', () => {
+    const r = api.buildCustomizeGroups(
+      [mkCustomProxy('🇭🇰 香港 01'), mkCustomProxy('🇭🇰 自建-香港 01')],
+      custom('香港 01'),
+    );
+    h.assertDeep(r.customProxyNames, ['🇭🇰 自建-自建-香港 01']);
+  });
+
   h.section('单元测试 · fixDialerProxy（dialer-proxy 引用修复）');
   const renameMap = new Map([['旧名', '新名']]);
   const normalizedProxyNames = new Set(['新名', '存活名']);

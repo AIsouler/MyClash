@@ -51,7 +51,7 @@ async function main() {
       const h = new Harness(script.label);
 
       runUnitTests(h, api, script.meta);
-      runIntegrationTests(h, api, script.meta, fx);
+      runIntegrationTests(h, api, script.meta, fx, loadScript, script.file);
       printDemo(api, script.label, script.meta);
 
       const s = h.summary();

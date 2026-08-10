@@ -21,7 +21,7 @@ function withOptions(api, patch, fn) {
  * 集成测试：直接调用 main() 对模拟订阅进行覆写并断言输出。
  * meta: { full, regions }
  */
-function runIntegrationTests(h, api, meta, fx) {
+function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
   // ---------------- 节点过滤与标准化 ----------------
   h.section('集成测试 · 节点过滤与标准化');
   h.test('过滤 DIRECT/REJECT/REMATCH 与信息节点', () => {
@@ -353,6 +353,60 @@ function runIntegrationTests(h, api, meta, fx) {
       h.assert(proxyNames(out.proxies).includes('官网公告'), '信息节点应被保留');
     }),
   );
+
+  // ---------------- 自定义节点 ----------------
+  h.section('集成测试 · 自定义节点');
+  h.test('未配置自定义节点 → 不生成自建节点组', () => {
+    const out = api.main(fx.typicalSubscription());
+    h.assert(!groupByName(out['proxy-groups'], '自建节点'), '不应生成自建节点组');
+    h.assert(!proxyNames(out.proxies).some((n) => n.startsWith('自建-')), '不应出现自建前缀节点');
+  });
+  h.test('配置自定义节点 → 自建节点组/重名前缀/不参与 hosts 改写', () => {
+    // 重新加载脚本并注入自定义节点（与订阅节点“香港 01 | 中转”标准化后重名）
+    const customApi = loadScript(scriptFile, (code) =>
+      code.replace(
+        'const customizeProxies = [];',
+        `const customizeProxies = [
+          { name: '香港 01 | 中转', type: 'ss', server: 'custom1.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+          { name: '自建独享', type: 'vmess', server: 'custom2.example.com', port: 443, uuid: 'x', alterId: 0 },
+        ];`,
+      ),
+    );
+    const cfg = fx.typicalSubscription();
+    // 为自定义节点域名添加 hosts 映射，验证自定义节点不参与 hosts 改写
+    cfg.hosts['custom1.example.com'] = '9.9.9.9';
+    const out = customApi.main(cfg);
+    const n = proxyNames(out.proxies);
+
+    // 标准化后与订阅节点重名 → 添加“自建-”前缀（国旗在前且无多余空格）；未重名 → 保持原名
+    h.assert(n.includes('🇭🇰 自建-香港 01 | 中转'), '与订阅节点重名的自定义节点应加自建- 前缀');
+    h.assert(n.includes('自建独享'), '未重名的自定义节点保持原名');
+    h.assertEqual(n.filter((x) => x === '🇭🇰 香港 01 | 中转').length, 1, '订阅节点仍应唯一保留');
+
+    // 自定义节点不参与 hosts 改写（server 保持原域名）
+    const cp = out.proxies.find((x) => x.name === '🇭🇰 自建-香港 01 | 中转');
+    h.assertEqual(cp.server, 'custom1.example.com', '自定义节点不应被 hosts 改写');
+
+    // 自建节点策略组
+    const g = groupByName(out['proxy-groups'], '自建节点');
+    h.assert(g, '应生成自建节点组');
+    h.assertEqual(g.type, 'select');
+    h.assert(g.proxies.includes('🇭🇰 自建-香港 01 | 中转'), '自建节点组应含重名自定义节点');
+    h.assert(g.proxies.includes('自建独享'), '自建节点组应含未重名自定义节点');
+
+    // 默认代理 / GLOBAL 应含自建节点组
+    h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('自建节点'), '默认代理应含自建节点组');
+    h.assert(groupByName(out['proxy-groups'], 'GLOBAL').proxies.includes('自建节点'), 'GLOBAL 应含自建节点组');
+
+    // 手动选择（includeAll 基础组）应含自定义节点
+    h.assert(
+      groupByName(out['proxy-groups'], '手动选择').proxies.includes('🇭🇰 自建-香港 01 | 中转'),
+      '手动选择应含自定义节点',
+    );
+
+    // 自定义节点域名不应进入 fake-ip-filter（不参与 DNS 域名处理）
+    h.assert(!out.dns['fake-ip-filter'].includes('custom1.example.com'), '自定义节点域名不应进入 fake-ip-filter');
+  });
 
   // ---------------- 异常场景 ----------------
   h.section('集成测试 · 异常场景');

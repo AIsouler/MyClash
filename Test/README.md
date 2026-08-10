@@ -47,6 +47,7 @@ npm --prefix Test install
 - `getMatchedRegions`：香港 / 日本 / 美国 / 新加坡 / 台湾省（全量版）以及低/高倍率匹配
 - `normalizeProxyName`：自动补国旗、折叠空格、保持原名
 - `fixDialerProxy`：重命名引用更新、引用目标不存在时移除、未变引用保留
+- `buildCustomizeGroups`：自定义节点标准化、与订阅节点重名加“自建-”前缀、内部去重、构建“自建节点”策略组
 
 ### 集成测试（main 覆写）
 
@@ -54,6 +55,7 @@ npm --prefix Test install
 - GLOBAL 策略组聚合所有策略组
 - DNS 与 hosts（私有 DNS 保留、公共 DNS 过滤、节点域名 policy/fake-ip-filter 保留、hosts 映射改写 server；仅当 `proxy-server-nameserver` 有且仅有一个条目且包含 `listen` 值时才触发改写，未命中时跳过改写）
 - 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 分流组添加所有节点 / QUIC 及 cn_additional 规则集 / 关闭分流组）
+- 自定义节点：未配置时不生成自建节点组；配置后生成“自建节点”组、重名加“自建-”前缀、不参与 hosts 改写与 DNS 域名处理、默认代理/GLOBAL/手动选择包含自定义节点
 - 异常场景（空节点、仅 DIRECT/REJECT/rematch 类型、全部可过滤节点 → 抛错）
 
 ## 文件结构
