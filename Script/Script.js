@@ -443,7 +443,10 @@ function filterAndNormalizeProxies(config) {
   // 清空缓存，避免上次运行残留的旧名称
   regionMatchCache.clear();
 
-  const highRateRegex = ruleOptionsEnable.过滤高倍率节点
+  const filterHighRateProxiesEnabled = ruleOptionsEnable.过滤高倍率节点;
+  const filterNonRegionProxiesEnabled = ruleOptionsEnable.过滤非地区节点;
+
+  const highRateRegex = filterHighRateProxiesEnabled
     ? rateRegionDefinitions.find((r) => r.name === highRateRegionName)?.regex
     : null;
 
@@ -456,7 +459,7 @@ function filterAndNormalizeProxies(config) {
 
     if (highRateRegex?.test(proxy.name)) return false;
 
-    if (!ruleOptionsEnable.过滤非地区节点) return true;
+    if (!filterNonRegionProxiesEnabled) return true;
 
     const isRegionProxy = getMatchedRegions(proxy.name).some((region) => regionDefinitions.includes(region));
 
@@ -501,7 +504,10 @@ function filterAndNormalizeProxies(config) {
  * 构建地区策略组，可附带自动选择组
  */
 function createRegionGroup(name, icon, proxies) {
-  if (ruleOptionsEnable.生成地区自动选择组) {
+  const generateRegionAutoSelectEnabled = ruleOptionsEnable.生成地区自动选择组;
+  const hideManualSelectGroupEnabled = ruleOptionsEnable.隐藏地区手动选择组;
+
+  if (generateRegionAutoSelectEnabled) {
     const urlTestName = `${name}-自动选择`;
     return [
       {
@@ -514,7 +520,7 @@ function createRegionGroup(name, icon, proxies) {
         name,
         icon,
         proxies: [urlTestName, ...proxies],
-        hidden: ruleOptionsEnable.隐藏地区手动选择组,
+        hidden: hideManualSelectGroupEnabled,
       },
     ];
   }
@@ -524,7 +530,7 @@ function createRegionGroup(name, icon, proxies) {
       name,
       icon,
       proxies,
-      hidden: ruleOptionsEnable.隐藏地区手动选择组,
+      hidden: hideManualSelectGroupEnabled,
     },
   ];
 }
@@ -533,6 +539,8 @@ function createRegionGroup(name, icon, proxies) {
  * 将节点按地区/倍率归类，构建地区策略组、倍率策略组与“其他节点”组
  */
 function buildRegionGroups(filteredProxies) {
+  const generateRateGroupEnabled = ruleOptionsEnable.生成倍率组;
+
   // 节点分类
   const regionGroups = Object.fromEntries(allRegionDefinitions.map(({ name }) => [name, []]));
   const otherProxies = [];
@@ -552,9 +560,7 @@ function buildRegionGroups(filteredProxies) {
 
   // 构建 地区/倍率 策略组
   const generatedRegionGroups = allRegionDefinitions
-    .filter(
-      (r) => regionGroups[r.name].length > 0 && (ruleOptionsEnable.生成倍率组 || !rateRegionDefinitions.includes(r)),
-    )
+    .filter((r) => regionGroups[r.name].length > 0 && (generateRateGroupEnabled || !rateRegionDefinitions.includes(r)))
     .flatMap((r) => createRegionGroup(r.name, r.icon, regionGroups[r.name]));
 
   if (otherProxies.length > 0) {
@@ -637,12 +643,17 @@ function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies)
  * 构建基础/分流策略组、GLOBAL 组与规则集，并汇总分流规则
  */
 function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customizeInfo) {
+  const blockForeignQuicEnabled = ruleOptionsEnable.屏蔽国外QUIC;
+  const addAllNodesToServiceGroupsEnabled = ruleOptionsEnable.分流组添加所有节点;
+  const chainEnabled = ruleOptionsEnable.链式代理;
+  const hideManualSelectGroupEnabled = ruleOptionsEnable.隐藏地区手动选择组;
+
   const functionalGroups = [];
   const functionalRules = [];
   const finalRuleProviders = { ...baseRuleProviders };
 
   // cn_additional 规则集仅服务于 “屏蔽国外QUIC” 规则，关闭该选项时无需生成
-  if (!ruleOptionsEnable.屏蔽国外QUIC) {
+  if (!blockForeignQuicEnabled) {
     delete finalRuleProviders.cn_additional;
   }
 
@@ -692,7 +703,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     } else if (svc.reject) {
       groupProxies = ['REJECT', 'REJECT-DROP', 'PASS'];
     } else {
-      groupProxies = !ruleOptionsEnable.分流组添加所有节点
+      groupProxies = !addAllNodesToServiceGroupsEnabled
         ? ['默认代理', ...customGroupNames, ...baseGroupNames, ...groupNamesOfSelect, ...(svc.direct ? ['直连'] : [])]
         : [
             '默认代理',
@@ -729,7 +740,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
       proxies: [...directProxies.map((p) => p.name)],
       url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
       icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png',
-      hidden: ruleOptionsEnable.隐藏地区手动选择组,
+      hidden: hideManualSelectGroupEnabled,
     },
   );
 
@@ -741,7 +752,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
   // 链式代理：构建“链式中转”策略组（自定义节点作为落地节点时的中转选择）
   // 直接放入所有订阅节点（不含自定义节点），不放入策略组，避免与落地节点的 dialer-proxy 形成回环
   const chainGroup =
-    ruleOptionsEnable.链式代理 && customGroup
+    chainEnabled && customGroup
       ? {
           ...selectBaseOption,
           name: '链式中转',
