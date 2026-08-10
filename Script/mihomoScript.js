@@ -48,6 +48,7 @@ const ruleOptionsEnable = {
   过滤高倍率节点: false, // 是否过滤高倍率节点
   过滤非地区节点: true, // 是否过滤非地区节点
   屏蔽国外QUIC: true, // 是否屏蔽国外QUIC流量
+  链式代理: false, // 是否启用链式代理（自定义节点作为落地节点，经“链式中转”策略组中转）
 };
 
 // 定义前置规则
@@ -887,28 +888,42 @@ function buildRegionGroups(filteredProxies) {
  * 自定义节点不参与订阅节点过滤，也不参与 hosts 改写及 DNS 域名处理。
  */
 function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies) {
+  const chainEnabled = ruleOptionsEnable.链式代理;
+
   // 未配置自定义节点时直接返回空结果
   if (!customizeList.length) {
+    if (chainEnabled) {
+      throw new Error('启用失败，请在脚本中添加自定义节点后尝试');
+    }
     return { customProxies: [], customProxyNames: [], customGroup: null };
   }
 
   // 订阅节点标准化后的名称集合，用于重名判断
   const usedNames = new Set(filteredProxies.map((p) => p.name));
 
+  // 重名时使用的前缀
+  const customPrefix = '自建-';
+
   // 标准化自定义节点并解决重名冲突（与订阅节点重名或自定义节点间重名）
   const customProxies = [];
   for (const proxy of customizeList) {
     const normalized = normalizeProxyName(proxy);
 
-    // 重名时添加“自建-”前缀并重新标准化（国旗自动回到最前），直至名称唯一；
-    // 标准化会重建“国旗 + 空格 + 名称”格式，这里去掉前缀“自建-”后多余的空格
     let name = normalized.name;
+
+    // 重名时添加前缀并重新标准化（国旗自动回到最前），直至名称唯一；
+    // 标准化会重建“国旗 + 空格 + 名称”格式，这里去掉前缀后多余的空格
     while (usedNames.has(name)) {
-      name = normalizeProxyName({ name: `自建-${name}` }).name.replace('自建- ', '自建-');
+      name = normalizeProxyName({ name: `${customPrefix}${name}` }).name.replace(`${customPrefix} `, customPrefix);
     }
     usedNames.add(name);
 
-    customProxies.push(name === normalized.name ? normalized : { ...normalized, name });
+    let customProxy = name === normalized.name ? normalized : { ...normalized, name };
+    // 链式代理启用时强制添加/覆盖 dialer-proxy，使自定义节点经“链式中转”策略组中转
+    if (chainEnabled && customProxy['dialer-proxy'] !== '链式中转') {
+      customProxy = { ...customProxy, 'dialer-proxy': '链式中转' };
+    }
+    customProxies.push(customProxy);
   }
 
   // “自建节点”策略组
@@ -1032,15 +1047,31 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     functionalGroups.push(customGroup);
   }
 
+  // 链式代理：构建“链式中转”策略组（自定义节点作为落地节点时的中转选择）
+  // 直接放入所有订阅节点（不含自定义节点），不放入策略组，避免与落地节点的 dialer-proxy 形成回环
+  const chainGroup =
+    ruleOptionsEnable.链式代理 && customGroup
+      ? {
+          ...selectBaseOption,
+          name: '链式中转',
+          proxies: filteredProxies.map((p) => p.name),
+          icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Bypass.png',
+        }
+      : null;
+
   // 构建 GLOBAL 全局策略组
   const globalGroup = {
     ...selectBaseOption,
     name: 'GLOBAL',
-    proxies: [...functionalGroups.map((g) => g.name), ...generatedRegionGroups.map((g) => g.name)],
+    proxies: [
+      ...functionalGroups.map((g) => g.name),
+      ...(chainGroup ? [chainGroup.name] : []),
+      ...generatedRegionGroups.map((g) => g.name),
+    ],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders };
+  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup };
 }
 
 // ---dns和hosts相关处理---
@@ -1355,8 +1386,8 @@ function main(config) {
   // 构建地区组和倍率组
   const generatedRegionGroups = buildRegionGroups(filteredProxies);
 
-  // 构建基础策略组和分流策略组（含“自建节点”策略组）
-  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders } = buildFunctionalGroups(
+  // 构建基础策略组和分流策略组（含“自建节点”策略组与“链式中转”策略组）
+  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup } = buildFunctionalGroups(
     filteredProxies,
     generatedRegionGroups,
     { customProxyNames, customGroup },
@@ -1406,7 +1437,12 @@ function main(config) {
   };
 
   newConfig['proxies'] = [...customProxies, ...mappedProxies, ...directProxies];
-  newConfig['proxy-groups'] = [globalGroup, ...functionalGroups, ...generatedRegionGroups];
+  newConfig['proxy-groups'] = [
+    globalGroup,
+    ...functionalGroups,
+    ...(chainGroup ? [chainGroup] : []),
+    ...generatedRegionGroups,
+  ];
   newConfig['rule-providers'] = finalRuleProviders;
 
   newConfig['rules'] = [

@@ -408,6 +408,118 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assert(!out.dns['fake-ip-filter'].includes('custom1.example.com'), '自定义节点域名不应进入 fake-ip-filter');
   });
 
+  // ---------------- 链式代理 ----------------
+  h.section('集成测试 · 链式代理');
+  // 注入自定义节点（首个节点自带 dialer-proxy，用于验证覆盖行为；与订阅节点“香港 01 | 中转”标准化后重名）
+  const chainCustomInjection = `const customizeProxies = [
+    { name: '香港 01 | 中转', type: 'ss', server: 'custom1.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x', 'dialer-proxy': '旧中转' },
+    { name: '自建独享', type: 'vmess', server: 'custom2.example.com', port: 443, uuid: 'x', alterId: 0 },
+    { name: '自建-日本-01', type: 'trojan', server: 'custom3.example.com', port: 443, password: 'x' },
+  ];`;
+
+  h.test('未启用链式代理：自定义节点保持自建- 前缀且 dialer-proxy 不被修改', () => {
+    const customApi = loadScript(scriptFile, (code) =>
+      code.replace('const customizeProxies = [];', chainCustomInjection),
+    );
+    const out = customApi.main(fx.typicalSubscription());
+    const n = proxyNames(out.proxies);
+    h.assert(n.includes('🇭🇰 自建-香港 01 | 中转'), '重名自定义节点应加自建- 前缀');
+    h.assert(n.includes('🇯🇵 自建-日本-01'), '自定义节点名称保持不变');
+    h.assertEqual(
+      out.proxies.find((x) => x.name === '🇭🇰 自建-香港 01 | 中转')['dialer-proxy'],
+      '旧中转',
+      '未启用链式代理时 dialer-proxy 应保持不变',
+    );
+    h.assert(!groupByName(out['proxy-groups'], '链式中转'), '不应生成链式中转组');
+  });
+
+  h.test('启用链式代理：生成链式中转组、自建- 前缀、强制 dialer-proxy', () => {
+    const customApi = loadScript(scriptFile, (code) =>
+      code.replace('const customizeProxies = [];', chainCustomInjection),
+    );
+    withOptions(customApi, { 链式代理: true }, () => {
+      const out = customApi.main(fx.typicalSubscription());
+      const n = proxyNames(out.proxies);
+
+      // 重名自定义节点使用“自建-”前缀；未重名节点名称保持不变
+      h.assert(n.includes('🇭🇰 自建-香港 01 | 中转'), '重名自定义节点应加自建- 前缀');
+      h.assert(n.includes('🇯🇵 自建-日本-01'), '未重名自定义节点名称保持不变');
+      h.assert(n.includes('自建独享'), '未重名自定义节点保持原名');
+      h.assertEqual(n.filter((x) => x === '🇭🇰 香港 01 | 中转').length, 1, '订阅节点仍应唯一保留');
+
+      // 强制 dialer-proxy（覆盖已有值）
+      h.assertEqual(
+        out.proxies.find((x) => x.name === '🇭🇰 自建-香港 01 | 中转')['dialer-proxy'],
+        '链式中转',
+        '已有 dialer-proxy 应被覆盖',
+      );
+      h.assertEqual(
+        out.proxies.find((x) => x.name === '自建独享')['dialer-proxy'],
+        '链式中转',
+        '应为自定义节点添加 dialer-proxy',
+      );
+
+      // “自建节点”策略组存在并含自定义节点
+      const customGroup = groupByName(out['proxy-groups'], '自建节点');
+      h.assert(customGroup, '自建节点组应存在');
+      h.assert(!groupByName(out['proxy-groups'], '落地节点'), '不应存在“落地节点”组');
+      h.assert(customGroup.proxies.includes('🇭🇰 自建-香港 01 | 中转'), '自建节点组应含自定义节点');
+
+      // 链式中转组存在且为 select
+      const chain = groupByName(out['proxy-groups'], '链式中转');
+      h.assert(chain, '应生成链式中转组');
+      h.assertEqual(chain.type, 'select');
+
+      // 链式中转直接放入所有订阅节点（不含自定义节点与直连节点），不放入任何策略组
+      const customNodeNames = new Set(customGroup.proxies);
+      const subscriptionNodes = out.proxies
+        .filter((p) => p.type !== 'direct' && !customNodeNames.has(p.name))
+        .map((p) => p.name);
+      h.assert(subscriptionNodes.length > 0, '前置：应存在订阅节点');
+      h.assertEqual(chain.proxies.length, subscriptionNodes.length, '链式中转应仅包含订阅节点');
+      for (const name of subscriptionNodes) {
+        h.assert(chain.proxies.includes(name), `链式中转应包含节点 ${name}`);
+      }
+      const allGroupNames = new Set(out['proxy-groups'].map((g) => g.name));
+      for (const x of chain.proxies) {
+        h.assert(!allGroupNames.has(x), `链式中转不应放入策略组 ${x}`);
+      }
+
+      // 链式中转仅嵌套进 GLOBAL，不嵌套进其他任何策略组
+      const global = groupByName(out['proxy-groups'], 'GLOBAL');
+      for (const g of out['proxy-groups']) {
+        if (g.name !== '链式中转') {
+          if (g.name === 'GLOBAL') {
+            h.assert(g.proxies.includes('链式中转'), 'GLOBAL 应包含链式中转');
+          } else {
+            h.assert(!g.proxies.includes('链式中转'), `策略组 ${g.name} 不应包含链式中转`);
+          }
+        }
+      }
+
+      // GLOBAL 聚合所有策略组（含链式中转与自建节点）
+      for (const g of out['proxy-groups']) {
+        if (g.name !== 'GLOBAL') {
+          h.assert(global.proxies.includes(g.name), `GLOBAL 应包含策略组 ${g.name}`);
+        }
+      }
+
+      // 自定义节点仍参与其他策略组（默认代理/手动选择）；链式中转只放订阅节点，不再形成回环
+      h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('自建节点'), '默认代理应含自建节点组');
+      h.assert(
+        groupByName(out['proxy-groups'], '手动选择').proxies.includes('🇭🇰 自建-香港 01 | 中转'),
+        '手动选择应含自建节点',
+      );
+      h.assert(global.proxies.includes('自建节点'), 'GLOBAL 应含自建节点组');
+    });
+  });
+
+  h.test('启用链式代理但未配置自定义节点 → 抛错', () => {
+    withOptions(api, { 链式代理: true }, () => {
+      h.assertThrows(() => api.main(fx.typicalSubscription()), /启用失败，请在脚本中添加自定义节点后尝试/);
+    });
+  });
+
   // ---------------- 异常场景 ----------------
   h.section('集成测试 · 异常场景');
   h.test('空节点列表 → 抛错', () => h.assertThrows(() => api.main(fx.emptySubscription()), /未找到任何代理节点/));
