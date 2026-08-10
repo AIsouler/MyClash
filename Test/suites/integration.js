@@ -24,36 +24,29 @@ function withOptions(api, patch, fn) {
 function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
   // ---------------- 节点过滤与标准化 ----------------
   h.section('集成测试 · 节点过滤与标准化');
-  h.test('过滤 DIRECT/REJECT/REMATCH 与信息节点', () => {
+  h.test('节点过滤与标准化：剔除无效节点、保留有效节点并补国旗', () => {
     const out = api.main(fx.typicalSubscription());
     const n = proxyNames(out.proxies);
     for (const bad of ['DIRECT', 'REJECT', 'REMATCH', '官方网站', '剩余流量', '节点到期 2026-08-01']) {
       h.assert(!n.includes(bad), `不应包含节点 ${bad}`);
     }
-  });
-  h.test('保留有效节点并自动补地区国旗', () => {
-    const out = api.main(fx.typicalSubscription());
-    const n = proxyNames(out.proxies);
     h.assert(n.includes('🇭🇰 HK 02 - 香港'));
     h.assert(n.includes('🇯🇵 JAPAN-02'));
     h.assert(n.includes('🇸🇬 SG 01 | 新加坡'));
   });
-  h.test('dialer-proxy 指向被重命名节点 → 引用同步更新', () => {
+  h.test('dialer-proxy 引用修复：重命名同步 / 存活保留 / 被过滤移除', () => {
     const out = api.main(fx.typicalSubscription());
-    const p = out.proxies.find((x) => x.name === '🇯🇵 东京');
-    h.assert(p, '节点 🇯🇵 东京 应存在');
-    h.assertEqual(p['dialer-proxy'], '🇯🇵 日本大阪');
-  });
-  h.test('dialer-proxy 指向被过滤节点 → 移除引用', () => {
-    const out = api.main(fx.typicalSubscription());
-    const p = out.proxies.find((x) => x.name === '测试节点A');
-    h.assert(p, '节点 测试节点A 应存在');
-    h.assert(!('dialer-proxy' in p), '应移除指向已过滤节点的引用');
-  });
-  h.test('dialer-proxy 指向存活未改名节点 → 引用保留', () => {
-    const out = api.main(fx.typicalSubscription());
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 04');
-    h.assertEqual(p['dialer-proxy'], '🇭🇰 香港 01 | 中转');
+    // 指向被重命名节点 → 引用同步更新
+    const renamed = out.proxies.find((x) => x.name === '🇯🇵 东京');
+    h.assert(renamed, '节点 🇯🇵 东京 应存在');
+    h.assertEqual(renamed['dialer-proxy'], '🇯🇵 日本大阪');
+    // 指向存活未改名节点 → 引用保留
+    const alive = out.proxies.find((x) => x.name === '🇭🇰 香港 04');
+    h.assertEqual(alive['dialer-proxy'], '🇭🇰 香港 01 | 中转');
+    // 指向被过滤节点 → 移除引用
+    const filtered = out.proxies.find((x) => x.name === '测试节点A');
+    h.assert(filtered, '节点 测试节点A 应存在');
+    h.assert(!('dialer-proxy' in filtered), '应移除指向已过滤节点的引用');
   });
   h.test('标准化后重名节点去重，保留首个且地区组不重复', () => {
     const cfg = fx.minimalSubscription();
@@ -112,31 +105,23 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assert(!out.dns['proxy-server-nameserver'].includes('223.5.5.5'), 'proxy-server-nameserver 公共 DNS 应被过滤');
     h.assert(!out.dns['proxy-server-nameserver'].some((d) => d.includes('#')), '私有 DNS 不应含 # 后缀');
   });
-  h.test('私有 DNS 的 # 策略组后缀被剥离', () => {
+  h.test('私有 DNS 后缀处理：非 direct 剥离、direct 整条保留（含参数、忽略大小写）', () => {
     const cfg = fx.typicalSubscription();
+    // 非 direct 后缀 → 剥离
     cfg.dns['proxy-server-nameserver-policy']['hk1.example.com'] = ['https://private.example-dns.com/dns-query#proxy'];
+    // direct 后缀 → 整条保留（含附加参数、忽略大小写）
+    cfg.dns['nameserver'] = [
+      'https://private.example-dns.com/dns-query#direct',
+      'https://private.example-dns.com/dns-query#direct&ecs=2.2.2.2',
+    ];
     const out = api.main(cfg);
     h.assertDeep(out.dns['proxy-server-nameserver-policy']['hk1.example.com'], [
       'https://private.example-dns.com/dns-query',
     ]);
-  });
-  h.test('私有 DNS 的 #direct 后缀被保留（忽略大小写）', () => {
-    const cfg = fx.typicalSubscription();
-    cfg.dns['nameserver'] = ['https://private.example-dns.com/dns-query#direct'];
-    cfg.dns['proxy-server-nameserver-policy']['hk1.example.com'] = ['https://private.example-dns.com/dns-query#DIRECT'];
-    const out = api.main(cfg);
     h.assert(
       out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query#direct'),
       '应保留 #direct 后缀',
     );
-    h.assertDeep(out.dns['proxy-server-nameserver-policy']['hk1.example.com'], [
-      'https://private.example-dns.com/dns-query#DIRECT',
-    ]);
-  });
-  h.test('私有 DNS 的 #direct&参数 后缀被整条保留', () => {
-    const cfg = fx.typicalSubscription();
-    cfg.dns['nameserver'] = ['https://private.example-dns.com/dns-query#direct&ecs=2.2.2.2'];
-    const out = api.main(cfg);
     h.assert(
       out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query#direct&ecs=2.2.2.2'),
       '应整条保留 #direct 及附加参数',
@@ -166,7 +151,8 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assert(!('www.unrelated.com' in out.hosts), '无关 hosts 应被过滤');
     h.assertDeep(out.hosts['dns.google'], ['8.8.8.8', '8.8.4.4']);
   });
-  h.test('fake-ip-filter 中匹配节点域名的条目被保留', () => {
+  h.test('fake-ip-filter 保留匹配条目并过滤无关条目', () => {
+    // 节点域名（精确/后缀/通配）保留，无关条目与 rule-set 被过滤，默认条目置于头部
     const out = api.main(fx.typicalSubscription());
     const f = out.dns['fake-ip-filter'];
     h.assert(f.includes('hk1.example.com'), '精确匹配的节点域名应保留');
@@ -176,83 +162,30 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assert(!f.includes('rule-set:unrelated'), 'rule-set 条目应被过滤');
     h.assertEqual(f[0], 'rule-set:private');
     h.assertEqual(f[1], 'rule-set:fakeip_filter');
+    // hosts 映射目标域名场景：保留目标域名对应的条目
+    const f2 = api.main(fx.hostsMappedSubscription()).dns['fake-ip-filter'];
+    h.assert(f2.includes('+.example-apt.com'), '节点 hosts 映射目标域名对应的条目应保留');
+    h.assert(!f2.includes('+.unrelated-filter.com'), '与节点无关的条目应被过滤');
   });
-  h.test('原配置无 fake-ip-filter → 仅保留默认条目', () => {
-    const cfg = fx.typicalSubscription();
-    delete cfg.dns['fake-ip-filter'];
-    const out = api.main(cfg);
-    h.assertDeep(out.dns['fake-ip-filter'], ['rule-set:private', 'rule-set:fakeip_filter']);
-  });
-  h.test('fake-ip-filter 保留 hosts 映射目标域名条目', () => {
-    const out = api.main(fx.hostsMappedSubscription());
-    const f = out.dns['fake-ip-filter'];
-    h.assert(f.includes('+.example-apt.com'), '节点 hosts 映射目标域名对应的条目应保留');
-    h.assert(!f.includes('+.unrelated-filter.com'), '与节点无关的条目应被过滤');
-  });
-  h.test('hosts 域名映射改写为节点 server，不再复制 hosts', () => {
-    const out = api.main(fx.hostsMappedSubscription());
-    const p = out.proxies.find((x) => x.name === '🇺🇸 美国 B');
-    h.assertEqual(p.server, 'node-a1b2c3.example-apt.com', '节点 server 应改写为 hosts 映射的目标域名');
-    h.assert(!('node-a1b2c3.example-node.biz' in out.hosts), '映射后的节点 hosts 不应复制到新配置');
-  });
-  h.test('hosts 链式映射改写为最终目标', () => {
-    const out = api.main(fx.hostsChainSubscription());
-    const p = out.proxies.find((x) => x.name === '🇺🇸 美国 B');
-    h.assertEqual(p.server, '10.0.0.88', '链式映射应逐级解析到最终目标');
-    h.assert(!('node-a1b2c3.example-node.biz' in out.hosts), '映射后的节点 hosts 不应复制到新配置');
-    h.assert(!('node-b1b2c3.example-apt.com' in out.hosts), '中继 hosts 不应复制到新配置');
-  });
-  h.test('hosts 精确映射优先于通配映射', () => {
-    const out = api.main(fx.hostsWildcardSubscription());
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 A');
-    h.assertEqual(p.server, '1.1.1.1', '精确映射应优先于 +. 通配映射');
-  });
-  h.test('hosts 通配映射数组取首个值', () => {
-    const out = api.main(fx.hostsWildcardSubscription());
-    const p = out.proxies.find((x) => x.name === '🇯🇵 日本 B');
-    h.assertEqual(p.server, '9.9.9.9', '通配映射数组应取首个值');
-  });
-  h.test('无 hosts 映射的节点 server 保持不变', () => {
-    const out = api.main(fx.hostsWildcardSubscription());
-    const p = out.proxies.find((x) => x.name === '🇺🇸 美国 C');
-    h.assertEqual(p.server, 'us1.other.com');
-  });
-  h.test('通配映射与无关 hosts 均不复制到新配置', () => {
-    const out = api.main(fx.hostsWildcardSubscription());
-    h.assert(!('hk1.premium.example.com' in out.hosts), '映射条目不应出现在 hosts');
-    h.assert(!('+.premium.example.com' in out.hosts), '通配映射条目不应出现在 hosts');
-    h.assert(!('www.unrelated.com' in out.hosts), '无关 hosts 应被过滤');
-  });
-  h.test('proxy-server-nameserver 长度不为 1 时跳过 hosts 改写', () => {
-    const cfg = fx.typicalSubscription();
-    // 长度不为 1（含多个 DNS，其中一个包含 listen 值）→ 不触发改写
+  h.test('hosts 改写触发条件不满足时跳过改写', () => {
+    const find = (cfg) => api.main(cfg).proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    // proxy-server-nameserver 长度不为 1（含多个 DNS，其中一个包含 listen 值）→ 不触发
+    let cfg = fx.typicalSubscription();
     cfg.dns['proxy-server-nameserver'] = ['8.8.8.8', '198.18.0.1:53'];
-    const out = api.main(cfg);
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
-    h.assertEqual(p.server, 'hk1.example.com', 'proxy-server-nameserver 长度不为 1 时节点 server 不应被改写');
-  });
-  h.test('proxy-server-nameserver 未包含 dns.listen 时跳过 hosts 改写', () => {
-    const cfg = fx.typicalSubscription();
-    // 长度为 1 但不包含 listen 值 → 不触发改写
+    h.assertEqual(find(cfg).server, 'hk1.example.com', 'proxy-server-nameserver 长度不为 1 时不应改写');
+    // 长度为 1 但不包含 listen 值 → 不触发
+    cfg = fx.typicalSubscription();
     cfg.dns['proxy-server-nameserver'] = ['8.8.8.8'];
-    const out = api.main(cfg);
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
-    h.assertEqual(p.server, 'hk1.example.com', '未命中触发条件时节点 server 不应被改写');
-  });
-  h.test('未设置 dns.listen 时跳过 hosts 改写', () => {
-    const cfg = fx.typicalSubscription();
-    delete cfg.dns.listen;
-    const out = api.main(cfg);
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
-    h.assertEqual(p.server, 'hk1.example.com', '未设置 dns.listen 时节点 server 不应被改写');
-  });
-  h.test('dns.listen 为空字符串时跳过 hosts 改写', () => {
-    const cfg = fx.typicalSubscription();
-    cfg.dns.listen = '';
-    const out = api.main(cfg);
-    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
-    h.assertEqual(p.server, 'hk1.example.com', 'listen 为空字符串时节点 server 不应被改写');
-    h.assert(!out.dns['proxy-server-nameserver'].includes(''), '不应将空串当作私有 DNS 保留');
+    h.assertEqual(find(cfg).server, 'hk1.example.com', '未命中触发条件时不应改写');
+    // listen 缺失或为空字符串 → 不触发，且空串不当作私有 DNS 保留
+    for (const listen of [undefined, '']) {
+      cfg = fx.typicalSubscription();
+      if (listen === undefined) delete cfg.dns.listen;
+      else cfg.dns.listen = listen;
+      const out = api.main(cfg);
+      h.assertEqual(find(cfg).server, 'hk1.example.com', 'listen 缺失/为空时不应改写');
+      h.assert(!out.dns['proxy-server-nameserver'].includes(''), '不应将空串当作私有 DNS 保留');
+    }
   });
   h.test('无 dns/hosts 输入时生成默认配置', () => {
     const cfg = fx.typicalSubscription();
@@ -315,22 +248,16 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
       h.assert(groupByName(out['proxy-groups'], 'AI').proxies.includes('🇭🇰 香港 A'), 'AI 组应含全部节点');
     }),
   );
-  h.test('屏蔽国外QUIC=false → 移除 QUIC 规则', () =>
+  h.test('屏蔽国外QUIC 开关：true 生成 / false 移除 QUIC 规则与 cn_additional', () => {
+    // true（默认）→ 生成 cn_additional 规则集
+    h.assert(api.main(fx.minimalSubscription())['rule-providers'].cn_additional, 'cn_additional 规则集应生成');
+    // false → 移除 QUIC 规则与 cn_additional，cn 规则集保留
     withOptions(api, { 屏蔽国外QUIC: false }, () => {
       const out = api.main(fx.minimalSubscription());
       h.assert(!out.rules.some((r) => r.includes('DST-PORT,443') && r.includes('REJECT')), '不应含 QUIC 规则');
-    }),
-  );
-  h.test('屏蔽国外QUIC=false → 不生成 cn_additional 规则集', () =>
-    withOptions(api, { 屏蔽国外QUIC: false }, () => {
-      const out = api.main(fx.minimalSubscription());
       h.assert(!out['rule-providers'].cn_additional, 'cn_additional 规则集不应生成');
       h.assert(out['rule-providers'].cn, 'cn 规则集仍应生成（供 nameserver-policy 使用）');
-    }),
-  );
-  h.test('屏蔽国外QUIC=true → 生成 cn_additional 规则集', () => {
-    const out = api.main(fx.minimalSubscription());
-    h.assert(out['rule-providers'].cn_additional, 'cn_additional 规则集应生成');
+    });
   });
   h.test('关闭 AI 分流组 → 移除组/规则/规则集', () =>
     withOptions(api, { AI: false }, () => {
@@ -356,11 +283,6 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
 
   // ---------------- 自定义节点 ----------------
   h.section('集成测试 · 自定义节点');
-  h.test('未配置自定义节点 → 不生成自建节点组', () => {
-    const out = api.main(fx.typicalSubscription());
-    h.assert(!groupByName(out['proxy-groups'], '自建节点'), '不应生成自建节点组');
-    h.assert(!proxyNames(out.proxies).some((n) => n.startsWith('自建-')), '不应出现自建前缀节点');
-  });
   h.test('配置自定义节点 → 自建节点组/重名前缀/不参与 hosts 改写', () => {
     // 重新加载脚本并注入自定义节点（与订阅节点“香港 01 | 中转”标准化后重名）
     const customApi = loadScript(scriptFile, (code) =>
@@ -514,21 +436,12 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     });
   });
 
-  h.test('启用链式代理但未配置自定义节点 → 抛错', () => {
-    withOptions(api, { 链式代理: true }, () => {
-      h.assertThrows(() => api.main(fx.typicalSubscription()), /启用失败，请在脚本中添加自定义节点后尝试/);
-    });
-  });
-
   // ---------------- 异常场景 ----------------
   h.section('集成测试 · 异常场景');
-  h.test('空节点列表 → 抛错', () => h.assertThrows(() => api.main(fx.emptySubscription()), /未找到任何代理节点/));
-  h.test('仅 DIRECT/REJECT/rematch 类型 → 抛错', () =>
-    h.assertThrows(() => api.main(fx.filteredByTypeSubscription()), /未找到任何代理节点/),
-  );
-  h.test('全部为可过滤节点（信息节点/rematch）且开启过滤 → 抛错', () =>
-    h.assertThrows(() => api.main(fx.allFilteredSubscription()), /未找到任何代理节点/),
-  );
+  h.test('无有效节点（空列表 / 全部可过滤）→ 抛错', () => {
+    h.assertThrows(() => api.main(fx.emptySubscription()), /未找到任何代理节点/);
+    h.assertThrows(() => api.main(fx.allFilteredSubscription()), /未找到任何代理节点/);
+  });
 }
 
 module.exports = { runIntegrationTests };

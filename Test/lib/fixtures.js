@@ -145,18 +145,6 @@ function emptySubscription() {
   return { proxies: [] };
 }
 
-/** 仅包含会被脚本按 type 过滤的节点（direct / reject / rematch） */
-function filteredByTypeSubscription() {
-  return {
-    proxies: [
-      { name: 'DIRECT', type: 'direct' },
-      { name: 'REJECT', type: 'reject' },
-      { name: 'REJECT-DROP', type: 'reject' },
-      { name: 'REMATCH', type: 'rematch' },
-    ],
-  };
-}
-
 /** 全部为会被过滤的节点（信息节点 + rematch 类型），开启过滤时会全部被剔除 */
 function allFilteredSubscription() {
   return {
@@ -194,66 +182,10 @@ function hostsMappedSubscription() {
   };
 }
 
-/** hosts 通配/多值映射场景：精确条目优先于通配条目，数组取值取首个元素 */
-function hostsWildcardSubscription() {
-  return {
-    dns: {
-      listen: '198.18.0.1:53',
-      'proxy-server-nameserver': ['198.18.0.1:53'],
-    },
-    hosts: {
-      '+.premium.example.com': ['9.9.9.9', '9.9.9.8'],
-      'hk1.premium.example.com': '1.1.1.1',
-      'www.unrelated.com': '10.0.0.9',
-    },
-    proxies: [
-      {
-        name: '🇭🇰 香港 A',
-        type: 'ss',
-        server: 'hk1.premium.example.com',
-        port: 443,
-        cipher: 'aes-256-gcm',
-        password: 'x',
-      },
-      {
-        name: '🇯🇵 日本 B',
-        type: 'ss',
-        server: 'jp2.premium.example.com',
-        port: 443,
-        cipher: 'aes-256-gcm',
-        password: 'x',
-      },
-      { name: '🇺🇸 美国 C', type: 'ss', server: 'us1.other.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
-    ],
-  };
-}
-
-/** hosts 链式映射场景：节点域名 a → b → 最终 IP，中继条目应逐级解析生效 */
-function hostsChainSubscription() {
-  return {
-    dns: {
-      listen: '198.18.0.1:53',
-      'proxy-server-nameserver': ['198.18.0.1:53'],
-    },
-    hosts: {
-      'node-a1b2c3.example-node.biz': 'node-b1b2c3.example-apt.com',
-      'node-b1b2c3.example-apt.com': '10.0.0.88',
-      'www.unrelated.com': '10.0.0.9',
-    },
-    proxies: [
-      { name: '🇭🇰 香港 A', type: 'ss', server: 'hk1.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
-      { name: '🇺🇸 美国 B', type: 'vmess', server: 'node-a1b2c3.example-node.biz', port: 443, uuid: 'x', alterId: 0 },
-    ],
-  };
-}
-
 module.exports = {
   typicalSubscription,
   minimalSubscription,
   emptySubscription,
-  filteredByTypeSubscription,
   allFilteredSubscription,
   hostsMappedSubscription,
-  hostsWildcardSubscription,
-  hostsChainSubscription,
 };

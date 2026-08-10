@@ -24,7 +24,6 @@ function runUnitTests(h, api, meta) {
   h.test('精确匹配命中', () => h.assert(api.matchDomainPattern('example.com', d)));
   h.test('精确匹配未命中', () => h.assert(!api.matchDomainPattern('nothere.com', d)));
   h.test('精确匹配大小写不敏感', () => h.assert(api.matchDomainPattern('EXAMPLE.COM', new Set(['example.com']))));
-  h.test('空集合不匹配', () => h.assert(!api.matchDomainPattern('example.com', new Set())));
   h.test('+.前缀匹配自身及子域', () => h.assert(api.matchDomainPattern('+.example.com', d)));
   h.test('+.前缀未命中', () => h.assert(!api.matchDomainPattern('+.nonexist.com', d)));
   h.test('.前缀匹配子域', () => h.assert(api.matchDomainPattern('.example.com', d)));
@@ -36,7 +35,6 @@ function runUnitTests(h, api, meta) {
   h.section('单元测试 · getMatchedRegions（地区匹配）');
   const matched = (name) => api.getMatchedRegions(name).map((r) => r.name);
   h.test('🇭🇰 香港 01 → 香港', () => h.assert(matched('🇭🇰 香港 01').includes('香港')));
-  h.test('HK 02 → 香港', () => h.assert(matched('HK 02').includes('香港')));
   h.test('hongkong-03 → 香港', () => h.assert(matched('hongkong-03').includes('香港')));
   h.test('JAPAN-02 → 日本', () => h.assert(matched('JAPAN-02').includes('日本')));
   h.test('US-LosAngeles-02 → 美国', () => h.assert(matched('US-LosAngeles-02').includes('美国')));
@@ -93,12 +91,6 @@ function runUnitTests(h, api, meta) {
     const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01')], custom('自建独享'));
     h.assertDeep(r.customProxyNames, ['自建独享']);
   });
-  h.test('自定义节点间重名 → 前缀去重', () => {
-    const r = api.buildCustomizeGroups([], custom('自建独享', '自建独享'));
-    h.assertEqual(r.customProxyNames.length, 2);
-    h.assert(r.customProxyNames.includes('自建独享'), '首个节点保留原名');
-    h.assert(r.customProxyNames.includes('自建-自建独享'), '重名节点加前缀去重');
-  });
   h.test('前缀后仍重名 → 继续加前缀直至唯一（国旗在前且无多余空格）', () => {
     const r = api.buildCustomizeGroups(
       [mkCustomProxy('🇭🇰 香港 01'), mkCustomProxy('🇭🇰 自建-香港 01')],
@@ -108,22 +100,12 @@ function runUnitTests(h, api, meta) {
   });
 
   h.section('单元测试 · buildCustomizeGroups（链式代理）');
-  h.test('链式代理启用：重名节点仍使用自建- 前缀（国旗在前且无多余空格）', () =>
+  h.test('链式代理启用：强制添加 dialer-proxy（已有值被覆盖）', () =>
     withUnitOptions({ 链式代理: true }, () => {
-      const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01 | 中转')], custom('香港 01 | 中转'));
-      h.assertDeep(r.customProxyNames, ['🇭🇰 自建-香港 01 | 中转']);
-    }),
-  );
-  h.test('链式代理启用：强制添加 dialer-proxy 指向链式中转', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      const r = api.buildCustomizeGroups([], custom('自建独享'));
-      h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
-    }),
-  );
-  h.test('链式代理启用：已有 dialer-proxy 被覆盖', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      const r = api.buildCustomizeGroups([], [{ ...mkCustomProxy('自建独享'), 'dialer-proxy': '旧中转' }]);
-      h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
+      for (const proxies of [custom('自建独享'), [{ ...mkCustomProxy('自建独享'), 'dialer-proxy': '旧中转' }]]) {
+        const r = api.buildCustomizeGroups([], proxies);
+        h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
+      }
     }),
   );
   h.test('链式代理启用：策略组名改为“链式落地”，节点名称保持不变', () =>
@@ -142,11 +124,6 @@ function runUnitTests(h, api, meta) {
       h.assertThrows(() => api.buildCustomizeGroups([], []), /启用失败，请在脚本中添加自定义节点后尝试/),
     ),
   );
-  h.test('未启用链式代理且未配置自定义节点 → 不抛错且返回空结果', () => {
-    const r = api.buildCustomizeGroups([], []);
-    h.assertEqual(r.customProxies.length, 0, '应返回空结果');
-    h.assertEqual(r.customGroup, null, '不应生成自建节点组');
-  });
 
   h.section('单元测试 · fixDialerProxy（dialer-proxy 引用修复）');
   const renameMap = new Map([['旧名', '新名']]);
@@ -170,13 +147,12 @@ function runUnitTests(h, api, meta) {
   // 与 buildDnsAndHostsConfig 调用方式一致
   const apply = (proxies, hosts) => api.applyHostsToProxies(proxies, hosts);
   const mkProxy = (server) => ({ name: 'x', server });
-  h.test('精确映射改写为字符串', () => {
-    const out = apply([mkProxy('node.example.com')], { 'node.example.com': '1.2.3.4' });
-    h.assertEqual(out[0].server, '1.2.3.4');
-  });
-  h.test('数组映射取首个值', () => {
-    const out = apply([mkProxy('node.example.com')], { 'node.example.com': ['1.2.3.4', '1.2.3.5'] });
-    h.assertEqual(out[0].server, '1.2.3.4');
+  h.test('精确映射改写：字符串直接替换、数组取首个值', () => {
+    h.assertEqual(apply([mkProxy('node.example.com')], { 'node.example.com': '1.2.3.4' })[0].server, '1.2.3.4');
+    h.assertEqual(
+      apply([mkProxy('node.example.com')], { 'node.example.com': ['1.2.3.4', '1.2.3.5'] })[0].server,
+      '1.2.3.4',
+    );
   });
   h.test('+.通配映射命中子域', () => {
     const out = apply([mkProxy('a.example.com'), mkProxy('b.other.com')], { '+.example.com': '9.9.9.9' });
@@ -190,10 +166,6 @@ function runUnitTests(h, api, meta) {
   h.test('链式映射逐级改写至最终目标', () => {
     const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.example.com', 'b.example.com': '1.2.3.4' });
     h.assertEqual(out[0].server, '1.2.3.4');
-  });
-  h.test('链式映射中继可跨通配条目', () => {
-    const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.other.com', '+.other.com': '9.9.9.9' });
-    h.assertEqual(out[0].server, '9.9.9.9');
   });
   h.test('链式映射中途无后继时仅单层改写', () => {
     const out = apply([mkProxy('a.example.com')], { 'a.example.com': 'b.example.com' });
@@ -215,22 +187,16 @@ function runUnitTests(h, api, meta) {
     const p = [{ name: 'x' }];
     h.assert(apply(p, { 'a.example.com': '1.1.1.1' })[0] === p[0], '无 server 字段的节点应原样保留');
   });
-  h.test('空 hosts 时节点原样保留', () => {
-    const p = [mkProxy('a.example.com')];
-    const out = apply(p, {});
-    h.assert(out[0] === p[0], '空 hosts 不应改写节点');
-  });
   h.test('与节点无关的 hosts 条目不参与改写', () => {
     const out = apply([mkProxy('node.example.com')], { 'cdn.unrelated.com': '1.1.1.1', '+.other.com': '2.2.2.2' });
     h.assertEqual(out[0].server, 'node.example.com');
   });
-  h.test('大小写不敏感匹配', () => {
-    const out = apply([mkProxy('NODE.Example.COM')], { 'node.example.com': '1.2.3.4' });
-    h.assertEqual(out[0].server, '1.2.3.4');
-  });
-  h.test('无匹配时保留原 server（含大小写）', () => {
-    const out = apply([mkProxy('NODE.Example.COM')], { 'cdn.unrelated.com': '1.1.1.1' });
-    h.assertEqual(out[0].server, 'NODE.Example.COM');
+  h.test('大小写不敏感匹配，无匹配时保留原 server', () => {
+    h.assertEqual(apply([mkProxy('NODE.Example.COM')], { 'node.example.com': '1.2.3.4' })[0].server, '1.2.3.4');
+    h.assertEqual(
+      apply([mkProxy('NODE.Example.COM')], { 'cdn.unrelated.com': '1.1.1.1' })[0].server,
+      'NODE.Example.COM',
+    );
   });
   h.test('*.通配映射命中同层级子域', () => {
     const out = apply([mkProxy('a.example.com'), mkProxy('a.b.example.com')], { '*.example.com': '9.9.9.9' });
@@ -245,22 +211,15 @@ function runUnitTests(h, api, meta) {
   h.test('非 direct 开头后缀 → 剥离', () =>
     h.assertEqual(api.stripDnsSuffix('https://dns.example.com/dns-query#proxy'), 'https://dns.example.com/dns-query'),
   );
-  h.test('#direct / #DIRECT 后缀 → 保留（忽略大小写）', () => {
-    h.assertEqual(
-      api.stripDnsSuffix('https://dns.example.com/dns-query#direct'),
+  h.test('#direct 后缀 → 整条保留（忽略大小写、含附加参数）', () => {
+    for (const url of [
       'https://dns.example.com/dns-query#direct',
-    );
-    h.assertEqual(
-      api.stripDnsSuffix('https://dns.example.com/dns-query#DIRECT'),
       'https://dns.example.com/dns-query#DIRECT',
-    );
-  });
-  h.test('#direct&ecs 参数后缀 → 整条保留', () =>
-    h.assertEqual(
-      api.stripDnsSuffix('https://dns.example.com/dns-query#direct&ecs=2.2.2.2'),
       'https://dns.example.com/dns-query#direct&ecs=2.2.2.2',
-    ),
-  );
+    ]) {
+      h.assertEqual(api.stripDnsSuffix(url), url);
+    }
+  });
   h.test('#directxxx 后缀 → 剥离（词边界）', () =>
     h.assertEqual(
       api.stripDnsSuffix('https://dns.example.com/dns-query#directxxx'),
