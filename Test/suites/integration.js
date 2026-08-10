@@ -459,11 +459,11 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
         '应为自定义节点添加 dialer-proxy',
       );
 
-      // “自建节点”策略组存在并含自定义节点
-      const customGroup = groupByName(out['proxy-groups'], '自建节点');
-      h.assert(customGroup, '自建节点组应存在');
-      h.assert(!groupByName(out['proxy-groups'], '落地节点'), '不应存在“落地节点”组');
-      h.assert(customGroup.proxies.includes('🇭🇰 自建-香港 01 | 中转'), '自建节点组应含自定义节点');
+      // “链式落地”策略组（链式代理启用时的自定义节点组）存在并含自定义节点
+      const customGroup = groupByName(out['proxy-groups'], '链式落地');
+      h.assert(customGroup, '链式落地组应存在');
+      h.assert(!groupByName(out['proxy-groups'], '自建节点'), '链式代理启用时不应存在“自建节点”组');
+      h.assert(customGroup.proxies.includes('🇭🇰 自建-香港 01 | 中转'), '链式落地组应含自定义节点');
 
       // 链式中转组存在且为 select
       const chain = groupByName(out['proxy-groups'], '链式中转');
@@ -497,7 +497,7 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
         }
       }
 
-      // GLOBAL 聚合所有策略组（含链式中转与自建节点）
+      // GLOBAL 聚合所有策略组（含链式中转与链式落地）
       for (const g of out['proxy-groups']) {
         if (g.name !== 'GLOBAL') {
           h.assert(global.proxies.includes(g.name), `GLOBAL 应包含策略组 ${g.name}`);
@@ -505,12 +505,12 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
       }
 
       // 自定义节点仍参与其他策略组（默认代理/手动选择）；链式中转只放订阅节点，不再形成回环
-      h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('自建节点'), '默认代理应含自建节点组');
+      h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('链式落地'), '默认代理应含链式落地组');
       h.assert(
         groupByName(out['proxy-groups'], '手动选择').proxies.includes('🇭🇰 自建-香港 01 | 中转'),
         '手动选择应含自建节点',
       );
-      h.assert(global.proxies.includes('自建节点'), 'GLOBAL 应含自建节点组');
+      h.assert(global.proxies.includes('链式落地'), 'GLOBAL 应含链式落地组');
     });
   });
 

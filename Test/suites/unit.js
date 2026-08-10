@@ -126,10 +126,10 @@ function runUnitTests(h, api, meta) {
       h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
     }),
   );
-  h.test('链式代理启用：策略组名保持“自建节点”，节点名称保持不变', () =>
+  h.test('链式代理启用：策略组名改为“链式落地”，节点名称保持不变', () =>
     withUnitOptions({ 链式代理: true }, () => {
       const r = api.buildCustomizeGroups([], custom('自建-日本-01'));
-      h.assertEqual(r.customGroup.name, '自建节点');
+      h.assertEqual(r.customGroup.name, '链式落地');
       h.assertDeep(r.customProxyNames, ['🇯🇵 自建-日本-01']);
     }),
   );

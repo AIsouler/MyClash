@@ -622,10 +622,10 @@ function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies)
     customProxies.push(customProxy);
   }
 
-  // “自建节点”策略组
+  // 自建节点/链式落地 策略组
   const customGroup = {
     ...selectBaseOption,
-    name: '自建节点',
+    name: chainEnabled ? '链式落地' : '自建节点',
     proxies: customProxies.map((p) => p.name),
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Server.png',
   };
