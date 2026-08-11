@@ -1230,8 +1230,14 @@ function applyHostsToProxies(proxies, hosts) {
     return typeof value === 'string' && value.length > 0 ? value : null;
   };
 
+  // 解析结果缓存：相同节点域名只解析一次，后续直接复用
+  const resolveCache = new Map();
+
   // 解析单个节点域名：沿链式映射逐级改写至最终目标，无匹配时原样返回
   const resolve = (server) => {
+    const cached = resolveCache.get(server);
+    if (cached !== undefined) return cached;
+
     const seen = new Set();
     let current = server.toLowerCase();
     let result = server;
@@ -1243,6 +1249,7 @@ function applyHostsToProxies(proxies, hosts) {
       result = target;
       current = target.toLowerCase();
     }
+    resolveCache.set(server, result);
     return result;
   };
 
