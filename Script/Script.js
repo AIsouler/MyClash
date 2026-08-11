@@ -230,6 +230,12 @@ const baseRuleProviders = {
     path: './ruleset/google.mrs',
     'path-in-bundle': 'geo/geosite/google.mrs',
   },
+  google_ip: {
+    ...ruleProviderCommonIpcidr,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/google.mrs',
+    path: './ruleset/google_ip.mrs',
+    'path-in-bundle': 'geo/geoip/google.mrs',
+  },
   gfw: {
     ...ruleProviderCommonDomain,
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gfw.mrs',
@@ -1160,6 +1166,7 @@ function main(config) {
 
     // 兜底规则
     'RULE-SET,google,默认代理',
+    'RULE-SET,google_ip,默认代理,no-resolve',
     'RULE-SET,gfw,默认代理',
     'RULE-SET,geolocation-cn,直连',
     'RULE-SET,cn_ip,直连',
