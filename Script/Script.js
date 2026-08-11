@@ -847,9 +847,6 @@ const commonDnsList = [
   'system',
 ];
 
-// 预编译为单个正则，避免逐个遍历数组进行子串匹配；i 标志统一忽略大小写
-let commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
-
 // 国内外 DNS 定义
 const chinaDNS = ['https://dns.alidns.com/dns-query#DIRECT', 'https://doh.pub/dns-query#DIRECT'];
 const foreignDNS = ['https://dns.cloudflare.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理'];
@@ -1011,11 +1008,14 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
 
   // 命中触发条件时，将 listen 值加入公共 DNS 列表并重建匹配正则，
   // 使其在私有 DNS 提取时被当作公共 DNS 过滤，避免 listen 地址被误留为私有 DNS
+  const commonDnsSet = new Set(commonDnsList);
   if (shouldRewriteByHosts) {
-    commonDnsList.push(String(listenValue));
-    commonDnsRegex = new RegExp(commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i');
+    commonDnsSet.add(listenValue);
   }
-
+  const commonDnsRegex = new RegExp(
+    [...commonDnsSet].map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+    'i',
+  );
   const isCommonDns = (dns) => commonDnsRegex.test(String(dns));
 
   // 提取私有 DNS（先剥离 # 策略组后缀，再判断是否为公共 DNS）
