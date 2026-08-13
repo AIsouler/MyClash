@@ -48,6 +48,8 @@ const ruleOptionsEnable = {
   过滤高倍率节点: false, // 是否过滤高倍率节点
   过滤非地区节点: true, // 是否过滤非地区节点
   屏蔽国外QUIC: true, // 是否屏蔽国外QUIC流量
+  代理IPV4优先: false, // 是否将订阅节点统一为 IPv4 优先（与“代理IPV6优先”同时开启时不生效）
+  代理IPV6优先: false, // 是否将订阅节点统一为 IPv6 优先（与“代理IPV4优先”同时开启时不生效）
   链式代理: false, // 是否启用链式代理（自定义节点作为落地节点，经“链式中转”策略组中转）
 };
 
@@ -750,6 +752,19 @@ function fixDialerProxy(proxy, renameMap, normalizedProxyNames) {
 }
 
 /**
+ * 读取代理 IP 版本偏好：仅其中一个开关开启时返回对应偏好，
+ * 同时开启或同时关闭时返回 null（不应用任何偏好，节点保持原样）
+ */
+function getIpVersionPreference() {
+  const ipv4PreferEnabled = ruleOptionsEnable.代理IPV4优先;
+  const ipv6PreferEnabled = ruleOptionsEnable.代理IPV6优先;
+
+  if (ipv4PreferEnabled && !ipv6PreferEnabled) return 'ipv4-prefer';
+  if (ipv6PreferEnabled && !ipv4PreferEnabled) return 'ipv6-prefer';
+  return null;
+}
+
+/**
  * 过滤并标准化节点：剔除内置/信息节点、按配置过滤、去重、修复 dialer-proxy 引用，空列表时抛错
  */
 function filterAndNormalizeProxies(config) {
@@ -806,6 +821,14 @@ function filterAndNormalizeProxies(config) {
   // 验证节点列表是否存在代理节点
   if (!filteredProxies.length) {
     throw new Error('配置文件中未找到任何代理节点，请使用机场提供的配置文件进行覆写');
+  }
+
+  // 应用代理 IP 版本偏好（仅订阅节点；自定义节点与直连节点不参与）
+  const ipVersionPreference = getIpVersionPreference();
+  if (ipVersionPreference) {
+    return filteredProxies.map((proxy) =>
+      proxy['ip-version'] === ipVersionPreference ? proxy : { ...proxy, 'ip-version': ipVersionPreference },
+    );
   }
 
   return filteredProxies;
