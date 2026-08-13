@@ -1360,7 +1360,8 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     'cache-algorithm': 'arc',
     'use-system-hosts': true,
     'enhanced-mode': 'fake-ip',
-    'fake-ip-range': '198.18.0.1/16',
+    'fake-ip-range': '198.18.0.1/15',
+    'fake-ip-range6': '2001:2::1/48',
     'fake-ip-filter': ['rule-set:private', 'rule-set:fakeip_filter', ...proxyFakeIpFilter],
     'proxy-server-nameserver': [...(privateDNS.length > 0 ? privateDNS : chinaDNS)],
     ...(Object.keys(proxyServerPolicy).length > 0 && {
