@@ -132,7 +132,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - `Crypto`
 - `EHentai`
 - `AdBlock`
-- `直连` （可自定义IP优先级）
+- `直连` （可自定义 `双栈/IPv4优先/IPv6优先/仅IPv4/仅IPv6`）
 - `漏网之鱼`
 - `自建节点` （仅添加了自定义节点时生成）
 - `链式中转` （仅启用链式代理且配置自定义节点时生成）

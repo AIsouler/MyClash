@@ -106,6 +106,16 @@ const directProxies = [
     type: 'direct',
     'ip-version': 'ipv6-prefer',
   },
+  {
+    name: '🇨🇳 直连 | 仅IPv4',
+    type: 'direct',
+    'ip-version': 'ipv4',
+  },
+  {
+    name: '🇨🇳 直连 | 仅IPv6',
+    type: 'direct',
+    'ip-version': 'ipv6',
+  },
 ];
 
 // 定义地区策略组

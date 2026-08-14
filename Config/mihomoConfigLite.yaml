@@ -42,9 +42,11 @@ proxy-providers:
 
 # 节点配置，可添加自定义节点
 proxies:
+  - { name: '🇨🇳 直连 | 双栈', type: direct }
   - { name: '🇨🇳 直连 | IPv4优先', type: direct, ip-version: ipv4-prefer }
   - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
-  - { name: '🇨🇳 直连 | 双栈', type: direct }
+  - { name: '🇨🇳 直连 | 仅IPv4', type: direct, ip-version: ipv4 }
+  - { name: '🇨🇳 直连 | 仅IPv6', type: direct, ip-version: ipv6 }
 
 # --- 基础全局配置 ---
 
@@ -357,7 +359,7 @@ proxy-groups:
 
   - name: '直连'
     <<: *group_common_select
-    proxies: ['🇨🇳 直连 | 双栈', '🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先']
+    proxies: ['🇨🇳 直连 | 双栈', '🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先', '🇨🇳 直连 | 仅IPv4', '🇨🇳 直连 | 仅IPv6']
     url: 'https://connectivitycheck.platform.hicloud.com/generate_204'
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png'
 
