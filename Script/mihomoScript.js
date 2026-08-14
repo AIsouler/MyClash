@@ -884,14 +884,14 @@ function createRegionGroup(name, icon, proxies) {
 /**
  * 将节点按地区/倍率归类，构建地区策略组、倍率策略组与“其他节点”组
  */
-function buildRegionGroups(filteredProxies) {
+function buildRegionGroups(filteredProxies, customProxies) {
   const generateRateGroupEnabled = ruleOptionsEnable.生成倍率组;
 
   // 节点分类
   const regionGroups = Object.fromEntries(allRegionDefinitions.map(({ name }) => [name, []]));
   const otherProxies = [];
 
-  for (const proxy of filteredProxies) {
+  for (const proxy of [...filteredProxies, ...customProxies]) {
     const matchedRegions = getMatchedRegions(proxy.name);
     const isRegionProxy = matchedRegions.some((region) => regionDefinitions.includes(region));
 
@@ -1442,7 +1442,7 @@ function main(config) {
   const { customProxies, customProxyNames, customGroup } = buildCustomizeGroups(filteredProxies);
 
   // 构建地区组和倍率组
-  const generatedRegionGroups = buildRegionGroups(filteredProxies);
+  const generatedRegionGroups = buildRegionGroups(filteredProxies, customProxies);
 
   // 构建基础策略组和分流策略组（含“自建节点”策略组与“链式中转”策略组）
   const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup } = buildFunctionalGroups(
