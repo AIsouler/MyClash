@@ -149,7 +149,6 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assertEqual(p.server, '10.0.0.1', 'hosts 映射的节点 server 应被改写');
     h.assert(!('hk1.example.com' in out.hosts), '映射后的节点 hosts 不应复制到新配置');
     h.assert(!('www.unrelated.com' in out.hosts), '无关 hosts 应被过滤');
-    h.assertDeep(out.hosts['dns.google'], ['8.8.8.8', '8.8.4.4']);
   });
   h.test('fake-ip-filter 保留匹配条目并过滤无关条目', () => {
     // 节点域名（精确/后缀/通配）保留，无关条目与 rule-set 被过滤，默认条目置于头部
@@ -193,7 +192,8 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     delete cfg.hosts;
     const out = api.main(cfg);
     h.assertEqual(out.dns.enable, true);
-    h.assertDeep(out.hosts['dns.google'], ['8.8.8.8', '8.8.4.4']);
+    // 默认 hosts 仍生成（不再包含已移除的 dns.alidns.com/dns.google 等条目）
+    h.assertDeep(out.hosts['services.googleapis.cn'], ['services.googleapis.com']);
   });
 
   // ---------------- 配置选项切换 ----------------
