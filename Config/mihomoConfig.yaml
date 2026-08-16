@@ -298,6 +298,11 @@ rule-providers:
     url: 'https://fastly.jsdelivr.net/gh/666OS/rules@release/mihomo/domain/Emby.mrs'
     path: './ruleset/emby.mrs'
     path-in-bundle: 'geo/geosite/category-emby.mrs'
+  emos:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/binaryu/emos-proxy-rule@main/rules/emos-mihomo.mrs'
+    path: './ruleset/emos.mrs'
+    path-in-bundle: 'geo/geosite/category-emby.mrs'
   pikpak:
     <<: *rule_providers_domain
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/pikpak.mrs'
@@ -676,6 +681,7 @@ rules:
   - RULE-SET,tiktok,TikTok
   - RULE-SET,twitter,Twitter
   - RULE-SET,emby,Emby
+  - RULE-SET,emos,Emby
   - DOMAIN-SUFFIX,mb3admin.com,Emby
   - DOMAIN-SUFFIX,nubebelle.com,Emby
   - DOMAIN-KEYWORD,emby,Emby
