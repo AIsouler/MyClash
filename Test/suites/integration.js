@@ -168,14 +168,23 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
   });
   h.test('hosts 改写触发条件不满足时跳过改写', () => {
     const find = (cfg) => api.main(cfg).proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
-    // proxy-server-nameserver 长度不为 1（含多个 DNS，其中一个包含 listen 值）→ 不触发
+    // proxy-server-nameserver 长度不为 1（含多个 DNS，其中一个包含 listen 端口）→ 不触发
     let cfg = fx.typicalSubscription();
     cfg.dns['proxy-server-nameserver'] = ['8.8.8.8', '198.18.0.1:53'];
     h.assertEqual(find(cfg).server, 'hk1.example.com', 'proxy-server-nameserver 长度不为 1 时不应改写');
-    // 长度为 1 但不包含 listen 值 → 不触发
+    // 长度为 1 但不含 listen 端口（:端口）→ 不触发
     cfg = fx.typicalSubscription();
     cfg.dns['proxy-server-nameserver'] = ['8.8.8.8'];
     h.assertEqual(find(cfg).server, 'hk1.example.com', '未命中触发条件时不应改写');
+    // 新写法：proxy-server-nameserver 不含 127.0.0.1 → 不触发
+    cfg = fx.typicalSubscription();
+    cfg.dns.listen = '0.0.0.0:7874';
+    cfg.dns['proxy-server-nameserver'] = ['udp://1.2.3.4:7874'];
+    h.assertEqual(find(cfg).server, 'hk1.example.com', 'proxy-server-nameserver 不含 127.0.0.1 时不应改写');
+    // 新写法：listen 不含 0.0.0.0 → 不触发
+    cfg = fx.typicalSubscription();
+    cfg.dns['proxy-server-nameserver'] = ['udp://127.0.0.1:7874'];
+    h.assertEqual(find(cfg).server, 'hk1.example.com', 'listen 不含 0.0.0.0 时不应改写');
     // listen 缺失或为空字符串 → 不触发，且空串不当作私有 DNS 保留
     for (const listen of [undefined, '']) {
       cfg = fx.typicalSubscription();
@@ -185,6 +194,31 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
       h.assertEqual(find(cfg).server, 'hk1.example.com', 'listen 缺失/为空时不应改写');
       h.assert(!out.dns['proxy-server-nameserver'].includes(''), '不应将空串当作私有 DNS 保留');
     }
+  });
+  h.test('新写法 proxy-server-nameserver 含 127.0.0.1 且 listen 含 0.0.0.0 时触发 hosts 改写', () => {
+    const cfg = fx.typicalSubscription();
+    // 新写法：listen 为 0.0.0.0:7874，proxy-server-nameserver 为 udp://127.0.0.1:7874，
+    // 仅判断两串含 127.0.0.1 与 0.0.0.0（不比较端口）→ 应触发 hosts 改写
+    cfg.dns.listen = '0.0.0.0:7874';
+    cfg.dns['proxy-server-nameserver'] = ['udp://127.0.0.1:7874'];
+    const out = api.main(cfg);
+    const p = out.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p.server, '10.0.0.1', '含 127.0.0.1 与 0.0.0.0 时应触发 hosts 改写');
+    // 端口不同也触发（不再比较端口）
+    cfg.dns['proxy-server-nameserver'] = ['udp://127.0.0.1:5353'];
+    const out2 = api.main(cfg);
+    const p2 = out2.proxies.find((x) => x.name === '🇭🇰 香港 01 | 中转');
+    h.assertEqual(p2.server, '10.0.0.1', '端口不同时仍应触发 hosts 改写');
+    // 本地监听 DNS（udp://127.0.0.1:7874）应在私有 DNS 提取时被置空，不被误留为私有 DNS
+    h.assert(
+      !out.dns['proxy-server-nameserver'].some((d) => d.includes('udp://127.0.0.1')),
+      'listen 对应的本地 DNS 不应被误留为私有 DNS',
+    );
+    // nameserver 中的私有 DNS 仍应保留
+    h.assert(
+      out.dns['proxy-server-nameserver'].includes('https://private.example-dns.com/dns-query'),
+      'nameserver 中的私有 DNS 仍应保留',
+    );
   });
   h.test('无 dns/hosts 输入时生成默认配置', () => {
     const cfg = fx.typicalSubscription();

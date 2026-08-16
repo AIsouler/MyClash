@@ -880,6 +880,12 @@ const commonDnsList = [
   'system',
 ];
 
+// 预编译公共 DNS 正则
+const commonDnsRegex = new RegExp(
+  commonDnsList.map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+  'i',
+);
+
 // 国内外 DNS 定义
 const chinaDNS = ['223.5.5.5', '119.29.29.29'];
 const chinaDohDNS = ['https://223.5.5.5/dns-query#DIRECT', 'https://1.12.12.12/dns-query#DIRECT'];
@@ -1010,19 +1016,26 @@ function stripDnsSuffix(dns) {
  * 构建 DNS 与 hosts：保留私有 DNS、节点域名 policy/fake-ip-filter，并按 hosts 改写节点 server
  */
 function buildDnsAndHostsConfig(config, filteredProxies) {
-  // 读取订阅中的 DNS 配置，保留订阅中的私有 DNS
-  // 用以解决部分机场使用私有 DNS 导致无法解析节点的问题
   const originalDnsConfig = config.dns || {};
 
-  // 仅当原配置 proxy-server-nameserver 有且仅有一个 DNS，且该 DNS 包含非空的 listen 时，
-  // 才根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP），否则跳过改写
+  // hosts改写条件：
+  // 1. 仅当原配置 proxy-server-nameserver 有且仅有一个 DNS，且该 DNS 包含非空的 listen 时
+  // 2. proxy-server-nameserver 有且仅有一个 DNS 并且包含 127.0.0.1 并且 listen 包含 0.0.0.0
   const proxyServerNameservers = originalDnsConfig['proxy-server-nameserver'] || [];
   const listenValue = originalDnsConfig['listen'];
+
+  const matchesLocalDnsListener =
+    proxyServerNameservers.length === 1 &&
+    typeof listenValue === 'string' &&
+    listenValue.includes('0.0.0.0') &&
+    proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes('127.0.0.1'));
+
   const shouldRewriteByHosts =
     proxyServerNameservers.length === 1 &&
     typeof listenValue === 'string' &&
     listenValue.length > 0 &&
-    proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(listenValue.toLowerCase()));
+    (proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(listenValue.toLowerCase())) ||
+      matchesLocalDnsListener);
 
   // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
   const mappedProxies = shouldRewriteByHosts ? applyHostsToProxies(filteredProxies, config.hosts) : filteredProxies;
@@ -1040,22 +1053,15 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
       ])
     : originalProxyDomains;
 
-  // 命中触发条件时，将 listen 值加入公共 DNS 列表并重建匹配正则，
-  // 使其在私有 DNS 提取时被当作公共 DNS 过滤，避免 listen 地址被误留为私有 DNS
-  const commonDnsSet = new Set(commonDnsList);
-  if (shouldRewriteByHosts) {
-    commonDnsSet.add(listenValue);
-  }
-  const commonDnsRegex = new RegExp(
-    [...commonDnsSet].map((dns) => dns.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
-    'i',
-  );
+  // 命中触发条件时，私有 DNS 提取时直接置空，避免本地监听 DNS 被误留为私有 DNS
+  const privateProxyServerNameservers = shouldRewriteByHosts ? [] : proxyServerNameservers;
+
   const isCommonDns = (dns) => commonDnsRegex.test(String(dns));
 
   // 提取私有 DNS（先剥离 # 策略组后缀，再判断是否为公共 DNS）
   const privateDNS = [
     ...new Set(
-      [...(originalDnsConfig['nameserver'] || []), ...proxyServerNameservers]
+      [...(originalDnsConfig['nameserver'] || []), ...privateProxyServerNameservers]
         .map(stripDnsSuffix)
         .filter((dns) => dns.length > 0 && !isCommonDns(dns)),
     ),
