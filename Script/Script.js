@@ -664,17 +664,19 @@ function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies)
     customProxies.push(customProxy);
   }
 
+  const customProxyNames = customProxies.map((p) => p.name);
+
   // 自建节点/链式落地 策略组
   const customGroup = {
     ...selectBaseOption,
     name: chainEnabled ? '链式落地' : '自建节点',
-    proxies: customProxies.map((p) => p.name),
+    proxies: customProxyNames,
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Server.png',
   };
 
   return {
     customProxies,
-    customProxyNames: customProxies.map((p) => p.name),
+    customProxyNames,
     customGroup,
   };
 }
