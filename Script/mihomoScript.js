@@ -996,7 +996,7 @@ function buildCustomizeGroups(filteredProxies, customizeList = customizeProxies)
 // ---构建基础策略组和分流策略组---
 
 /**
- * 构建基础/分流策略组、GLOBAL 组与规则集，并汇总分流规则
+ * 构建基础/分流策略组/部分节点组、GLOBAL 组与规则集，并汇总分流规则
  */
 function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customizeInfo) {
   const blockForeignQuicEnabled = ruleOptionsEnable.屏蔽国外QUIC;
@@ -1085,22 +1085,12 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
   }
 
   // 添加其他策略组
-  functionalGroups.push(
-    {
-      ...selectBaseOption,
-      name: '漏网之鱼',
-      proxies: ['默认代理', '直连', ...groupNamesOfSelect],
-      icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Stack.png',
-    },
-    {
-      ...selectBaseOption,
-      name: '直连',
-      proxies: [...directProxies.map((p) => p.name)],
-      url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
-      icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png',
-      hidden: hideManualSelectGroupEnabled,
-    },
-  );
+  functionalGroups.push({
+    ...selectBaseOption,
+    name: '漏网之鱼',
+    proxies: ['默认代理', '直连', ...groupNamesOfSelect],
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Stack.png',
+  });
 
   // 添加自建节点策略组（未配置自定义节点时跳过）
   if (customGroup) {
@@ -1119,6 +1109,15 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
         }
       : null;
 
+  const directProxiesGroup = {
+    ...selectBaseOption,
+    name: '直连',
+    proxies: [...directProxies.map((p) => p.name)],
+    url: 'https://connectivitycheck.platform.hicloud.com/generate_204',
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png',
+    hidden: hideManualSelectGroupEnabled,
+  };
+
   // 构建 GLOBAL 全局策略组
   const globalGroup = {
     ...selectBaseOption,
@@ -1126,12 +1125,13 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     proxies: [
       ...functionalGroups.map((g) => g.name),
       ...(chainGroup ? [chainGroup.name] : []),
+      directProxiesGroup.name,
       ...generatedRegionGroups.map((g) => g.name),
     ],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup };
+  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directProxiesGroup };
 }
 
 // ---dns和hosts相关处理---
@@ -1459,12 +1459,9 @@ function main(config) {
   // 构建地区组和倍率组
   const generatedRegionGroups = buildRegionGroups(filteredProxies, customProxies);
 
-  // 构建基础策略组和分流策略组（含“自建节点”策略组与“链式中转”策略组）
-  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup } = buildFunctionalGroups(
-    filteredProxies,
-    generatedRegionGroups,
-    { customProxyNames, customGroup },
-  );
+  // 构建基础策略组和分流策略组和部分节点组（含“自建节点”、“链式中转”和“直连”策略组）
+  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directProxiesGroup } =
+    buildFunctionalGroups(filteredProxies, generatedRegionGroups, { customProxyNames, customGroup });
 
   // dns和hosts相关处理（仅订阅节点参与 hosts 改写，返回已应用 hosts 映射的节点列表）
   const { dns, hosts, proxies: mappedProxies } = buildDnsAndHostsConfig(config, filteredProxies);
@@ -1514,6 +1511,7 @@ function main(config) {
     globalGroup,
     ...functionalGroups,
     ...(chainGroup ? [chainGroup] : []),
+    directProxiesGroup,
     ...generatedRegionGroups,
   ];
   newConfig['rule-providers'] = finalRuleProviders;
