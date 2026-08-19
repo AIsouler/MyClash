@@ -83,7 +83,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/15
   fake-ip-range6: 2001:2::1/48
-  fake-ip-filter: ['rule-set:private', 'rule-set:fakeip_filter']
+  fake-ip-filter: ['rule-set:private', 'rule-set:fakeip_filter', 'rule-set:geolocation-cn']
   proxy-server-nameserver: *chinaDohDNS
   default-nameserver: *chinaDNS
   nameserver: *foreignDNS
