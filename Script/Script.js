@@ -1016,6 +1016,13 @@ function stripDnsSuffix(dns) {
 }
 
 /**
+ * 判断节点 server 是否为 IP 地址（IPv4 / IPv6），用于从节点域名集合中排除 IP 类型的 server
+ */
+function isIpAddress(server) {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(server) || server.includes(':');
+}
+
+/**
  * 构建 DNS 与 hosts：保留私有 DNS、节点域名 policy/fake-ip-filter，并按 hosts 改写节点 server
  */
 function buildDnsAndHostsConfig(config, filteredProxies) {
@@ -1043,18 +1050,13 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
   // 根据订阅 hosts 改写节点 server 为映射后的地址（域名或 IP）
   const mappedProxies = shouldRewriteByHosts ? applyHostsToProxies(filteredProxies, config.hosts) : filteredProxies;
 
-  // 原节点域名（改写前）
-  const originalProxyDomains = new Set(
-    filteredProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
+  // 节点域名集合
+  const proxyDomains = new Set(
+    mappedProxies
+      .filter((proxy) => typeof proxy.server === 'string')
+      .map((proxy) => proxy.server.toLowerCase())
+      .filter((server) => !isIpAddress(server)),
   );
-
-  // 合并改写前/后的节点域名；未执行 hosts 改写时两者一致，直接复用原域名集合避免冗余操作
-  const proxyDomains = shouldRewriteByHosts
-    ? new Set([
-        ...originalProxyDomains,
-        ...mappedProxies.filter((proxy) => typeof proxy.server === 'string').map((proxy) => proxy.server.toLowerCase()),
-      ])
-    : originalProxyDomains;
 
   // 命中触发条件时，私有 DNS 提取时直接置空，避免本地监听 DNS 被误留为私有 DNS
   const privateProxyServerNameservers = shouldRewriteByHosts ? [] : proxyServerNameservers;
@@ -1085,6 +1087,13 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     proxyServerPolicy[domain] = value;
   }
 
+  // 无节点专属 DNS 策略且存在私有 DNS 时，将节点域名统一映射到私有 DNS
+  if (privateDNS.length > 0 && Object.keys(proxyServerPolicy).length === 0) {
+    for (const domain of proxyDomains) {
+      proxyServerPolicy[domain] = privateDNS;
+    }
+  }
+
   // 遍历原配置中的 fake-ip-filter，保留与节点域名匹配的条目
   // 部分机场的节点域名需走真实 IP 解析，避免 fake-ip 导致节点无法连接
   const originalFakeIpFilter = originalDnsConfig['fake-ip-filter'] || [];
@@ -1103,7 +1112,7 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     'fake-ip-range': '198.18.0.1/15',
     'fake-ip-range6': '2001:2::1/48',
     'fake-ip-filter': ['rule-set:private', 'rule-set:fakeip_filter', 'rule-set:geolocation-cn', ...proxyFakeIpFilter],
-    'proxy-server-nameserver': privateDNS.length > 0 ? privateDNS : chinaDohDNS,
+    'proxy-server-nameserver': chinaDohDNS,
     ...(Object.keys(proxyServerPolicy).length > 0 && {
       'proxy-server-nameserver-policy': proxyServerPolicy,
     }),

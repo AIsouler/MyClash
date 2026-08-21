@@ -226,6 +226,20 @@ function runUnitTests(h, api, meta) {
       'https://dns.example.com/dns-query',
     ),
   );
+
+  h.section('单元测试 · isIpAddress（IP 地址识别）');
+  h.test('IPv4 → true', () => {
+    h.assert(api.isIpAddress('1.2.3.4'));
+    h.assert(api.isIpAddress('10.0.0.1'));
+  });
+  h.test('IPv6 → true', () => {
+    h.assert(api.isIpAddress('2001:db8::1'));
+    h.assert(api.isIpAddress('::1'));
+  });
+  h.test('域名 → false', () => {
+    h.assert(!api.isIpAddress('example.com'));
+    h.assert(!api.isIpAddress('hk1.example.com'));
+  });
 }
 
 module.exports = { runUnitTests };
