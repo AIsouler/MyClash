@@ -61,6 +61,7 @@ const prefixRules = [
   // 国内直连
   'RULE-SET,games_cn,直连', // 已包含 steam 下载域名
   'RULE-SET,epicgames,直连',
+  'RULE-SET,steam_asn,直连,no-resolve',
   'RULE-SET,nvidia_cn,直连',
   'RULE-SET,apple_cn,直连',
   'RULE-SET,microsoft_cn,直连',
@@ -229,6 +230,12 @@ const baseRuleProviders = {
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/epicgames.mrs',
     path: './ruleset/epicgames.mrs',
     'path-in-bundle': 'geo/geosite/epicgames.mrs',
+  },
+  steam_asn: {
+    ...ruleProviderCommonIpcidr,
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/asn/AS32590.mrs',
+    path: './ruleset/steam_asn.mrs',
+    'path-in-bundle': 'asn/AS32590.mrs',
   },
   nvidia_cn: {
     ...ruleProviderCommonDomain,
