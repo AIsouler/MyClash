@@ -116,15 +116,17 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - `手动选择`
 - `自动选择`
 - `负载均衡`
-- `AI`
-- `Media` （YouTube+Instagram+Netflix+HBO+Twitch+Disney+NicoNico+BBC+Pornhub）
 - `FCM`
+- `YouTube`
 - `Google`
+- `AI`
 - `Microsoft`
 - `Apple`
 - `Telegram`
 - `Steam`
 - `TikTok`
+- `Instagram`
+- `Netflix`
 - `Twitter`
 - `Emby`
 - `PikPak`
@@ -134,7 +136,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - `AdBlock`
 - `直连` （可自定义 `双栈/IPv4优先/IPv6优先/仅IPv4/仅IPv6`）
 - `漏网之鱼`
-- `自建节点` （仅添加了自定义节点时生成）
+- `自建节点/链式落地` （仅添加了自定义节点时生成）
 - `链式中转` （仅启用链式代理且配置自定义节点时生成）
 
 ## 内置节点组
@@ -158,7 +160,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 |                                                                                  |                                                                                  |                                                                                  |                                                                                  |
 | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_1.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_2.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_3.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_4.webp) |
-| ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_5.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_6.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_7.webp) |                                                                                  |
+| ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_5.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_6.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_7.webp) | ![img](https://raw.githubusercontent.com/AIsouler/MyClash/main/Image/IMG_8.webp) |
 
 ## 致谢
 

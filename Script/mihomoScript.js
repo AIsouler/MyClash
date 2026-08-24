@@ -23,16 +23,18 @@ const ruleOptionsEnable = {
   负载均衡: true, // 是否启用负载均衡策略组
 
   // 以下为分流策略配置
-  AI: true, // 国外AI服务
-  Media: true, // 国外视频平台
   FCM: true, // GoogleFCM服务
+  YouTube: true, // YouTube视频平台
   Google: true, // Google服务
+  AI: true, // 国外AI服务
   Microsoft: true, // Microsoft服务
   Apple: true, // Apple服务
   Telegram: true, // Telegram通讯软件
   Steam: true, // Steam游戏平台
   TikTok: true, // TikTok视频平台
   Twitter: true, // Twitter社交平台
+  Instagram: true, // Instagram社交平台
+  Netflix: true, // Netflix视频平台
   Emby: true, // Emby媒体服务
   PikPak: true, // PikPak网盘服务
   Spotify: true, // Spotify音乐服务
@@ -354,101 +356,6 @@ const baseGroups = [
 const serviceConfigs = [
   ...baseGroups,
   {
-    name: 'AI',
-    baseOption: selectBaseOption,
-    defaultSelected: '美国',
-    providers: {
-      ai: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-!cn.mrs',
-        path: './ruleset/ai.mrs',
-        'path-in-bundle': 'geo/geosite/category-ai-!cn.mrs',
-      },
-    },
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png',
-    rules: ['RULE-SET,ai,AI'],
-  },
-  {
-    name: 'Media',
-    baseOption: selectBaseOption,
-    defaultSelected: '日本',
-    providers: {
-      youtube: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs',
-        path: './ruleset/youtube.mrs',
-        'path-in-bundle': 'geo/geosite/youtube.mrs',
-      },
-      instagram: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/instagram.mrs',
-        path: './ruleset/instagram.mrs',
-        'path-in-bundle': 'geo/geosite/instagram.mrs',
-      },
-      netflix: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs',
-        path: './ruleset/netflix.mrs',
-        'path-in-bundle': 'geo/geosite/netflix.mrs',
-      },
-      netflix_ip: {
-        ...ruleProviderCommonIpcidr,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs',
-        path: './ruleset/netflix_ip.mrs',
-        'path-in-bundle': 'geo/geoip/netflix.mrs',
-      },
-      hbo: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/hbo.mrs',
-        path: './ruleset/hbo.mrs',
-        'path-in-bundle': 'geo/geosite/hbo.mrs',
-      },
-      twitch: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/twitch.mrs',
-        path: './ruleset/twitch.mrs',
-        'path-in-bundle': 'geo/geosite/twitch.mrs',
-      },
-      disney: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/disney.mrs',
-        path: './ruleset/disney.mrs',
-        'path-in-bundle': 'geo/geosite/disney.mrs',
-      },
-      niconico: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/niconico.mrs',
-        path: './ruleset/niconico.mrs',
-        'path-in-bundle': 'geo/geosite/niconico.mrs',
-      },
-      bbc: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/bbc.mrs',
-        path: './ruleset/bbc.mrs',
-        'path-in-bundle': 'geo/geosite/bbc.mrs',
-      },
-      pornhub: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/pornhub.mrs',
-        path: './ruleset/pornhub.mrs',
-        'path-in-bundle': 'geo/geosite/pornhub.mrs',
-      },
-    },
-    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ForeignMedia.png',
-    rules: [
-      'RULE-SET,youtube,Media',
-      'RULE-SET,instagram,Media',
-      'RULE-SET,netflix,Media',
-      'RULE-SET,netflix_ip,Media,no-resolve',
-      'RULE-SET,hbo,Media',
-      'RULE-SET,twitch,Media',
-      'RULE-SET,disney,Media',
-      'RULE-SET,niconico,Media',
-      'RULE-SET,bbc,Media',
-      'RULE-SET,pornhub,Media',
-    ],
-  },
-  {
     name: 'FCM',
     baseOption: selectBaseOption,
     direct: true,
@@ -463,6 +370,20 @@ const serviceConfigs = [
     },
     icon: 'https://fastly.jsdelivr.net/gh/MiToverG422/Qure@master/IconSet/Color/fcm.png',
     rules: ['RULE-SET,googlefcm,FCM'],
+  },
+  {
+    name: 'YouTube',
+    baseOption: selectBaseOption,
+    providers: {
+      youtube: {
+        ...ruleProviderCommonDomain,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs',
+        path: './ruleset/youtube.mrs',
+        'path-in-bundle': 'geo/geosite/youtube.mrs',
+      },
+    },
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/YouTube.png',
+    rules: ['RULE-SET,youtube,YouTube'],
   },
   {
     name: 'Google',
@@ -483,6 +404,21 @@ const serviceConfigs = [
     },
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Google_Search.png',
     rules: ['RULE-SET,google,Google', 'RULE-SET,google_ip,Google,no-resolve'],
+  },
+  {
+    name: 'AI',
+    baseOption: selectBaseOption,
+    defaultSelected: '美国',
+    providers: {
+      ai: {
+        ...ruleProviderCommonDomain,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-!cn.mrs',
+        path: './ruleset/ai.mrs',
+        'path-in-bundle': 'geo/geosite/category-ai-!cn.mrs',
+      },
+    },
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/ChatGPT.png',
+    rules: ['RULE-SET,ai,AI'],
   },
   {
     name: 'Microsoft',
@@ -589,6 +525,40 @@ const serviceConfigs = [
     },
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Twitter.png',
     rules: ['RULE-SET,twitter,Twitter', 'RULE-SET,twitter_ip,Twitter,no-resolve'],
+  },
+  {
+    name: 'Instagram',
+    baseOption: selectBaseOption,
+    providers: {
+      instagram: {
+        ...ruleProviderCommonDomain,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/instagram.mrs',
+        path: './ruleset/instagram.mrs',
+        'path-in-bundle': 'geo/geosite/instagram.mrs',
+      },
+    },
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Instagram.png',
+    rules: ['RULE-SET,instagram,Instagram'],
+  },
+  {
+    name: 'Netflix',
+    baseOption: selectBaseOption,
+    providers: {
+      netflix: {
+        ...ruleProviderCommonDomain,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs',
+        path: './ruleset/netflix.mrs',
+        'path-in-bundle': 'geo/geosite/netflix.mrs',
+      },
+      netflix_ip: {
+        ...ruleProviderCommonIpcidr,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/netflix.mrs',
+        path: './ruleset/netflix_ip.mrs',
+        'path-in-bundle': 'geo/geoip/netflix.mrs',
+      },
+    },
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Netflix.png',
+    rules: ['RULE-SET,netflix,Netflix', 'RULE-SET,netflix_ip,Netflix,no-resolve'],
   },
   {
     name: 'Emby',
@@ -873,7 +843,7 @@ function createRegionGroup(name, icon, proxies) {
         ...selectBaseOption,
         name,
         icon,
-        proxies: [urlTestName, ...proxies],
+        proxies: [...proxies, urlTestName],
         hidden: hideManualSelectGroupEnabled,
       },
     ];
