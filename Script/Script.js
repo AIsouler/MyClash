@@ -378,9 +378,15 @@ const serviceConfigs = [
         path: './ruleset/steam.mrs',
         'path-in-bundle': 'geo/geosite/steam.mrs',
       },
+      steam_asn: {
+        ...ruleProviderCommonIpcidr,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/asn/AS32590.mrs',
+        path: './ruleset/steam_asn.mrs',
+        'path-in-bundle': 'asn/AS32590.mrs',
+      },
     },
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Steam.png',
-    rules: ['RULE-SET,steam,Steam'],
+    rules: ['RULE-SET,steam,Steam', 'RULE-SET,steam_asn,Steam,no-resolve'],
   },
   {
     name: 'AdBlock',

@@ -204,6 +204,11 @@ rule-providers:
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs'
     path: './ruleset/steam.mrs'
     path-in-bundle: 'geo/geosite/steam.mrs'
+  steam_asn:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/asn/AS32590.mrs'
+    path: './ruleset/steam_asn.mrs'
+    path-in-bundle: 'asn/AS32590.mrs'
   gfw:
     <<: *rule_providers_domain
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gfw.mrs'
@@ -468,6 +473,7 @@ rules:
   - RULE-SET,telegram,Telegram
   - RULE-SET,telegram_ip,Telegram,no-resolve
   - RULE-SET,steam,Steam
+  - RULE-SET,steam_asn,Steam,no-resolve
 
   # 兜底规则
   - RULE-SET,gfw,默认代理
