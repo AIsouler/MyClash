@@ -814,7 +814,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
         }
       : null;
 
-  const directProxiesGroup = {
+  const directGroup = {
     ...selectBaseOption,
     name: '直连',
     proxies: [...directProxies.map((p) => p.name)],
@@ -830,13 +830,13 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
     proxies: [
       ...functionalGroups.map((g) => g.name),
       ...(chainGroup ? [chainGroup.name] : []),
-      directProxiesGroup.name,
+      directGroup.name,
       ...generatedRegionGroups.map((g) => g.name),
     ],
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png',
   };
 
-  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directProxiesGroup };
+  return { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directGroup };
 }
 
 // ---dns和hosts相关处理---
@@ -1174,7 +1174,7 @@ function main(config) {
   const generatedRegionGroups = buildRegionGroups(filteredProxies, customProxies);
 
   // 构建基础策略组和分流策略组和部分节点组（含“自建节点”、“链式中转”和“直连”策略组）
-  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directProxiesGroup } =
+  const { globalGroup, functionalGroups, functionalRules, finalRuleProviders, chainGroup, directGroup } =
     buildFunctionalGroups(filteredProxies, generatedRegionGroups, { customProxyNames, customGroup });
 
   // dns和hosts相关处理（仅订阅节点参与 hosts 改写，返回已应用 hosts 映射的节点列表）
@@ -1225,7 +1225,7 @@ function main(config) {
     globalGroup,
     ...functionalGroups,
     ...(chainGroup ? [chainGroup] : []),
-    directProxiesGroup,
+    directGroup,
     ...generatedRegionGroups,
   ];
   newConfig['rule-providers'] = finalRuleProviders;
