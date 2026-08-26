@@ -22,6 +22,7 @@ const ruleOptionsEnable = {
   自动选择: true, // 是否启用自动选择策略组
 
   // 以下为分流策略配置
+  Google: true, // Google服务
   AI: true, // 国外AI服务
   Telegram: true, // Telegram通讯软件
   Steam: true, // Steam游戏平台
@@ -244,18 +245,6 @@ const baseRuleProviders = {
 
   // --- 代理规则集 ---
 
-  google: {
-    ...ruleProviderCommonDomain,
-    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs',
-    path: './ruleset/google.mrs',
-    'path-in-bundle': 'geo/geosite/google.mrs',
-  },
-  google_ip: {
-    ...ruleProviderCommonIpcidr,
-    url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/google.mrs',
-    path: './ruleset/google_ip.mrs',
-    'path-in-bundle': 'geo/geoip/google.mrs',
-  },
   gfw: {
     ...ruleProviderCommonDomain,
     url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gfw.mrs',
@@ -330,6 +319,26 @@ const baseGroups = [
 // 定义分流策略组配置
 const serviceConfigs = [
   ...baseGroups,
+  {
+    name: 'Google',
+    baseOption: selectBaseOption,
+    providers: {
+      google: {
+        ...ruleProviderCommonDomain,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs',
+        path: './ruleset/google.mrs',
+        'path-in-bundle': 'geo/geosite/google.mrs',
+      },
+      google_ip: {
+        ...ruleProviderCommonIpcidr,
+        url: 'https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/google.mrs',
+        path: './ruleset/google_ip.mrs',
+        'path-in-bundle': 'geo/geoip/google.mrs',
+      },
+    },
+    icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Google_Search.png',
+    rules: ['RULE-SET,google,Google', 'RULE-SET,google_ip,Google,no-resolve'],
+  },
   {
     name: 'AI',
     baseOption: selectBaseOption,
@@ -569,7 +578,7 @@ function createRegionGroup(name, icon, proxies) {
         ...selectBaseOption,
         name,
         icon,
-        proxies: [urlTestName, ...proxies],
+        proxies: [...proxies, urlTestName],
         hidden: hideManualSelectGroupEnabled,
       },
     ];
@@ -1228,8 +1237,6 @@ function main(config) {
     ...functionalRules,
 
     // 兜底规则
-    'RULE-SET,google,默认代理',
-    'RULE-SET,google_ip,默认代理,no-resolve',
     'RULE-SET,gfw,默认代理',
     'RULE-SET,geolocation-cn,直连',
     'RULE-SET,cn_ip,直连',
