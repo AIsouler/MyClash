@@ -68,7 +68,6 @@ const prefixRules = [
   'RULE-SET,microsoft_cn,直连',
   'DOMAIN,fsend.cn,直连',
   'DOMAIN,international-gfe.download.nvidia.com,直连',
-  'DOMAIN-SUFFIX,hdslb.com,直连',
 ];
 
 // 此处添加自定义节点，填入下方[]内（可选，留空则不生成“自建节点”策略组）

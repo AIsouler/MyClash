@@ -458,7 +458,6 @@ rules:
   - RULE-SET,microsoft_cn,直连
   - DOMAIN,fsend.cn,直连
   - DOMAIN,international-gfe.download.nvidia.com,直连
-  - DOMAIN-SUFFIX,hdslb.com,直连
 
   # 禁用国外 QUIC 流量
   - AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((RULE-SET,cn_additional),(RULE-SET,cn_ip,no-resolve)))))),REJECT
