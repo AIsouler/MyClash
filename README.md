@@ -170,7 +170,7 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 
 - [YiXuanZX/rules](https://github.com/YiXuanZX/rules)
 
-- [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat)
+- [appshubcc/bett-rules](https://github.com/appshubcc/bett-rules)
 
 - [wwqgtxx/clash-rules](https://github.com/wwqgtxx/clash-rules)
 
