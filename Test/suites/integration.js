@@ -239,7 +239,7 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     h.assertDeep(out.dns['proxy-server-nameserver'], api.chinaDohDNS);
     h.assert(!('proxy-server-nameserver-policy' in out.dns), '无私有 DNS 时不应生成 policy');
     // 默认 hosts 仍生成（不再包含已移除的 dns.alidns.com/dns.google 等条目）
-    h.assertDeep(out.hosts['services.googleapis.cn'], ['services.googleapis.com']);
+    h.assertDeep(out.hosts['services.googleapis.cn'], 'services.googleapis.com');
   });
 
   // ---------------- 配置选项切换 ----------------

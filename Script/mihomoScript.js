@@ -1349,7 +1349,7 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     'dns.google': ['8.8.8.8', '8.8.4.4'],
 
     // 解决谷歌商店无法下载的问题
-    'services.googleapis.cn': ['services.googleapis.com'],
+    'services.googleapis.cn': 'services.googleapis.com',
 
     // 屏蔽哔哩哔哩PCDN，解决访问视频/直播卡顿问题
     '+.mcdn.bilivideo.com': ['0.0.0.0'],
