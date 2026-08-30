@@ -1135,6 +1135,7 @@ const commonDnsList = [
 
   // 关键词（国外）
   'dns.google',
+  'dns.cloudflare',
   'cloudflare-dns',
   'quad9',
   'opendns',
