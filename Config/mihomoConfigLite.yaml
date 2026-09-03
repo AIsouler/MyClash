@@ -13,7 +13,7 @@ proxy_providers_common:
     interval: 86400,
     proxy: DIRECT,
     exclude-type: 'direct|reject|rematch',
-    health-check: { enable: true, url: https://g.cn/generate_204, interval: 600, lazy: true },
+    health-check: { enable: true, url: https://www.apple.com/library/test/success.html, interval: 600, lazy: true },
   }
 
 # 全局过滤节点
@@ -249,7 +249,7 @@ group_common:
       timeout: 3000,
       max-failed-times: 3,
       empty-fallback: REJECT,
-      url: 'https://g.cn/generate_204',
+      url: 'https://www.apple.com/library/test/success.html',
       lazy: true,
     }
 
@@ -260,7 +260,7 @@ group_common:
       timeout: 3000,
       max-failed-times: 3,
       empty-fallback: REJECT,
-      url: 'https://g.cn/generate_204',
+      url: 'https://www.apple.com/library/test/success.html',
       lazy: true,
       tolerance: 50,
       include-all: true,
@@ -380,7 +380,6 @@ proxy-groups:
   - name: '直连'
     <<: *group_common_select
     proxies: ['🇨🇳 直连 | 双栈', '🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先', '🇨🇳 直连 | 仅IPv4', '🇨🇳 直连 | 仅IPv6']
-    url: 'https://connectivitycheck.platform.hicloud.com/generate_204'
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/China_Map.png'
 
   # 定义地区策略组
