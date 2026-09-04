@@ -36,6 +36,7 @@
 - ✅ 支持自定义是否隐藏地区手动选择策略组
 - ✅ 支持自定义是否生成 高/低 倍率节点组
 - ✅ 支持自定义是否将全部节点加入分流策略组
+- ✅ 支持自定义是否过滤低倍率节点
 - ✅ 支持自定义是否过滤高倍率节点
 - ✅ 支持自定义是否过滤非地区节点
 - ✅ 支持自定义是否屏蔽国外 QUIC 流量
@@ -171,8 +172,6 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - [YiXuanZX/rules](https://github.com/YiXuanZX/rules)
 
 - [appshubcc/bett-rules](https://github.com/appshubcc/bett-rules)
-
-- [wwqgtxx/clash-rules](https://github.com/wwqgtxx/clash-rules)
 
 - [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters)
 
