@@ -244,6 +244,11 @@ rule-providers:
     url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/tiktok.mrs'
     path: './ruleset/tiktok.mrs'
     path-in-bundle: 'geo/geosite/tiktok.mrs'
+  tiktok_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/tiktok.mrs'
+    path: './ruleset/tiktok_ip.mrs'
+    path-in-bundle: 'geo/geoip/tiktok.mrs'
   twitter:
     <<: *rule_providers_domain
     url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/twitter.mrs'
@@ -289,6 +294,11 @@ rule-providers:
     url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/spotify.mrs'
     path: './ruleset/spotify.mrs'
     path-in-bundle: 'geo/geosite/spotify.mrs'
+  spotify_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/spotify.mrs'
+    path: './ruleset/spotify_ip.mrs'
+    path-in-bundle: 'geo/geoip/spotify.mrs'
   cryptocurrency:
     <<: *rule_providers_domain
     url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-cryptocurrency.mrs'
@@ -661,6 +671,7 @@ rules:
   - RULE-SET,steam,Steam
   - RULE-SET,steam_ip,Steam,no-resolve
   - RULE-SET,tiktok,TikTok
+  - RULE-SET,tiktok_ip,TikTok,no-resolve
   - RULE-SET,twitter,Twitter
   - RULE-SET,twitter_ip,Twitter,no-resolve
   - RULE-SET,instagram,Instagram
@@ -680,6 +691,7 @@ rules:
   - PROCESS-NAME,com.feifeiduck.capyplayer,Emby
   - RULE-SET,pikpak,PikPak
   - RULE-SET,spotify,Spotify
+  - RULE-SET,spotify_ip,Spotify,no-resolve
   - RULE-SET,cryptocurrency,Crypto
   - RULE-SET,ehentai,EHentai
 

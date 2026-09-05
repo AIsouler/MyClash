@@ -509,9 +509,15 @@ const serviceConfigs = [
         path: './ruleset/tiktok.mrs',
         'path-in-bundle': 'geo/geosite/tiktok.mrs',
       },
+      tiktok_ip: {
+        ...ruleProviderCommonIpcidr,
+        url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/tiktok.mrs',
+        path: './ruleset/tiktok_ip.mrs',
+        'path-in-bundle': 'geo/geoip/tiktok.mrs',
+      },
     },
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/TikTok.png',
-    rules: ['RULE-SET,tiktok,TikTok'],
+    rules: ['RULE-SET,tiktok,TikTok', 'RULE-SET,tiktok_ip,TikTok,no-resolve'],
   },
   {
     name: 'Twitter',
@@ -627,9 +633,15 @@ const serviceConfigs = [
         path: './ruleset/spotify.mrs',
         'path-in-bundle': 'geo/geosite/spotify.mrs',
       },
+      spotify_ip: {
+        ...ruleProviderCommonIpcidr,
+        url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/spotify.mrs',
+        path: './ruleset/spotify_ip.mrs',
+        'path-in-bundle': 'geo/geoip/spotify.mrs',
+      },
     },
     icon: 'https://fastly.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Spotify.png',
-    rules: ['RULE-SET,spotify,Spotify'],
+    rules: ['RULE-SET,spotify,Spotify', 'RULE-SET,spotify_ip,Spotify,no-resolve'],
   },
   {
     name: 'Crypto',
