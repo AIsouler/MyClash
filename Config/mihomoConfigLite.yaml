@@ -91,8 +91,11 @@ dns:
   proxy-server-nameserver: *proxyServerDNS
   nameserver: *foreignDNS
   nameserver-policy:
+    'rule-set:private': 'system'
+    'rule-set:douyin': ['system', '180.184.1.1', '180.184.2.2']
     'rule-set:cn': *chinaDNS
   direct-nameserver: *chinaDNS
+  direct-nameserver-follow-policy: true
 
 hosts:
   'doh.pub': ['1.12.12.12', '120.53.53.53']
@@ -241,6 +244,11 @@ rule-providers:
     url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/cn.mrs'
     path: './ruleset/cn.mrs'
     path-in-bundle: 'geo/geosite/cn.mrs'
+  douyin:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/douyin.mrs'
+    path: './ruleset/douyin.mrs'
+    path-in-bundle: 'geo/geosite/douyin.mrs'
 
 # --- 策略组 (Proxy Groups) ---
 
