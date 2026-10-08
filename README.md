@@ -131,3 +131,4 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/mihomoConfigLite.
 - [YiXuanZX/rules](https://github.com/YiXuanZX/rules)
 - [appshubcc/bett-rules](https://github.com/appshubcc/bett-rules)
 - [Koolson/Qure](https://github.com/Koolson/Qure)
+- [jsdmirror/JSDMirror](https://github.com/jsdmirror/JSDMirror)
