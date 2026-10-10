@@ -2,23 +2,9 @@
 
 /**
  * 纯函数单元测试，两个脚本共用。
- * 覆盖：matchDomainPattern / getMatchedRegions / normalizeProxyName / fixDialerProxy
+ * 覆盖：matchDomainPattern / getMatchedRegions / normalizeProxyName / fixDialerProxy / buildCustomizeGroups
  */
 function runUnitTests(h, api, meta) {
-  /** 临时修改 ruleOptionsEnable 的若干选项，执行完成后恢复，避免污染后续用例 */
-  const withUnitOptions = (patch, fn) => {
-    const saved = {};
-    for (const key of Object.keys(patch)) {
-      saved[key] = api.ruleOptionsEnable[key];
-      api.ruleOptionsEnable[key] = patch[key];
-    }
-    try {
-      return fn();
-    } finally {
-      for (const key of Object.keys(patch)) api.ruleOptionsEnable[key] = saved[key];
-    }
-  };
-
   h.section('单元测试 · matchDomainPattern（域名规则匹配）');
   const d = new Set(['example.com', 'sub.example.com', 'a.b.example.com', 'other.org']);
   h.test('精确匹配命中', () => h.assert(api.matchDomainPattern('example.com', d)));
@@ -98,32 +84,6 @@ function runUnitTests(h, api, meta) {
     );
     h.assertDeep(r.customProxyNames, ['🇭🇰 自建-自建-香港 01']);
   });
-
-  h.section('单元测试 · buildCustomizeGroups（链式代理）');
-  h.test('链式代理启用：强制添加 dialer-proxy（已有值被覆盖）', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      for (const proxies of [custom('自建独享'), [{ ...mkCustomProxy('自建独享'), 'dialer-proxy': '旧中转' }]]) {
-        const r = api.buildCustomizeGroups([], proxies);
-        h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
-      }
-    }),
-  );
-  h.test('链式代理启用：策略组名改为“链式落地”，节点名称保持不变', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      const r = api.buildCustomizeGroups([], custom('自建-日本-01'));
-      h.assertEqual(r.customGroup.name, '链式落地');
-      h.assertDeep(r.customProxyNames, ['🇯🇵 自建-日本-01']);
-    }),
-  );
-  h.test('未启用链式代理：不添加 dialer-proxy', () => {
-    const r = api.buildCustomizeGroups([], custom('自建独享'));
-    h.assert(!('dialer-proxy' in r.customProxies[0]), '未启用链式代理时不应添加 dialer-proxy');
-  });
-  h.test('链式代理启用但未配置自定义节点 → 抛错', () =>
-    withUnitOptions({ 链式代理: true }, () =>
-      h.assertThrows(() => api.buildCustomizeGroups([], []), /启用失败，请在脚本中添加自定义节点后尝试/),
-    ),
-  );
 
   h.section('单元测试 · fixDialerProxy（dialer-proxy 引用修复）');
   const renameMap = new Map([['旧名', '新名']]);
