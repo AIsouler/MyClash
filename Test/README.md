@@ -44,7 +44,7 @@ npm --prefix Test install
 - `matchDomainPattern`：精确 / `+.` / `.` / `*.` / 中间通配符、大小写
 - `applyHostsToProxies`：hosts 映射改写节点 server（精确/通配/数组取值/优先级/链式映射，回环映射防御性终止）
 - `stripDnsSuffix`：# 策略组后缀处理（#direct 或 #direct&参数 整条保留，direct 后接其他字符仍剥离）
-- `getMatchedRegions`：香港 / 日本 / 美国 / 新加坡 / 台湾省（全量版）以及低/高倍率匹配
+- `getMatchedRegions`：香港 / 日本 / 美国 / 新加坡 / 台湾（全量版）以及低/高倍率匹配
 - `normalizeProxyName`：自动补国旗、折叠空格、保持原名
 - `fixDialerProxy`：重命名引用更新、引用目标不存在时移除、未变引用保留
 - `buildCustomizeGroups`：自定义节点标准化、与订阅节点重名加“自建-”前缀、内部去重、构建自定义节点策略组（链式代理启用时名“链式落地”，否则“自建节点”）
