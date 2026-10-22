@@ -12,7 +12,7 @@ proxy_providers_common:
     type: http,
     interval: 86400,
     proxy: DIRECT,
-    exclude-type: 'direct|reject|rematch',
+    exclude-type: 'DIRECT|REJECT|REMATCH',
     health-check: { enable: true, url: https://www.apple.com/library/test/success.html, interval: 600, lazy: true },
   }
 
