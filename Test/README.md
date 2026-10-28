@@ -56,7 +56,8 @@ npm --prefix Test install
 - 节点名含零宽字符（`invisibleCharsSubscription`）：地区识别、信息节点过滤、倍率判断均不受影响；且节点名**不被改写**（不可见字符原样保留，只额外补国旗），dialer-proxy 引用照常同步
 - GLOBAL 策略组聚合所有策略组
 - DNS 与 hosts（`default-nameserver` 与 `proxy-server-nameserver` 分别使用固定公共 DNS；私有 DNS 在无节点专属 policy 时合并写入节点域名 policy、有专属 policy 时优先保留、公共 DNS 过滤；节点域名 policy/fake-ip-filter 保留（节点域名仅取映射后的 server 且排除 IP 类型）、包含 `doh.pub` 在内的默认 hosts 映射，以及 hosts 映射改写 server；仅当 `proxy-server-nameserver` 有且仅有一个条目且包含 `listen` 值，或条目含 `127.0.0.1` 且 `listen` 含 `0.0.0.0` 时才触发改写，未命中时跳过改写）
-- 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 分流组添加所有节点 / QUIC 及 cn_additional 规则集 / 关闭分流组）
+- 配置选项开关（过滤高倍率 / 自动选择组 / 隐藏手动组 / 生成倍率组 / 生成家宽节点组 / 分流组添加所有节点 / QUIC 及 cn_additional 规则集 / 关闭分流组）
+- 家宽节点：生成“家宽节点”组（含 Home 图标），地区家宽节点同时归地区组，无地区关键词的家宽节点入“其他节点”组；`生成家宽节点组=false` 时不再生成该组，节点仍按地区 / 其他节点归类
 - 自定义节点：未配置时不生成自定义节点组；配置后生成“自建节点”组、重名加“自建-”前缀、不参与 hosts 改写与 DNS 域名处理、默认代理/GLOBAL/手动选择包含自定义节点
 - 异常场景（空节点、仅 DIRECT/REJECT/rematch 类型、全部可过滤节点 → 抛错）
 

@@ -423,13 +423,18 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     );
     h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('家宽节点'), '默认代理应含家宽节点组');
   });
-  h.test('过滤家宽节点=true → 移除家宽节点及家宽节点组', () =>
-    withOptions(api, { 过滤家宽节点: true }, () => {
+  h.test('生成家宽节点组=false → 不生成家宽节点组，节点仍按地区/其他归类', () =>
+    withOptions(api, { 生成家宽节点组: false }, () => {
       const out = api.main(fx.homeBroadbandSubscription());
-      const n = proxyNames(out.proxies);
-      h.assert(!n.some((x) => /家宽|住宅|原生IP|家庭宽带|ISP|RES/i.test(x)), '家宽节点应被过滤');
       h.assert(!groupByName(out['proxy-groups'], '家宽节点'), '不应生成家宽节点组');
-      h.assert(n.includes('🇸🇬 新加坡 06'), '非家宽节点应保留');
+      h.assert(!groupByName(out['proxy-groups'], '家宽节点-自动选择'), '不应生成家宽自动选择组');
+      h.assert(groupByName(out['proxy-groups'], '香港').proxies.includes('🇭🇰 香港 家宽 01'), '地区家宽节点仍归地区组');
+      h.assert(
+        groupByName(out['proxy-groups'], '其他节点').proxies.includes('家宽专线 03'),
+        '无地区关键词的家宽节点仍入其他节点组',
+      );
+      h.assert(!groupByName(out['proxy-groups'], '默认代理').proxies.includes('家宽节点'), '默认代理不应含家宽节点组');
+      h.assert(proxyNames(out.proxies).includes('🇭🇰 香港 家宽 01'), '家宽节点本身仍应保留');
     }),
   );
 

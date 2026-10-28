@@ -485,7 +485,7 @@ group_filter:
     &high_filter {
       filter: '(?i)(?:[*×✕✖⨯⨉x](?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?(?:倍|[*×✕✖⨯⨉x]))',
     }
-  jiaKuan_filter: &jiaKuan_filter { filter: '(?i)(家宽|住宅|原生\s*IP|家庭宽带|\bISP\b|\bRES\b|residential)' }
+  home_filter: &home_filter { filter: '(?i)(家宽|住宅|原生\s*IP|家庭宽带|\bISP\b|\bRES\b|residential)' }
   exclude_filter:
     &exclude_filter {
       exclude-filter: '(?i)(🇭🇰|香港|(?<![A-Za-z])HKG?(?![A-Za-z])|hong\s*kong|🇯🇵|日本|东京|大阪|京都|(?<![A-Za-z])JPN?(?![A-Za-z])|japan|🇺🇸|美国|纽约|洛杉矶|旧金山|芝加哥|休斯顿|迈阿密|西雅图|波士顿|华盛顿|拉斯维加斯|圣何塞|(?<![A-Za-z])USA?(?![A-Za-z])|america|united\s*states|🇸🇬|新加坡|狮城|(?<![A-Za-z])SGP?(?![A-Za-z])|singapore|🇹🇼|台湾|台北|高雄|(?<![A-Za-z])TWN?(?![A-Za-z])|taiwan)',
@@ -687,12 +687,12 @@ proxy-groups:
     <<: [*group_common_auto, *high_filter]
 
   - name: '家宽节点'
-    <<: [*group_common_select, *jiaKuan_filter]
+    <<: [*group_common_select, *home_filter]
     include-all: true
     proxies: ['家宽节点-自动选择']
-    icon: 'https://cdn.jsdmirror.com/gh/AIsouler/MyClash@main/Icons/svg/Server.svg'
+    icon: 'https://cdn.jsdmirror.com/gh/AIsouler/MyClash@main/Icons/svg/Home.svg'
   - name: '家宽节点-自动选择'
-    <<: [*group_common_auto, *jiaKuan_filter]
+    <<: [*group_common_auto, *home_filter]
 
   - name: '其他节点'
     <<: [*group_common_select, *exclude_filter]
