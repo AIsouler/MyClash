@@ -53,6 +53,19 @@ function runUnitTests(h, api, meta) {
     h.assert(n.includes('低倍率节点'), '应识别为低倍率节点');
     h.assert(n.includes('日本'));
   });
+  h.test('家宽/住宅/原生IP/家庭宽带/ISP/RES → 家宽节点', () => {
+    for (const name of ['家宽 01', '住宅 IP', '原生IP 香港', '家庭宽带', '美国 ISP', 'HK-RES']) {
+      h.assert(matched(name).includes('家宽节点'), `${name} 应识别为家宽节点`);
+    }
+  });
+  h.test('家宽 + 地区 → 同时命中地区与家宽节点', () => {
+    h.assert(matched('🇭🇰 香港 家宽').includes('香港'));
+    h.assert(matched('🇭🇰 香港 家宽').includes('家宽节点'));
+  });
+  h.test('非家宽名称不误判', () => {
+    h.assert(!matched('美国 01').includes('家宽节点'));
+    h.assert(!matched('🇸🇬 新加坡 06').includes('家宽节点'));
+  });
 
   h.section('单元测试 · toMatchableName（仅供匹配的不可见字符剥离）');
   h.test('剥离零宽/不可见字符', () => h.assertEqual(api.toMatchableName('H\u200BK\u200B \u200B0\u200B1'), 'HK 01'));

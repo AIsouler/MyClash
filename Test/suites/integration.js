@@ -406,6 +406,33 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     }),
   );
 
+  // ---------------- 家宽节点 ----------------
+  h.section('集成测试 · 家宽节点');
+  h.test('家宽节点归类：生成家宽节点组，地区家宽节点仍归地区组', () => {
+    const out = api.main(fx.homeBroadbandSubscription());
+    const g = groupByName(out['proxy-groups'], '家宽节点');
+    h.assert(g, '应生成家宽节点组');
+    h.assertEqual(g.type, 'select', '家宽节点组应为 select 类型');
+    h.assert(g.proxies.includes('🇭🇰 香港 家宽 01'), '地区家宽节点应入家宽组');
+    h.assert(g.proxies.includes('家宽专线 03'), '无地区关键词的家宽节点应入家宽组');
+    h.assert(groupByName(out['proxy-groups'], '香港').proxies.includes('🇭🇰 香港 家宽 01'), '地区家宽节点仍归地区组');
+    h.assert(groupByName(out['proxy-groups'], '新加坡').proxies.includes('🇸🇬 新加坡 06'), '非家宽节点正常归地区组');
+    h.assert(
+      groupByName(out['proxy-groups'], '其他节点').proxies.includes('家宽专线 03'),
+      '无地区关键词的家宽节点仍入其他节点组（与倍率组行为一致）',
+    );
+    h.assert(groupByName(out['proxy-groups'], '默认代理').proxies.includes('家宽节点'), '默认代理应含家宽节点组');
+  });
+  h.test('过滤家宽节点=true → 移除家宽节点及家宽节点组', () =>
+    withOptions(api, { 过滤家宽节点: true }, () => {
+      const out = api.main(fx.homeBroadbandSubscription());
+      const n = proxyNames(out.proxies);
+      h.assert(!n.some((x) => /家宽|住宅|原生IP|家庭宽带|ISP|RES/i.test(x)), '家宽节点应被过滤');
+      h.assert(!groupByName(out['proxy-groups'], '家宽节点'), '不应生成家宽节点组');
+      h.assert(n.includes('🇸🇬 新加坡 06'), '非家宽节点应保留');
+    }),
+  );
+
   // ---------------- 代理 IP 版本优先 ----------------
   h.section('集成测试 · 代理IP版本优先');
   const nonDirectProxies = (out) => out.proxies.filter((p) => p.type !== 'direct');

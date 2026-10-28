@@ -36,6 +36,7 @@ const ruleOptionsEnable = {
   分流组添加所有节点: false, // 是否为分流策略组添加所有节点
   过滤低倍率节点: false, // 是否过滤低倍率节点
   过滤高倍率节点: false, // 是否过滤高倍率节点
+  过滤家宽节点: false, // 是否过滤家宽（住宅/原生 IP）节点
   过滤非地区节点: true, // 是否过滤非地区节点
   屏蔽国外QUIC: true, // 是否屏蔽国外QUIC流量
   代理IPV4优先: false, // 是否将订阅节点统一为 IPv4 优先（与“代理IPV6优先”同时开启时不生效）
@@ -180,8 +181,19 @@ const rateRegionDefinitions = [
   },
 ];
 
-// 全部策略组定义（地区 + 倍率），统一用于节点匹配与归类
-const allRegionDefinitions = [...regionDefinitions, ...rateRegionDefinitions];
+// 定义家宽（住宅/原生 IP）节点策略组
+const homeBroadbandRegionName = '家宽节点';
+
+const homeBroadbandDefinitions = [
+  {
+    name: homeBroadbandRegionName,
+    regex: /家宽|住宅|原生\s*IP|家庭宽带|\bISP\b|\bRES\b|residential/i,
+    icon: `${iconBaseUrl}Server.svg`,
+  },
+];
+
+// 全部策略组定义（地区 + 倍率 + 家宽），统一用于节点匹配与归类
+const allRegionDefinitions = [...regionDefinitions, ...rateRegionDefinitions, ...homeBroadbandDefinitions];
 
 // Rule Providers 通用配置
 const ruleProviderCommonDomain = {
@@ -525,6 +537,7 @@ function filterAndNormalizeProxies(config) {
 
   const filterLowRateProxiesEnabled = ruleOptionsEnable.过滤低倍率节点;
   const filterHighRateProxiesEnabled = ruleOptionsEnable.过滤高倍率节点;
+  const filterHomeBroadbandProxiesEnabled = ruleOptionsEnable.过滤家宽节点;
   const filterNonRegionProxiesEnabled = ruleOptionsEnable.过滤非地区节点;
 
   const lowRateRegex = filterLowRateProxiesEnabled
@@ -532,6 +545,9 @@ function filterAndNormalizeProxies(config) {
     : null;
   const highRateRegex = filterHighRateProxiesEnabled
     ? rateRegionDefinitions.find((r) => r.name === highRateRegionName)?.regex
+    : null;
+  const homeBroadbandRegex = filterHomeBroadbandProxiesEnabled
+    ? homeBroadbandDefinitions.find((r) => r.name === homeBroadbandRegionName)?.regex
     : null;
 
   const originalProxies = config.proxies || [];
@@ -542,7 +558,13 @@ function filterAndNormalizeProxies(config) {
 
     const matchableName = toMatchableName(proxy.name);
 
-    if (lowRateRegex?.test(matchableName) || highRateRegex?.test(matchableName)) return false;
+    if (
+      lowRateRegex?.test(matchableName) ||
+      highRateRegex?.test(matchableName) ||
+      homeBroadbandRegex?.test(matchableName)
+    ) {
+      return false;
+    }
 
     if (!filterNonRegionProxiesEnabled) return true;
 

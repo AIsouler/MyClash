@@ -228,6 +228,20 @@ function invisibleCharsSubscription() {
   };
 }
 
+/** 家宽（住宅/原生 IP）节点场景：用于验证家宽过滤器与家宽节点策略组 */
+function homeBroadbandSubscription() {
+  return {
+    proxies: [
+      { name: '🇭🇰 香港 家宽 01', type: 'ss', server: 'a.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '日本 住宅 IP 02', type: 'ss', server: 'b.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '家宽专线 03', type: 'ss', server: 'c.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '🇺🇸 美国 ISP 04', type: 'ss', server: 'd.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '原生IP 香港 05', type: 'ss', server: 'e.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+      { name: '🇸🇬 新加坡 06', type: 'ss', server: 'f.example.com', port: 443, cipher: 'aes-256-gcm', password: 'x' },
+    ],
+  };
+}
+
 module.exports = {
   typicalSubscription,
   minimalSubscription,
@@ -235,5 +249,6 @@ module.exports = {
   allFilteredSubscription,
   hostsMappedSubscription,
   invisibleCharsSubscription,
+  homeBroadbandSubscription,
   withInvisibleChars,
 };
