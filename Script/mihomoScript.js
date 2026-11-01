@@ -449,7 +449,12 @@ const serviceConfigs = [
       },
     },
     icon: `${iconBaseUrl}OpenAI.svg`,
-    rules: ['RULE-SET,ai,AI'],
+    rules: [
+      'RULE-SET,ai,AI',
+      'DOMAIN,cdn.usefathom.com,AI',
+      'DOMAIN-SUFFIX,intercom.io,AI',
+      'DOMAIN-SUFFIX,intercomcdn.com,AI',
+    ],
   },
   {
     name: 'GitHub',

@@ -740,6 +740,9 @@ rules:
   - RULE-SET,google,Google
   - RULE-SET,google_ip,Google,no-resolve
   - RULE-SET,ai,AI
+  - DOMAIN,cdn.usefathom.com,AI
+  - DOMAIN-SUFFIX,intercom.io,AI
+  - DOMAIN-SUFFIX,intercomcdn.com,AI
   - RULE-SET,github,GitHub
   - RULE-SET,microsoft,Microsoft
   - RULE-SET,microsoft_ip,Microsoft,no-resolve
