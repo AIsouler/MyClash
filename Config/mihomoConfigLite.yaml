@@ -507,20 +507,22 @@ rules:
   # 广告拦截
   - RULE-SET,category-ads,AdBlock
 
-  # 代理规则
+  # 代理规则（非IP类）
   - RULE-SET,google,Google
-  - RULE-SET,google_ip,Google,no-resolve
   - RULE-SET,ai,AI
   - DOMAIN,cdn.usefathom.com,AI
   - DOMAIN-SUFFIX,intercom.io,AI
   - DOMAIN-SUFFIX,intercomcdn.com,AI
   - RULE-SET,telegram,Telegram
-  - RULE-SET,telegram_ip,Telegram,no-resolve
   - RULE-SET,steam,Steam
-  - RULE-SET,steam_ip,Steam,no-resolve
+  - RULE-SET,geolocation-!cn,默认代理
+
+  # 代理（IP类）
+  - RULE-SET,google_ip,Google
+  - RULE-SET,telegram_ip,Telegram
+  - RULE-SET,steam_ip,Steam
 
   # 兜底规则
-  - RULE-SET,geolocation-!cn,默认代理
   - RULE-SET,cn_ip,直连
   - RULE-SET,private_ip,直连
   - MATCH,漏网之鱼
