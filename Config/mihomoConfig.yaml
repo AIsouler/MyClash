@@ -626,7 +626,7 @@ proxy-groups:
 
   - name: '漏网之鱼'
     <<: *group_common_select
-    proxies: ['默认代理', '直连']
+    proxies: ['直连', '默认代理']
     icon: 'https://cdn.jsdmirror.com/gh/AIsouler/MyClash@main/Icons/svg/Stack.svg'
 
   - name: '直连'
@@ -711,9 +711,6 @@ proxy-groups:
 # --- 路由规则 (Rules) ---
 
 rules:
-  # 规则集下载域名，避免出现鸡蛋问题
-  - DOMAIN,cdn.jsdmirror.com,直连
-
   # 私有网络直连
   - RULE-SET,private,直连
 

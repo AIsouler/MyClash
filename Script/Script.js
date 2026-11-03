@@ -46,9 +46,6 @@ const ruleOptionsEnable = {
 
 // 定义前置规则
 const prefixRules = [
-  // 规则集下载域名，避免出现鸡蛋问题
-  'DOMAIN,cdn.jsdmirror.com,直连',
-
   // 私有网络直连
   'RULE-SET,private,直连',
 
@@ -887,7 +884,7 @@ function buildFunctionalGroups(filteredProxies, generatedRegionGroups, customize
   functionalGroups.push({
     ...selectBaseOption,
     name: '漏网之鱼',
-    proxies: ['默认代理', '直连', ...groupNamesOfSelect],
+    proxies: ['直连', '默认代理', ...groupNamesOfSelect],
     icon: `${iconBaseUrl}Stack.svg`,
   });
 
