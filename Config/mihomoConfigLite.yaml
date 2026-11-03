@@ -399,8 +399,7 @@ proxy-groups:
     icon: 'https://cdn.jsdmirror.com/gh/AIsouler/MyClash@main/Icons/svg/AdBlock.svg'
 
   - name: '漏网之鱼'
-    <<: *group_common_select
-    proxies: ['默认代理', '直连']
+    <<: [*group_common_select, *proxies_direct]
     icon: 'https://cdn.jsdmirror.com/gh/AIsouler/MyClash@main/Icons/svg/Stack.svg'
 
   - name: '直连'
