@@ -373,15 +373,22 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
       h.assert(groupByName(out['proxy-groups'], 'AI').proxies.includes('🇭🇰 香港 A'), 'AI 组应含全部节点');
     }),
   );
-  h.test('屏蔽国外QUIC 开关：true 生成 / false 移除 QUIC 规则与 cn_additional', () => {
-    // true（默认）→ 生成 cn_additional 规则集
-    h.assert(api.main(fx.minimalSubscription())['rule-providers'].cn_additional, 'cn_additional 规则集应生成');
-    // false → 移除 QUIC 规则与 cn_additional，cn 规则集保留
-    withOptions(api, { 屏蔽国外QUIC: false }, () => {
+  h.test('屏蔽国外QUIC 开关：默认关闭 / true 生成基于 geolocation-!cn 的屏蔽规则', () => {
+    // 默认 false → 不含 QUIC 规则；cn_additional 规则集已废弃，任何情况下都不生成
+    const def = api.main(fx.minimalSubscription());
+    h.assert(!def.rules.some((r) => r.includes('DST-PORT,443') && r.includes('REJECT')), '默认不应含 QUIC 规则');
+    h.assert(!def['rule-providers'].cn_additional, 'cn_additional 规则集不应再生成');
+    h.assert(def['rule-providers'].cn, 'cn 规则集仍应生成（供 nameserver-policy 使用）');
+    // true → 命中 geolocation-!cn 的 UDP 443 流量拒绝
+    withOptions(api, { 屏蔽国外QUIC: true }, () => {
       const out = api.main(fx.minimalSubscription());
-      h.assert(!out.rules.some((r) => r.includes('DST-PORT,443') && r.includes('REJECT')), '不应含 QUIC 规则');
-      h.assert(!out['rule-providers'].cn_additional, 'cn_additional 规则集不应生成');
-      h.assert(out['rule-providers'].cn, 'cn 规则集仍应生成（供 nameserver-policy 使用）');
+      h.assert(
+        out.rules.some(
+          (r) => r.includes('DST-PORT,443') && r.includes('RULE-SET,geolocation-!cn') && r.includes('REJECT'),
+        ),
+        '应含基于 geolocation-!cn 的 QUIC 屏蔽规则',
+      );
+      h.assert(out['rule-providers']['geolocation-!cn'], 'geolocation-!cn 规则集应存在');
     });
   });
   h.test('关闭 AI 分流组 → 移除组/规则/规则集', () =>
