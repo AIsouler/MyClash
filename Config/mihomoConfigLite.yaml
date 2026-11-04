@@ -496,7 +496,7 @@ rules:
   - DOMAIN-SUFFIX,ctaiot.com,直连
 
   # 禁用国外 QUIC 流量（默认不启用，如果想启用请删除前面的#号注释）
-  # - AND,((NETWORK,UDP),(DST-PORT,443),(RULE-SET,geolocation-!cn)),REJECT
+  # - AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((RULE-SET,cn),(RULE-SET,cn_ip,no-resolve)))))),REJECT
 
   # 广告拦截
   - RULE-SET,category-ads,AdBlock
