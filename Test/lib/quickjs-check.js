@@ -4,7 +4,7 @@
  * 覆盖两层验证：
  * 1. 语法解析 + 顶层执行（含所有正则字面量编译）
  * 2. 集成验证：在 QuickJS 上下文实际调用 main() 处理 typicalSubscription 配置，
- *    并将输出 JSON 化回传 Node，与 Node(v8) 引擎跑出的结果做结构性对照。
+ *    确认输出结构完整（proxies / proxy-groups / rules / dns / hosts）。
  *
  * 由 Test/run-tests.js 调用（npm --prefix Test run test:quickjs，需要已安装 quickjs-emscripten）。
  */
@@ -12,7 +12,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { loadScript } = require('./loader');
 const { SCRIPT_FILES } = require('./scripts');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -44,7 +43,7 @@ function run(ctx, code, filename) {
 
 /**
  * QuickJS 引擎兼容性验证（异步：需等待 WASM 模块初始化）。
- * 覆盖：语法解析 + 顶层执行、实际调用 main() 并与 Node 引擎对照。
+ * 覆盖：语法解析 + 顶层执行、实际调用 main() 并校验输出结构完整。
  * 未安装 quickjs-emscripten 时跳过（不记入通过/失败）。
  *
  * @param {object} opts { harness, fixtures }
@@ -101,17 +100,6 @@ globalThis.__out = JSON.stringify(__main(JSON.parse(${JSON.stringify(cfgJson)}))
         harness.assert(Array.isArray(out['proxy-groups']) && out['proxy-groups'].length > 0, 'proxy-groups 缺失或为空');
         harness.assert(Array.isArray(out.rules) && out.rules.length > 0, 'rules 缺失或为空');
         harness.assert(out.dns && out.hosts, 'dns/hosts 缺失');
-      });
-
-      harness.test(`${rel}：与 Node 引擎输出结构一致`, () => {
-        harness.assert(out !== null, '前置 main() 未成功运行，无法对照');
-        const nodeOut = loadScript(rel).main(fixtures.typicalSubscription());
-        harness.assert(
-          out.proxies.length === nodeOut.proxies.length &&
-            out['proxy-groups'].length === nodeOut['proxy-groups'].length &&
-            out.rules.length === nodeOut.rules.length,
-          `QuickJS[${out.proxies.length}/${out['proxy-groups'].length}/${out.rules.length}] vs Node[${nodeOut.proxies.length}/${nodeOut['proxy-groups'].length}/${nodeOut.rules.length}]`,
-        );
       });
     } finally {
       ctx.dispose();

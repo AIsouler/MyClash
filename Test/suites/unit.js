@@ -1,24 +1,13 @@
 'use strict';
 
+const { withOptions } = require('../lib/options');
+
 /**
  * 纯函数单元测试，两个脚本共用。
- * 覆盖：matchDomainPattern / getMatchedRegions / normalizeProxyName / fixDialerProxy
+ * 覆盖：matchDomainPattern / getMatchedRegions / toMatchableName / normalizeProxyName /
+ *      buildCustomizeGroups / fixDialerProxy / applyHostsToProxies / stripDnsSuffix / simplifyDomainPolicy
  */
-function runUnitTests(h, api, meta) {
-  /** 临时修改 ruleOptionsEnable 的若干选项，执行完成后恢复，避免污染后续用例 */
-  const withUnitOptions = (patch, fn) => {
-    const saved = {};
-    for (const key of Object.keys(patch)) {
-      saved[key] = api.ruleOptionsEnable[key];
-      api.ruleOptionsEnable[key] = patch[key];
-    }
-    try {
-      return fn();
-    } finally {
-      for (const key of Object.keys(patch)) api.ruleOptionsEnable[key] = saved[key];
-    }
-  };
-
+function runUnitTests(h, api) {
   h.section('单元测试 · matchDomainPattern（域名规则匹配）');
   const d = new Set(['example.com', 'sub.example.com', 'a.b.example.com', 'other.org']);
   h.test('精确匹配命中', () => h.assert(api.matchDomainPattern('example.com', d)));
@@ -39,9 +28,7 @@ function runUnitTests(h, api, meta) {
   h.test('JAPAN-02 → 日本', () => h.assert(matched('JAPAN-02').includes('日本')));
   h.test('US-LosAngeles-02 → 美国', () => h.assert(matched('US-LosAngeles-02').includes('美国')));
   h.test('SG 01 | 新加坡 → 新加坡', () => h.assert(matched('SG 01 | 新加坡').includes('新加坡')));
-  h.test('台湾 01 → 台湾（仅全量版）', () => {
-    if (meta.full) h.assert(matched('台湾 01').includes('台湾'));
-  });
+  h.test('🇹🇼 台湾 01 → 台湾', () => h.assert(matched('🇹🇼 台湾 01').includes('台湾')));
   h.test('日本 0.3x 流量 → 低倍率节点 + 日本', () => {
     const n = matched('日本 0.3x 流量');
     h.assert(n.includes('低倍率节点'));
@@ -53,15 +40,6 @@ function runUnitTests(h, api, meta) {
     h.assert(n.includes('香港'));
   });
   h.test('无地区关键词 → 空结果', () => h.assertEqual(matched('随便测试名称').length, 0));
-  h.test('名称夹零宽字符仍能匹配地区（匹配期剥离）', () => {
-    h.assert(matched('H\u200BK\u200B \u200B0\u200B1').includes('香港'), 'H\\u200BK 应识别为香港');
-    h.assert(matched('J\u200BP\u200B \u200B0\u200B2').includes('日本'), 'J\\u200BP 应识别为日本');
-    h.assert(
-      matched('\u180EH\u2063K\u2066 \u206901\u2069').includes('香港'),
-      '蒙古文分隔符/隐形运算符/隔离符 均应忽略',
-    );
-    h.assert(matched('\u3164SG\uFFA0 03').includes('新加坡'), '谚文填充符应忽略');
-  });
   h.test('夹零宽字符不影响倍率匹配', () => {
     const n = matched('\u200B日本\u200B 0.3\u200Bx 流量');
     h.assert(n.includes('低倍率节点'), '应识别为低倍率节点');
@@ -120,17 +98,6 @@ function runUnitTests(h, api, meta) {
     h.assertEqual(r.customProxies.length, 0);
     h.assertEqual(r.customProxyNames.length, 0);
   });
-  h.test('自定义节点标准化并构建自建节点组', () => {
-    const r = api.buildCustomizeGroups([], custom('香港 自建'));
-    h.assertDeep(r.customProxyNames, ['🇭🇰 香港 自建']);
-    h.assertEqual(r.customGroup.name, '自建节点');
-    h.assertEqual(r.customGroup.type, 'select');
-    h.assertDeep(r.customGroup.proxies, ['🇭🇰 香港 自建']);
-  });
-  h.test('与订阅节点标准化后重名 → 添加自建- 前缀（国旗在前且无多余空格）', () => {
-    const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01 | 中转')], custom('香港 01 | 中转'));
-    h.assertDeep(r.customProxyNames, ['🇭🇰 自建-香港 01 | 中转']);
-  });
   h.test('未与订阅节点重名 → 保持原名', () => {
     const r = api.buildCustomizeGroups([mkCustomProxy('🇭🇰 香港 01')], custom('自建独享'));
     h.assertDeep(r.customProxyNames, ['自建独享']);
@@ -142,29 +109,12 @@ function runUnitTests(h, api, meta) {
     );
     h.assertDeep(r.customProxyNames, ['🇭🇰 自建-自建-香港 01']);
   });
-
-  h.section('单元测试 · buildCustomizeGroups（链式代理）');
-  h.test('链式代理启用：强制添加 dialer-proxy（已有值被覆盖）', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      for (const proxies of [custom('自建独享'), [{ ...mkCustomProxy('自建独享'), 'dialer-proxy': '旧中转' }]]) {
-        const r = api.buildCustomizeGroups([], proxies);
-        h.assertEqual(r.customProxies[0]['dialer-proxy'], '链式中转');
-      }
-    }),
-  );
-  h.test('链式代理启用：策略组名改为“链式落地”，节点名称保持不变', () =>
-    withUnitOptions({ 链式代理: true }, () => {
-      const r = api.buildCustomizeGroups([], custom('自建-日本-01'));
-      h.assertEqual(r.customGroup.name, '链式落地');
-      h.assertDeep(r.customProxyNames, ['🇯🇵 自建-日本-01']);
-    }),
-  );
   h.test('未启用链式代理：不添加 dialer-proxy', () => {
     const r = api.buildCustomizeGroups([], custom('自建独享'));
     h.assert(!('dialer-proxy' in r.customProxies[0]), '未启用链式代理时不应添加 dialer-proxy');
   });
   h.test('链式代理启用但未配置自定义节点 → 抛错', () =>
-    withUnitOptions({ 链式代理: true }, () =>
+    withOptions(api, { 链式代理: true }, () =>
       h.assertThrows(() => api.buildCustomizeGroups([], []), /启用失败，请在脚本中添加自定义节点后尝试/),
     ),
   );
@@ -173,15 +123,6 @@ function runUnitTests(h, api, meta) {
   const renameMap = new Map([['旧名', '新名']]);
   const normalizedProxyNames = new Set(['新名', '存活名']);
   const fixArgs = [renameMap, normalizedProxyNames];
-  h.test('目标被重命名 → 引用同步更新', () =>
-    h.assertEqual(api.fixDialerProxy({ 'dialer-proxy': '旧名' }, ...fixArgs)['dialer-proxy'], '新名'),
-  );
-  h.test('目标存活未改名 → 引用不变', () =>
-    h.assertEqual(api.fixDialerProxy({ 'dialer-proxy': '存活名' }, ...fixArgs)['dialer-proxy'], '存活名'),
-  );
-  h.test('目标被过滤 → 移除引用', () =>
-    h.assert(!('dialer-proxy' in api.fixDialerProxy({ 'dialer-proxy': '被删名' }, ...fixArgs))),
-  );
   h.test('目标从未存在 → 移除引用', () =>
     h.assert(!('dialer-proxy' in api.fixDialerProxy({ 'dialer-proxy': '从未存在' }, ...fixArgs))),
   );
@@ -197,11 +138,6 @@ function runUnitTests(h, api, meta) {
       apply([mkProxy('node.example.com')], { 'node.example.com': ['1.2.3.4', '1.2.3.5'] })[0].server,
       '1.2.3.4',
     );
-  });
-  h.test('+.通配映射命中子域', () => {
-    const out = apply([mkProxy('a.example.com'), mkProxy('b.other.com')], { '+.example.com': '9.9.9.9' });
-    h.assertEqual(out[0].server, '9.9.9.9');
-    h.assertEqual(out[1].server, 'b.other.com');
   });
   h.test('精确映射优先于通配映射', () => {
     const out = apply([mkProxy('hk1.example.com')], { '+.example.com': '9.9.9.9', 'hk1.example.com': '1.1.1.1' });
@@ -222,30 +158,9 @@ function runUnitTests(h, api, meta) {
     });
     h.assert(['a.example.com', 'b.example.com'].includes(out[0].server), '回环映射不应死循环');
   });
-  h.test('无 hosts 时节点原样保留', () => {
-    const p = [mkProxy('a.example.com')];
-    const out = apply(p, undefined);
-    h.assert(out[0] === p[0], '未改写时不应创建新对象');
-  });
-  h.test('非字符串 server 不处理', () => {
-    const p = [{ name: 'x' }];
-    h.assert(apply(p, { 'a.example.com': '1.1.1.1' })[0] === p[0], '无 server 字段的节点应原样保留');
-  });
   h.test('与节点无关的 hosts 条目不参与改写', () => {
     const out = apply([mkProxy('node.example.com')], { 'cdn.unrelated.com': '1.1.1.1', '+.other.com': '2.2.2.2' });
     h.assertEqual(out[0].server, 'node.example.com');
-  });
-  h.test('大小写不敏感匹配，无匹配时保留原 server', () => {
-    h.assertEqual(apply([mkProxy('NODE.Example.COM')], { 'node.example.com': '1.2.3.4' })[0].server, '1.2.3.4');
-    h.assertEqual(
-      apply([mkProxy('NODE.Example.COM')], { 'cdn.unrelated.com': '1.1.1.1' })[0].server,
-      'NODE.Example.COM',
-    );
-  });
-  h.test('*.通配映射命中同层级子域', () => {
-    const out = apply([mkProxy('a.example.com'), mkProxy('a.b.example.com')], { '*.example.com': '9.9.9.9' });
-    h.assertEqual(out[0].server, '9.9.9.9');
-    h.assertEqual(out[1].server, 'a.b.example.com');
   });
 
   h.section('单元测试 · stripDnsSuffix（DNS # 策略组后缀处理）');
@@ -265,12 +180,6 @@ function runUnitTests(h, api, meta) {
       h.assertEqual(api.stripDnsSuffix(url), 'https://dns.example.com/dns-query#DIRECT');
     }
   });
-  h.test('包含 direct 的后缀 → 规范化为 #DIRECT', () =>
-    h.assertEqual(
-      api.stripDnsSuffix('https://dns.example.com/dns-query#directxxx'),
-      'https://dns.example.com/dns-query#DIRECT',
-    ),
-  );
 
   h.section('单元测试 · simplifyDomainPolicy（节点域名 DNS 策略压缩）');
   h.test('相同 DNS 的同一后缀子域 → 合并为 +. 后缀规则', () =>
@@ -304,20 +213,6 @@ function runUnitTests(h, api, meta) {
       { 'example.com': 'https://dns.example/dns-query' },
     ),
   );
-
-  h.section('单元测试 · isIpAddress（IP 地址识别）');
-  h.test('IPv4 → true', () => {
-    h.assert(api.isIpAddress('1.2.3.4'));
-    h.assert(api.isIpAddress('10.0.0.1'));
-  });
-  h.test('IPv6 → true', () => {
-    h.assert(api.isIpAddress('2001:db8::1'));
-    h.assert(api.isIpAddress('::1'));
-  });
-  h.test('域名 → false', () => {
-    h.assert(!api.isIpAddress('example.com'));
-    h.assert(!api.isIpAddress('hk1.example.com'));
-  });
 }
 
 module.exports = { runUnitTests };

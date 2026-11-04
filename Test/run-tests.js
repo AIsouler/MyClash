@@ -50,8 +50,8 @@ async function main() {
       const api = loadScript(script.file);
       const h = new Harness(script.label);
 
-      runUnitTests(h, api, script.meta);
-      runIntegrationTests(h, api, script.meta, fx, loadScript, script.file);
+      runUnitTests(h, api);
+      runIntegrationTests(h, api, fx, loadScript, script.file);
       printDemo(api, script.label, script.meta);
 
       const s = h.summary();

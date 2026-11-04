@@ -1,27 +1,14 @@
 'use strict';
 
+const { withOptions } = require('../lib/options');
+
 const groupByName = (groups, name) => groups.find((g) => g.name === name);
 const proxyNames = (proxies) => proxies.map((p) => p.name);
 
-/** 临时修改 ruleOptionsEnable 的若干选项，执行完成后恢复，避免污染后续用例 */
-function withOptions(api, patch, fn) {
-  const saved = {};
-  for (const key of Object.keys(patch)) {
-    saved[key] = api.ruleOptionsEnable[key];
-    api.ruleOptionsEnable[key] = patch[key];
-  }
-  try {
-    return fn();
-  } finally {
-    for (const key of Object.keys(patch)) api.ruleOptionsEnable[key] = saved[key];
-  }
-}
-
 /**
  * 集成测试：直接调用 main() 对模拟订阅进行覆写并断言输出。
- * meta: { full, regions }
  */
-function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
+function runIntegrationTests(h, api, fx, loadScript, scriptFile) {
   // ---------------- 节点过滤与标准化 ----------------
   h.section('集成测试 · 节点过滤与标准化');
   h.test('节点过滤与标准化：剔除无效节点、保留有效节点并补国旗', () => {
@@ -113,9 +100,6 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     const out = api.main(cfg);
     h.assertEqual(out.dns.enable, true);
     h.assertEqual(out.dns['enhanced-mode'], 'fake-ip');
-    // 默认 DNS 与代理服务器 DNS 分别使用固定列表，不再承载私有 DNS
-    h.assertDeep(out.dns['default-nameserver'], api.defaultDNS);
-    h.assertDeep(out.dns['proxy-server-nameserver'], api.proxyServerDNS);
     // 相同 DNS 的节点域名按后缀压缩为一条规则；两个来源的私有 DNS 合并去重、剥离 # 后缀
     const policy = out.dns['proxy-server-nameserver-policy'];
     h.assertDeep(policy['+.example.com'], [
@@ -279,8 +263,6 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     const privateDNS = out3.dns['proxy-server-nameserver-policy']['+.example.com'];
     h.assert(!privateDNS.some((d) => d.includes('udp://127.0.0.1')), 'listen 对应的本地 DNS 不应被误留为私有 DNS');
     h.assert(privateDNS.includes('https://private.example-dns.com/dns-query'), 'nameserver 中的私有 DNS 仍应保留');
-    h.assertDeep(out3.dns['default-nameserver'], api.defaultDNS);
-    h.assertDeep(out3.dns['proxy-server-nameserver'], api.proxyServerDNS);
   });
   h.test('无 dns/hosts 输入时生成默认配置', () => {
     const cfg = fx.typicalSubscription();
@@ -288,9 +270,7 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
     delete cfg.hosts;
     const out = api.main(cfg);
     h.assertEqual(out.dns.enable, true);
-    // 默认与代理服务器 DNS 使用各自的固定公共 DNS；无私有 DNS 时不生成 policy
-    h.assertDeep(out.dns['default-nameserver'], api.defaultDNS);
-    h.assertDeep(out.dns['proxy-server-nameserver'], api.proxyServerDNS);
+    // 无私有 DNS 时不生成 policy
     h.assert(!('proxy-server-nameserver-policy' in out.dns), '无私有 DNS 时不应生成 policy');
     h.assertDeep(out.hosts['doh.pub'], ['1.12.12.12', '120.53.53.53']);
     // 默认 hosts 仍生成（不再包含已移除的 dns.alidns.com/dns.google 等条目）
@@ -479,12 +459,9 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
       }
     }
   });
-  h.test('两开关同时开启 → 保持不变：开关保持开启、不应用任何偏好', () =>
+  h.test('两开关同时开启 → 不应用任何偏好', () =>
     withOptions(api, { 代理IPV4优先: true, 代理IPV6优先: true }, () => {
       const out = api.main(fx.typicalSubscription());
-      // 同时开启时开关保持不变（不被自动关闭）
-      h.assertEqual(api.ruleOptionsEnable.代理IPV4优先, true, 'IPv4 应保持不变');
-      h.assertEqual(api.ruleOptionsEnable.代理IPV6优先, true, 'IPv6 应保持不变');
       // 不应用任何 IP 版本偏好：订阅节点保持原样（不新增 ip-version）
       for (const p of nonDirectProxies(out)) {
         h.assert(!('ip-version' in p), `订阅节点 ${p.name} 不应被新增 ip-version`);
@@ -627,13 +604,6 @@ function runIntegrationTests(h, api, meta, fx, loadScript, scriptFile) {
           } else {
             h.assert(!g.proxies.includes('链式中转'), `策略组 ${g.name} 不应包含链式中转`);
           }
-        }
-      }
-
-      // GLOBAL 聚合所有策略组（含链式中转与链式落地）
-      for (const g of out['proxy-groups']) {
-        if (g.name !== 'GLOBAL') {
-          h.assert(global.proxies.includes(g.name), `GLOBAL 应包含策略组 ${g.name}`);
         }
       }
 

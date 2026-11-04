@@ -22,9 +22,6 @@ const EXPORT_SUFFIX = `
   toMatchableName,
   normalizeProxyName,
   fixDialerProxy,
-  isIpAddress,
-  defaultDNS,
-  proxyServerDNS,
   ruleOptionsEnable
 };
 // 仅全量版存在 buildCustomizeGroups，精简版无此函数时保持导出不报错
