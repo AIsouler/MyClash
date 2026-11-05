@@ -279,14 +279,27 @@ function runIntegrationTests(h, api, fx, loadScript, scriptFile) {
 
   // ---------------- 配置选项切换 ----------------
   h.section('集成测试 · 配置选项切换');
-  h.test('极简模式仅保留基础策略组且 MATCH 走默认代理', () =>
-    withOptions(api, { 极简模式: true }, () => {
+  h.test('default-selected 只指向组内成员：无对应地区组时不下发', () => {
+    // hostsMapped 订阅只有香港/美国节点，日本地区组不会生成
+    for (const factory of [fx.typicalSubscription, fx.hostsMappedSubscription]) {
+      const out = api.main(factory());
+      for (const group of out['proxy-groups']) {
+        if (group['default-selected'] === undefined) continue;
+        h.assert(
+          group.proxies.includes(group['default-selected']),
+          `${group.name} 的 default-selected「${group['default-selected']}」应存在于本组`,
+        );
+      }
+    }
+  });
+  h.test('极简国内外分流模式仅保留基础策略组且 MATCH 走默认代理', () =>
+    withOptions(api, { 极简国内外分流模式: true }, () => {
       const out = api.main(fx.typicalSubscription());
       const groups = out['proxy-groups'];
       h.assertDeep(
         groups.map((g) => g.name),
         ['GLOBAL', '默认代理', '自动选择', '直连'],
-        '极简模式策略组应仅保留 GLOBAL、默认代理、自动选择和直连',
+        '极简国内外分流模式策略组应仅保留 GLOBAL、默认代理、自动选择和直连',
       );
       h.assert(!out.dns['fake-ip-filter'].includes('rule-set:googlefcm'), '不应注入 FCM fake-IP 规则');
       h.assert(!out.rules.some((rule) => /,(Google|AI|Telegram|Steam|AdBlock)$/.test(rule)), '不应生成分流规则');
@@ -311,8 +324,8 @@ function runIntegrationTests(h, api, fx, loadScript, scriptFile) {
       h.assert(groupByName(out['proxy-groups'], '日本'), '日本组仍应存在');
     }),
   );
-  h.test('生成倍率组=false → 不生成倍率组，节点按地区归类', () =>
-    withOptions(api, { 生成倍率组: false }, () => {
+  h.test('生成高低倍率组=false → 不生成高低倍率组，节点按地区归类', () =>
+    withOptions(api, { 生成高低倍率组: false }, () => {
       const out = api.main(fx.typicalSubscription());
       h.assert(!groupByName(out['proxy-groups'], '低倍率节点'), '不应生成低倍率组');
       h.assert(!groupByName(out['proxy-groups'], '高倍率节点'), '不应生成高倍率组');
