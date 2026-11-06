@@ -25,7 +25,7 @@
 | 命名                             | PascalCase、无下划线/连字符；png 与 svg **同名一一对应**（当前 40 对）                                                                                                                                                                                     |
 | 引用格式                         | `https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/<Name>.svg`；**JS 脚本里前缀已提为 `iconBaseUrl`**，写成 `` `${iconBaseUrl}<Name>.svg` ``；YAML 不支持变量，仍写全量                                                                       |
 | 引用位置                         | `Script/mihomoScript.js`（43）、`Script/Script.js`（24）、`Config/mihomoConfig.yaml`（36）、`Config/mihomoConfigLite.yaml`（18）（共 121 处）                                                                                                              |
-| 规则集引用                       | 脚本里已提为 `const ruleSetBaseUrl`（`…/gh/appshubcc/bett-rules@meta/geo/`），写成 `` `${ruleSetBaseUrl}geosite/<name>.mrs` ``；`path-in-bundle` 是包内本地路径，与之无关；少数第三方规则集（Emby / emos / cn-additional）仓库不同，仍写全量 URL |
+| 规则集引用                       | 脚本里已提为 `const ruleSetBaseUrl`（`…/gh/appshubcc/bett-rules@meta/geo/`），写成 `` `${ruleSetBaseUrl}geosite/<name>.mrs` ``；`path-in-bundle` 是包内本地路径，与之无关；当前所有规则集都走这个前缀，无第三方全量 URL 例外 |
 | 回归测试                         | `node Test/run-tests.js`（改过脚本必跑，当前 198 项；含 ES2020 语法检查与 QuickJS 实跑 `main()`）                                                                                                                                                          |
 
 ---

@@ -659,31 +659,17 @@ const serviceConfigs = [
     providers: {
       emby: {
         ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/666OS/rules@release/mihomo/domain/Emby.mrs',
+        url: `${ruleSetBaseUrl}geosite/category-emby.mrs`,
         path: './ruleset/emby.mrs',
-        'path-in-bundle': 'geo/geosite/category-emby.mrs',
-      },
-      emos: {
-        ...ruleProviderCommonDomain,
-        url: 'https://fastly.jsdelivr.net/gh/binaryu/emos-proxy-rule@main/rules/emos-mihomo.mrs',
-        path: './ruleset/emos.mrs',
         'path-in-bundle': 'geo/geosite/category-emby.mrs',
       },
     },
     icon: `${iconBaseUrl}Emby.svg`,
     rules: [
       'RULE-SET,emby,Emby',
-      'RULE-SET,emos,Emby',
       'DOMAIN-SUFFIX,mb3admin.com,Emby',
       'DOMAIN-SUFFIX,nubebelle.com,Emby',
       'DOMAIN-KEYWORD,emby,Emby',
-      'PROCESS-NAME,com.mb.android,Emby',
-      'PROCESS-NAME,tv.emby.embyatv,Emby',
-      'PROCESS-NAME,com.hush.yamby,Emby',
-      'PROCESS-NAME,com.jellycine.app,Emby',
-      'PROCESS-NAME,com.mountains.hills,Emby',
-      'PROCESS-NAME,RodelPlayer.App.exe,Emby',
-      'PROCESS-NAME,com.feifeiduck.capyplayer,Emby',
     ],
   },
   {
