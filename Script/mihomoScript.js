@@ -1862,10 +1862,6 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
  * 主入口：覆写机场订阅配置，生成完整 mihomo 配置
  */
 function main(config) {
-  if (config['proxy-providers'] && Object.keys(config['proxy-providers']).length > 0) {
-    throw new Error('配置文件中包含 proxy-providers，请使用机场提供的配置文件进行覆写');
-  }
-
   const newConfig = {};
 
   const filteredProxies = filterAndNormalizeProxies(config);
