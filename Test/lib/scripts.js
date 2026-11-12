@@ -2,7 +2,7 @@
 
 /**
  * 待测试/验证的脚本及差异元信息（单一来源）。
- * run-tests.js（Node 测试）、es2020-check.js、quickjs-check.js 共用，
+ * run-tests.js（Node 测试）、es2026-check.js、quickjs-check.js 共用，
  * 避免脚本列表在多处重复维护导致不同步。
  */
 const SCRIPTS = [

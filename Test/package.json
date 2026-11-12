@@ -6,10 +6,10 @@
     "scripts": {
         "test": "node run-tests.js",
         "test:quickjs": "node run-tests.js --quickjs",
-        "test:es2020": "node run-tests.js --es2020"
+        "test:es2026": "node run-tests.js --es2026"
     },
     "devDependencies": {
-        "espree": "^9.6.1",
+        "espree": "^11.2.0",
         "quickjs-emscripten": "^0.32.0"
     }
 }

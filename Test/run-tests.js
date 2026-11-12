@@ -5,15 +5,15 @@ const { Harness } = require('./lib/harness');
 const fx = require('./lib/fixtures');
 const { runUnitTests } = require('./suites/unit');
 const { runIntegrationTests } = require('./suites/integration');
-const { runES2020Checks } = require('./lib/es2020-check');
+const { runES2026Checks } = require('./lib/es2026-check');
 const { runQuickJSChecks } = require('./lib/quickjs-check');
 const { SCRIPTS } = require('./lib/scripts');
 
-// 运行范围筛选：--node / --es2020 / --quickjs；不传参数则全部运行
+// 运行范围筛选：--node / --es2026 / --quickjs；不传参数则全部运行
 const ARGS = new Set(process.argv.slice(2));
-const runAll = !ARGS.has('--node') && !ARGS.has('--es2020') && !ARGS.has('--quickjs');
+const runAll = !ARGS.has('--node') && !ARGS.has('--es2026') && !ARGS.has('--quickjs');
 const shouldRunNode = runAll || ARGS.has('--node');
-const shouldRunES2020 = runAll || ARGS.has('--es2020');
+const shouldRunES2026 = runAll || ARGS.has('--es2026');
 const shouldRunQuickJS = runAll || ARGS.has('--quickjs');
 
 /** 打印一份覆写结果概览，便于快速确认输出规模 */
@@ -60,11 +60,11 @@ async function main() {
     }
   }
 
-  // ES2020 兼容性检查（语法 + 内置 API 静态扫描，未安装 espree 时自动跳过）
-  if (shouldRunES2020) {
-    const hES2020 = new Harness('ES2020 兼容性检查');
-    runES2020Checks({ harness: hES2020 });
-    const se = hES2020.summary();
+  // ES2026 兼容性检查（语法 + 内置 API 静态扫描，未安装 espree 时自动跳过）
+  if (shouldRunES2026) {
+    const hES2026 = new Harness('ES2026 兼容性检查');
+    runES2026Checks({ harness: hES2026 });
+    const se = hES2026.summary();
     totalPassed += se.passed;
     totalFailed += se.failed;
   }

@@ -354,6 +354,15 @@ function runIntegrationTests(h, api, fx, loadScript, scriptFile) {
       h.assert(groupByName(out['proxy-groups'], '香港'), '香港组仍应存在');
     }),
   );
+  h.test('生成地区自动选择组=true → 自动选择组排在地区组之后', () => {
+    const out = api.main(fx.minimalSubscription());
+    const names = out['proxy-groups'].map((g) => g.name);
+    const idx = names.indexOf('香港');
+    h.assert(idx >= 0, '应生成香港组');
+    h.assertEqual(names[idx + 1], '香港-自动选择', '自动选择组应紧跟其地区组之后');
+    h.assert(!names.slice(0, idx).includes('香港-自动选择'), '自动选择组不应排在地区组之前');
+    h.assert(groupByName(out['proxy-groups'], '香港').proxies.includes('香港-自动选择'), '地区组应包含自动选择组');
+  });
   h.test('隐藏地区手动选择组=true → 地区组 hidden', () =>
     withOptions(api, { 隐藏地区手动选择组: true }, () => {
       const out = api.main(fx.minimalSubscription());

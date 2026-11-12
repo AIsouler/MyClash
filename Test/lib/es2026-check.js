@@ -6,38 +6,20 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const { SCRIPT_FILES } = require('./scripts');
 
-// ES2021+ 全局构造函数 / 顶层函数：作为独立标识符引用（new / 调用）即视为越界
-const GLOBAL_APIS = ['WeakRef', 'FinalizationRegistry', 'AggregateError', 'structuredClone'];
+// ES2027+ 全局构造函数 / 顶层函数：作为独立标识符引用（new / 调用）即视为越界。
+// ES2027 尚无定稿 API，清单暂为空；保留结构便于后续补充。
+const GLOBAL_APIS = [];
 
-// ES2021+ 成员方法（专有名称，作为属性名出现即视为越界）
-const MEMBER_APIS = [
-  'replaceAll', // ES2021
-  'hasOwn',
-  'supportedValuesOf', // ES2022
-  'findLast',
-  'findLastIndex',
-  'toReversed',
-  'toSorted',
-  'toSpliced',
-  'fromAsync', // ES2023
-  'groupBy',
-  'withResolvers',
-  'waitAsync',
-  'transfer',
-  'transferToFixedLength',
-  'isWellFormed',
-  'toWellFormed', // ES2024
-  'getOrInsert',
-  'getOrInsertComputed',
-  'symmetricDifference',
-  'isSubsetOf',
-  'isSupersetOf',
-  'isDisjointFrom',
-  'escape', // ES2025
-];
+// ES2027+ 成员方法（专有名称，作为属性名出现即视为越界）。
+// 已随基线放开（ES2022–ES2026 均已允许）：hasOwn、structuredClone、at、findLast(Index)、
+// toReversed/toSorted/toSpliced/with、fromAsync、groupBy、withResolvers、waitAsync、
+// transfer(ToFixedLength)、isWellFormed/toWellFormed、Set 集合运算（union/intersection/
+// difference/symmetricDifference/isSubsetOf/isSupersetOf/isDisjointFrom）、Promise.try、
+// RegExp.escape、Map.getOrInsert(Computed) 等。
+const MEMBER_APIS = [];
 
 // 通用短名方法：仅在作为方法调用（x.xxx(...)）时才视为越界，降低误报
-const CALL_ONLY_APIS = ['at', 'union', 'intersection', 'difference', 'try'];
+const CALL_ONLY_APIS = [];
 
 /** 尝试加载 espree；仅「未安装」时返回 null（调用方应优雅跳过） */
 function tryLoadEspree() {
@@ -90,58 +72,58 @@ function collectUsages(ast) {
   return { idUsages, memberNames, memberCalls };
 }
 
-/** 检查 AST 中是否使用了 ES2021+ 的内置 API，返回违规描述列表 */
+/** 检查 AST 中是否使用了 ES2027+ 的内置 API，返回违规描述列表 */
 function findApiViolations(ast) {
   const { idUsages, memberNames, memberCalls } = collectUsages(ast);
   const violations = [];
   for (const name of GLOBAL_APIS) {
-    if (idUsages.has(name)) violations.push(`${name}（ES2021+ 全局 API）`);
+    if (idUsages.has(name)) violations.push(`${name}（ES2027+ 全局 API）`);
   }
   for (const name of MEMBER_APIS) {
-    if (memberNames.has(name)) violations.push(`xxx.${name}(...)（ES2021+ 成员方法）`);
+    if (memberNames.has(name)) violations.push(`xxx.${name}(...)（ES2027+ 成员方法）`);
   }
   for (const name of CALL_ONLY_APIS) {
-    if (memberCalls.has(name)) violations.push(`xxx.${name}(...)（ES2021+ 成员方法）`);
+    if (memberCalls.has(name)) violations.push(`xxx.${name}(...)（ES2027+ 成员方法）`);
   }
   return violations;
 }
 
 /**
- * ES2020 兼容性检查（同步，静态分析）：
- * 1. 用 espree 以 ecmaVersion: 2020 解析脚本 —— 任何 ES2021+ 语法都会抛出解析错误；
- * 2. 遍历 AST 检查是否使用了 ES2021+ 的内置 API。
+ * ES2026 兼容性检查（同步，静态分析）：
+ * 1. 用 espree 以 ecmaVersion: 2026 解析脚本 —— 任何 ES2027+ 语法都会抛出解析错误；
+ * 2. 遍历 AST 检查是否使用了 ES2027+ 的内置 API（当前清单为空，留作后续扩展）。
  * 未安装 espree 时跳过（不记入通过/失败）。
  *
  * @param {object} opts { harness }
  */
-function runES2020Checks({ harness }) {
+function runES2026Checks({ harness }) {
   const espree = tryLoadEspree();
   if (!espree) {
-    harness.section('ES2020 兼容性检查（已跳过）');
-    console.log('    ⚠ 未安装 espree 依赖，已跳过 ES2020 兼容性检查。');
+    harness.section('ES2026 兼容性检查（已跳过）');
+    console.log('    ⚠ 未安装 espree 依赖，已跳过 ES2026 兼容性检查。');
     console.log('      如需启用：npm --prefix Test install');
     return;
   }
 
-  harness.section('ES2020 兼容性检查');
+  harness.section('ES2026 兼容性检查');
   for (const rel of SCRIPT_FILES) {
     const code = fs.readFileSync(path.join(ROOT, rel), 'utf8');
     let ast = null;
 
-    harness.test(`${rel}：语法不超出 ES2020`, () => {
+    harness.test(`${rel}：语法不超出 ES2026`, () => {
       try {
-        ast = espree.parse(code, { ecmaVersion: 2020, sourceType: 'script', loc: true });
+        ast = espree.parse(code, { ecmaVersion: 2026, sourceType: 'script', loc: true });
       } catch (e) {
         harness.assert(false, `第 ${e.lineNumber} 行: ${e.message}`);
       }
     });
 
-    harness.test(`${rel}：未使用 ES2021+ 内置 API`, () => {
-      harness.assert(ast !== null, '语法解析失败（超出 ES2020），跳过 API 检查');
+    harness.test(`${rel}：未使用 ES2027+ 内置 API`, () => {
+      harness.assert(ast !== null, '语法解析失败（超出 ES2026），跳过 API 检查');
       const violations = findApiViolations(ast);
       harness.assert(violations.length === 0, `检测到 ${violations.join('、')}`);
     });
   }
 }
 
-module.exports = { runES2020Checks };
+module.exports = { runES2026Checks };
