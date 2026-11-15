@@ -1727,24 +1727,36 @@ function simplifyDomainPolicy(policy) {
 /**
  * 构建 DNS 与 hosts：保留私有 DNS、节点域名 policy/fake-ip-filter，并按 hosts 改写节点 server
  * hosts改写条件（满足任意一个条件即可）：
- * 1. proxy-server-nameserver 有且仅有一个 DNS 并且该 DNS 包含非空的 listen 值
- * 2. proxy-server-nameserver 有且仅有一个 DNS 并且该 DNS 包含 127.0.0.1 并且 listen 包含 0.0.0.0
+ * 1. proxy-server-nameserver 不存在或为空
+ * 2. proxy-server-nameserver 有且仅有一个 DNS 并且该 DNS 包含非空的 listen 值
+ * 3. proxy-server-nameserver 有且仅有一个 DNS 并且该 DNS 包含 127.0.0.1 并且 listen 包含 0.0.0.0
  */
 function buildDnsAndHostsConfig(config, filteredProxies) {
   const minimalModeEnabled = ruleOptionsEnable.极简国内外分流模式;
 
   const originalDnsConfig = config.dns || {};
-
-  const proxyServerNameservers = originalDnsConfig['proxy-server-nameserver'] || [];
   const listenValue = originalDnsConfig['listen'];
+  const rawProxyServerNameservers = originalDnsConfig['proxy-server-nameserver'];
 
-  const shouldRewriteByHosts =
+  const proxyServerNameservers = (
+    Array.isArray(rawProxyServerNameservers)
+      ? rawProxyServerNameservers
+      : rawProxyServerNameservers === undefined || rawProxyServerNameservers === null
+        ? []
+        : [rawProxyServerNameservers]
+  ).filter((dns) => String(dns ?? '').trim() !== '');
+
+  const isProxyServerNameserverEmpty = proxyServerNameservers.length === 0;
+
+  const shouldRewriteByListen =
     proxyServerNameservers.length === 1 &&
     typeof listenValue === 'string' &&
     listenValue.length > 0 &&
     (proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes(listenValue.toLowerCase())) ||
       (listenValue.includes('0.0.0.0') &&
         proxyServerNameservers.some((dns) => String(dns).toLowerCase().includes('127.0.0.1'))));
+
+  const shouldRewriteByHosts = isProxyServerNameserverEmpty || shouldRewriteByListen;
 
   const mappedProxies = shouldRewriteByHosts ? applyHostsToProxies(filteredProxies, config.hosts) : filteredProxies;
 
