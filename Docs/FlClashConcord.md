@@ -86,7 +86,7 @@ concord 版本不是新写的配置，而是从 mihomo 版逐项裁剪而来，�
 | `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                                        |
 | `external-controller`            | FlClash 内嵌内核时自己接管监听地址，写了只会多一条 `host_owned_key` 告警 |
 
-另外，mihomo 版里那些只用来挂 YAML 锚点的顶层键（`dns_common`、`rule_providers_common`、`group_common`、`proxies_common`、`group_filter`）现在**自身也带上了锚点**。Concord 只把「自身带锚点」的顶层键当作模板键静默丢弃，否则每个键都会报一条 `unknown_key` 警告，FlClash 会弹出「配置警告」。
+另外，那些只用来挂锚点的容器键（`dns_common`、`rule_providers_common`、`group_common`、`proxies_common`、`group_filter`）已经全部去掉，锚点直接定义在原来的下级键上（如 `chinaDNS: &chinaDNS [...]`）。这些键自身带锚点，Concord 会把它们当作模板键静默丢弃；再多包一层没有锚点的容器，就会每个容器报一条 `unknown_key` 警告，FlClash 会弹出「配置警告」。
 
 如果你想独立运行 `concord run` 并用面板查看状态，自行加回 `external-controller: '127.0.0.1:9090'` 即可，此时它才生效。
 
