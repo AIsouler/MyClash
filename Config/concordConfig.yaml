@@ -1,0 +1,718 @@
+#  ---------说明---------
+#  concord配置（全量版）
+#  作者：AIsouler
+#  原仓库：https://github.com/AIsouler/MyClash
+#  配置链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/concordConfig.yaml
+#  兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect）
+#  友情推荐，非常好用、省电且内存占用低的代理软件：https://github.com/appshubcc/Bettbox
+#  ---------------------
+
+# --- 锚点定义 (通用属性) ---
+proxy_providers_common:
+  &proxy_providers_common {
+    type: http,
+    interval: 86400,
+    proxy: DIRECT,
+    exclude-type: 'DIRECT|REJECT|REMATCH',
+    health-check: { enable: true, url: https://www.apple.com/library/test/success.html, interval: 600, lazy: true },
+  }
+
+# 全局过滤节点
+global_exclude_filter:
+  &global_exclude_filter {
+    exclude-filter: '(?i)(群|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|电报|频道|无法|说明|提示|访问|支持|教程|关注|更新|作者|加入|超时|收藏|优惠|福利|邀请|好友|失联|选择|剩余|公益|发布|DIZTNA|通路|登录|定时|渠道|牢记|永久|余额|阁下|本站|刷新|导航|建议|重置|以下|过滤|⚠️|@|t\.me\/\+|\bexpire\b|\bhttps?:\/\/|\.com|\btraffic\b)',
+  }
+
+# 订阅提供者，如果你想要添加多个订阅提供者，可以复制 provider1 的配置块，并修改 url 、 path 和 additional-prefix 字段。
+proxy-providers:
+  provider1:
+    <<: [*proxy_providers_common, *global_exclude_filter]
+    url: '' # 此处单引号中间填入机场订阅链接
+    age-secret-key: '' # 此处填入机场订阅链接解密私钥，如果机场订阅链接需要解密才能使用，请将解密私钥填入单引号中间，否则不要改动此项
+    path: ./proxy_provider/provider1.yaml
+    override:
+      additional-prefix: 'p1 | ' # 给节点名称添加前缀，防止不同订阅的节点重名导致出现问题
+
+# 以下是一个示例，各行缩进必须严格对齐provider1
+# provider2:
+#   <<: [*proxy_providers_common, *global_exclude_filter]
+#   url: ''
+#   age-secret-key: ''
+#   path: ./proxy_provider/provider2.yaml
+#   override:
+#     additional-prefix: 'p2 | '
+
+# 节点配置，可添加自定义节点
+proxies:
+  - { name: '🇨🇳 直连 | 双栈', type: direct }
+  - { name: '🇨🇳 直连 | IPv4优先', type: direct, ip-version: ipv4-prefer }
+  - { name: '🇨🇳 直连 | IPv6优先', type: direct, ip-version: ipv6-prefer }
+  - { name: '🇨🇳 直连 | 仅IPv4', type: direct, ip-version: ipv4 }
+  - { name: '🇨🇳 直连 | 仅IPv6', type: direct, ip-version: ipv6 }
+
+# --- 基础全局配置 ---
+
+mixed-port: 7890
+allow-lan: true
+ipv6: true
+mode: rule
+log-level: info
+unified-delay: true
+tcp-concurrent: true
+keep-alive-interval: 60
+find-process-mode: strict
+external-controller: '127.0.0.1:9090'
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# 国内外 DNS 定义
+dns_common:
+  chinaDNS: &chinaDNS ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT']
+  foreignDNS: &foreignDNS ['https://cloudflare-dns.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理']
+  defaultDNS: &defaultDNS ['114.114.114.114#DIRECT', 'tls://223.5.5.5#DIRECT', 'https://1.12.12.12/dns-query#DIRECT']
+  proxyServerDNS:
+    &proxyServerDNS ['114.114.114.114#DIRECT', 'tls://223.5.5.5#DIRECT', 'https://doh.pub/dns-query#DIRECT']
+
+dns:
+  enable: true
+  ipv6: true
+  use-hosts: true
+  cache-algorithm: arc
+  use-system-hosts: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/15
+  fake-ip-range6: 2001:2::1/48
+  fake-ip-filter: ['rule-set:private', 'rule-set:fakeip_filter', 'rule-set:cn', 'rule-set:googlefcm']
+  default-nameserver: *defaultDNS
+  proxy-server-nameserver: *proxyServerDNS
+  nameserver: *foreignDNS
+  nameserver-policy:
+    'rule-set:private': 'system'
+    'rule-set:douyin': ['180.184.1.1#DIRECT', '180.184.2.2#DIRECT']
+    'rule-set:cn': *chinaDNS
+  direct-nameserver: *chinaDNS
+  direct-nameserver-follow-policy: true
+
+hosts:
+  'doh.pub': ['1.12.12.12', '120.53.53.53']
+  'cloudflare-dns.com': ['1.1.1.1', '1.0.0.1']
+  'dns.google': ['8.8.8.8', '8.8.4.4']
+
+  # 解决谷歌商店无法下载的问题
+  'services.googleapis.cn': 'services.googleapis.com'
+
+  # 屏蔽哔哩哔哩PCDN，解决访问视频卡顿/直播问题
+  '+.mcdn.bilivideo.com': ['0.0.0.0']
+  '+.mcdn.bilivideo.cn': ['0.0.0.0']
+  '+.edge.mountaintoys.cn': ['0.0.0.0']
+  '+.h2.smtcdns.net': ['0.0.0.0']
+
+ntp:
+  enable: true
+  write-to-system: false
+  server: 'ntp.aliyun.com'
+  port: 123
+  interval: 60
+
+tun:
+  enable: true
+  stack: mips
+  auto-route: true
+  strict-route: true
+  auto-detect-interface: true
+  dns-hijack: ['any:53', 'tcp://any:53']
+
+# --- 规则集 ---
+
+# Rule Provider 通用配置
+rule_providers_common:
+  rule_providers_domain: &rule_providers_domain { type: http, format: mrs, interval: 86400, behavior: domain }
+  rule_providers_ip: &rule_providers_ip { type: http, format: mrs, interval: 86400, behavior: ipcidr }
+
+# 定义 Rule Providers
+rule-providers:
+  # --- 直连规则集 ---
+
+  private:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/private.mrs'
+    path: './ruleset/private.mrs'
+  private_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/private.mrs'
+    path: './ruleset/private_ip.mrs'
+  games_cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-games@cn.mrs'
+    path: './ruleset/category-games@cn.mrs'
+  synology:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/synology.mrs'
+    path: './ruleset/synology.mrs'
+  nvidia_cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/nvidia@cn.mrs'
+    path: './ruleset/nvidia@cn.mrs'
+  apple_cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/apple@cn.mrs'
+    path: './ruleset/apple@cn.mrs'
+  microsoft_cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/microsoft@cn.mrs'
+    path: './ruleset/microsoft@cn.mrs'
+  geolocation-cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/geolocation-cn.mrs'
+    path: './ruleset/geolocation-cn.mrs'
+  cn_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/cn.mrs'
+    path: './ruleset/cn_ip.mrs'
+
+  # --- 代理规则集 ---
+
+  googlefcm:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/googlefcm.mrs'
+    path: './ruleset/googlefcm.mrs'
+  youtube:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/youtube.mrs'
+    path: './ruleset/youtube.mrs'
+  google:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/google.mrs'
+    path: './ruleset/google.mrs'
+  google_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/google.mrs'
+    path: './ruleset/google_ip.mrs'
+  ai:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-ai-!cn.mrs'
+    path: './ruleset/ai.mrs'
+  github:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/github.mrs'
+    path: './ruleset/github.mrs'
+  microsoft:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/microsoft.mrs'
+    path: './ruleset/microsoft.mrs'
+  microsoft_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/microsoft.mrs'
+    path: './ruleset/microsoft_ip.mrs'
+  apple:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/apple.mrs'
+    path: './ruleset/apple.mrs'
+  apple_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/apple.mrs'
+    path: './ruleset/apple_ip.mrs'
+  telegram:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/telegram.mrs'
+    path: './ruleset/telegram.mrs'
+  telegram_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/telegram.mrs'
+    path: './ruleset/telegram_ip.mrs'
+  steam:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/steam.mrs'
+    path: './ruleset/steam.mrs'
+  steam_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/steam.mrs'
+    path: './ruleset/steam_ip.mrs'
+  tiktok:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/tiktok.mrs'
+    path: './ruleset/tiktok.mrs'
+  tiktok_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/tiktok.mrs'
+    path: './ruleset/tiktok_ip.mrs'
+  twitter:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/twitter.mrs'
+    path: './ruleset/twitter.mrs'
+  twitter_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/twitter.mrs'
+    path: './ruleset/twitter_ip.mrs'
+  meta:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/meta.mrs'
+    path: './ruleset/meta.mrs'
+  facebook_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/facebook.mrs'
+    path: './ruleset/facebook_ip.mrs'
+  line:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/line.mrs'
+    path: './ruleset/line.mrs'
+  netflix:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/netflix.mrs'
+    path: './ruleset/netflix.mrs'
+  netflix_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/netflix.mrs'
+    path: './ruleset/netflix_ip.mrs'
+  emby:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-emby.mrs'
+    path: './ruleset/emby.mrs'
+  pikpak:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/pikpak.mrs'
+    path: './ruleset/pikpak.mrs'
+  spotify:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/spotify.mrs'
+    path: './ruleset/spotify.mrs'
+  spotify_ip:
+    <<: *rule_providers_ip
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geoip/spotify.mrs'
+    path: './ruleset/spotify_ip.mrs'
+  cryptocurrency:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-cryptocurrency.mrs'
+    path: './ruleset/cryptocurrency.mrs'
+  paypal:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/paypal.mrs'
+    path: './ruleset/paypal.mrs'
+  patreon:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/patreon.mrs'
+    path: './ruleset/patreon.mrs'
+  ehentai:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/ehentai.mrs'
+    path: './ruleset/ehentai.mrs'
+  geolocation-!cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/geolocation-!cn.mrs'
+    path: './ruleset/geolocation-!cn.mrs'
+
+  # --- 其他规则集 ---
+
+  category-ads:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/category-ads.mrs'
+    path: './ruleset/category-ads.mrs'
+  fakeip_filter:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/fakeip-filter.mrs'
+    path: './ruleset/fakeip-filter.mrs'
+  cn:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/cn.mrs'
+    path: './ruleset/cn.mrs'
+  douyin:
+    <<: *rule_providers_domain
+    url: 'https://fastly.jsdelivr.net/gh/appshubcc/bett-rules@meta/geo/geosite/douyin.mrs'
+    path: './ruleset/douyin.mrs'
+
+# --- 策略组 (Proxy Groups) ---
+
+# 策略组通用配置
+group_common:
+  group_common_select:
+    &group_common_select {
+      type: select,
+      timeout: 5000,
+      max-failed-times: 3,
+      empty-fallback: REJECT,
+      url: 'https://www.apple.com/library/test/success.html',
+    }
+
+  group_common_auto:
+    &group_common_auto {
+      type: url-test,
+      interval: 600,
+      timeout: 5000,
+      max-failed-times: 3,
+      empty-fallback: REJECT,
+      url: 'https://www.apple.com/library/test/success.html',
+      lazy: true,
+      tolerance: 50,
+      include-all: true,
+      exclude-type: 'DIRECT',
+      icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Auto.svg',
+      hidden: true,
+    }
+
+  group_common_load:
+    &group_common_load {
+      type: load-balance,
+      interval: 600,
+      timeout: 5000,
+      max-failed-times: 3,
+      empty-fallback: REJECT,
+      url: 'https://www.apple.com/library/test/success.html',
+      lazy: true,
+      strategy: 'sticky-sessions',
+      include-all: true,
+      exclude-type: 'DIRECT',
+      icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/RoundRobin.svg',
+      hidden: true,
+    }
+
+# 通用代理节点组
+proxies_common:
+  proxies_default:
+    &proxies_default {
+      proxies:
+        [
+          '默认代理',
+          '手动选择',
+          '自动选择',
+          '负载均衡',
+          '香港',
+          '日本',
+          '美国',
+          '新加坡',
+          '台湾',
+          '低倍率节点',
+          '高倍率节点',
+          '家宽节点',
+          '其他节点',
+        ],
+    }
+
+  proxies_direct:
+    &proxies_direct {
+      proxies:
+        [
+          '默认代理',
+          '手动选择',
+          '自动选择',
+          '负载均衡',
+          '直连',
+          '香港',
+          '日本',
+          '美国',
+          '新加坡',
+          '台湾',
+          '低倍率节点',
+          '高倍率节点',
+          '家宽节点',
+          '其他节点',
+        ],
+    }
+
+  proxies_reject: &proxies_reject { proxies: ['REJECT', 'REJECT-DROP', 'PASS'] }
+
+# 地区过滤器正则表达式定义
+group_filter:
+  HK_filter: &HK_filter { filter: '(?i)(🇭🇰|香港|(?<![A-Za-z])HKG?(?![A-Za-z])|hong\s*kong)' }
+  JP_filter: &JP_filter { filter: '(?i)(🇯🇵|日本|东京|大阪|京都|(?<![A-Za-z])JPN?(?![A-Za-z])|japan)' }
+  US_filter:
+    &US_filter {
+      filter: '(?i)(🇺🇸|美国|纽约|洛杉矶|旧金山|芝加哥|休斯顿|迈阿密|西雅图|波士顿|华盛顿|拉斯维加斯|圣何塞|(?<![A-Za-z])USA?(?![A-Za-z])|america|united\s*states)',
+    }
+  SG_filter: &SG_filter { filter: '(?i)(🇸🇬|新加坡|狮城|(?<![A-Za-z])SGP?(?![A-Za-z])|singapore)' }
+  TW_filter: &TW_filter { filter: '(?i)(🇹🇼|台湾|台北|高雄|(?<![A-Za-z])TWN?(?![A-Za-z])|taiwan)' }
+  low_filter:
+    &low_filter {
+      filter: '(?i)(^(?!.*(?:剩|期)).*(?:(?<![\d.])0(\.[0-5]|[*×✕✖⨯⨉x倍]))|(?:[*×✕✖⨯⨉x]0)|^(?!.*(?:客户端|软件)).*下载|低倍|免费|(?<![A-Za-z])free(?![A-Za-z]))',
+    }
+  high_filter:
+    &high_filter {
+      filter: '(?i)(?:[*×✕✖⨯⨉x](?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?)|(?:(?<![\d.])(?:[2-9]\d*|[1-9]\d+)(?:\.\d+)?(?:倍|[*×✕✖⨯⨉x]))',
+    }
+  home_filter: &home_filter { filter: '(?i)(家宽|住宅|原生\s*IP|家庭宽带|\bISP\b|\bRES\b|residential)' }
+  exclude_filter:
+    &exclude_filter {
+      exclude-filter: '(?i)(🇭🇰|香港|(?<![A-Za-z])HKG?(?![A-Za-z])|hong\s*kong|🇯🇵|日本|东京|大阪|京都|(?<![A-Za-z])JPN?(?![A-Za-z])|japan|🇺🇸|美国|纽约|洛杉矶|旧金山|芝加哥|休斯顿|迈阿密|西雅图|波士顿|华盛顿|拉斯维加斯|圣何塞|(?<![A-Za-z])USA?(?![A-Za-z])|america|united\s*states|🇸🇬|新加坡|狮城|(?<![A-Za-z])SGP?(?![A-Za-z])|singapore|🇹🇼|台湾|台北|高雄|(?<![A-Za-z])TWN?(?![A-Za-z])|taiwan)',
+    }
+
+# 定义分流策略组
+proxy-groups:
+  - name: '默认代理'
+    <<: *group_common_select
+    proxies:
+      [
+        '香港',
+        '日本',
+        '美国',
+        '新加坡',
+        '台湾',
+        '低倍率节点',
+        '高倍率节点',
+        '家宽节点',
+        '手动选择',
+        '自动选择',
+        '负载均衡',
+        '其他节点',
+      ]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Proxy.svg'
+
+  - name: '手动选择'
+    <<: *group_common_select
+    include-all: true
+    exclude-type: 'DIRECT'
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Static.svg'
+
+  - name: '自动选择'
+    <<: *group_common_auto
+
+  - name: '负载均衡'
+    <<: *group_common_load
+
+  - name: 'FCM'
+    <<: [*group_common_select, *proxies_direct]
+    default-selected: '直连'
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Fcm.svg'
+
+  - name: 'YouTube'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/YouTube.svg'
+
+  - name: 'Google'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Google.svg'
+
+  - name: 'AI'
+    <<: [*group_common_select, *proxies_default]
+    default-selected: '美国'
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/OpenAI.svg'
+
+  - name: 'GitHub'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/GitHub.svg'
+
+  - name: 'Microsoft'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Microsoft.svg'
+
+  - name: 'Apple'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Apple.svg'
+
+  - name: 'Telegram'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Telegram.svg'
+
+  - name: 'Steam'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Steam.svg'
+
+  - name: 'TikTok'
+    default-selected: '日本'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/TikTok.svg'
+
+  - name: 'Twitter'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Twitter.svg'
+
+  - name: 'Meta'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Meta.svg'
+
+  - name: 'Line'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Line.svg'
+
+  - name: 'Netflix'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Netflix.svg'
+
+  - name: 'Emby'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Emby.svg'
+
+  - name: 'PikPak'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/PikPak.svg'
+
+  - name: 'Spotify'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Spotify.svg'
+
+  - name: 'Crypto'
+    default-selected: '日本'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Bitcoin.svg'
+
+  - name: 'PayPal'
+    default-selected: '美国'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/PayPal.svg'
+
+  - name: 'Patreon'
+    default-selected: '香港'
+    <<: [*group_common_select, *proxies_default]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Patreon.svg'
+
+  - name: 'EHentai'
+    default-selected: '美国'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/EHentai.svg'
+
+  - name: 'AdBlock'
+    <<: [*group_common_select, *proxies_reject]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/AdBlock.svg'
+
+  - name: '漏网之鱼'
+    <<: [*group_common_select, *proxies_direct]
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Stack.svg'
+
+  - name: '直连'
+    <<: *group_common_select
+    proxies: ['🇨🇳 直连 | 双栈', '🇨🇳 直连 | IPv4优先', '🇨🇳 直连 | IPv6优先', '🇨🇳 直连 | 仅IPv4', '🇨🇳 直连 | 仅IPv6']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/China.svg'
+
+  # 定义地区策略组
+  - name: '香港'
+    <<: [*group_common_select, *HK_filter]
+    include-all: true
+    proxies: ['香港-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/HongKong.svg'
+  - name: '香港-自动选择'
+    <<: [*group_common_auto, *HK_filter]
+
+  - name: '日本'
+    <<: [*group_common_select, *JP_filter]
+    include-all: true
+    proxies: ['日本-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Japan.svg'
+  - name: '日本-自动选择'
+    <<: [*group_common_auto, *JP_filter]
+
+  - name: '美国'
+    <<: [*group_common_select, *US_filter]
+    include-all: true
+    proxies: ['美国-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/America.svg'
+  - name: '美国-自动选择'
+    <<: [*group_common_auto, *US_filter]
+
+  - name: '新加坡'
+    <<: [*group_common_select, *SG_filter]
+    include-all: true
+    proxies: ['新加坡-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Singapore.svg'
+  - name: '新加坡-自动选择'
+    <<: [*group_common_auto, *SG_filter]
+
+  - name: '台湾'
+    <<: [*group_common_select, *TW_filter]
+    include-all: true
+    proxies: ['台湾-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Taiwan.svg'
+  - name: '台湾-自动选择'
+    <<: [*group_common_auto, *TW_filter]
+
+  - name: '低倍率节点'
+    <<: [*group_common_select, *low_filter]
+    include-all: true
+    proxies: ['低倍率节点-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Available.svg'
+  - name: '低倍率节点-自动选择'
+    <<: [*group_common_auto, *low_filter]
+
+  - name: '高倍率节点'
+    <<: [*group_common_select, *high_filter]
+    include-all: true
+    proxies: ['高倍率节点-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Airport.svg'
+  - name: '高倍率节点-自动选择'
+    <<: [*group_common_auto, *high_filter]
+
+  - name: '家宽节点'
+    <<: [*group_common_select, *home_filter]
+    include-all: true
+    proxies: ['家宽节点-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/Home.svg'
+  - name: '家宽节点-自动选择'
+    <<: [*group_common_auto, *home_filter]
+
+  - name: '其他节点'
+    <<: [*group_common_select, *exclude_filter]
+    include-all: true
+    exclude-type: 'DIRECT'
+    proxies: ['其他节点-自动选择']
+    icon: 'https://fastly.jsdelivr.net/gh/AIsouler/MyClash@main/Icons/svg/WorldMap.svg'
+  - name: '其他节点-自动选择'
+    <<: [*group_common_auto, *exclude_filter]
+
+# --- 路由规则 (Rules) ---
+
+rules:
+  # 广告拦截
+  - RULE-SET,category-ads,AdBlock
+
+  # 私有网络直连
+  - RULE-SET,private,直连
+
+  # 国内直连
+  - RULE-SET,geolocation-cn,直连
+  - RULE-SET,games_cn,直连 # 已包含 steam 下载域名
+  - RULE-SET,synology,直连
+  - RULE-SET,nvidia_cn,直连
+  - RULE-SET,apple_cn,直连
+  - RULE-SET,microsoft_cn,直连
+  - DOMAIN,fsend.cn,直连
+  - DOMAIN,international-gfe.download.nvidia.com,直连
+  - DOMAIN-SUFFIX,ctaiot.com,直连
+
+  # 禁用国外 QUIC 流量（默认不启用，如果想启用请删除前面的#号注释）
+  # - AND,((NETWORK,UDP),(DST-PORT,443),(NOT,((OR,((RULE-SET,cn),(RULE-SET,cn_ip,no-resolve)))))),REJECT
+
+  # 代理规则（非IP类）
+  - RULE-SET,googlefcm,FCM
+  - RULE-SET,youtube,YouTube
+  - RULE-SET,google,Google
+  - RULE-SET,ai,AI
+  - DOMAIN,cdn.usefathom.com,AI
+  - DOMAIN-SUFFIX,intercom.io,AI
+  - DOMAIN-SUFFIX,intercomcdn.com,AI
+  - RULE-SET,github,GitHub
+  - RULE-SET,microsoft,Microsoft
+  - RULE-SET,apple,Apple
+  - RULE-SET,telegram,Telegram
+  - RULE-SET,steam,Steam
+  - RULE-SET,tiktok,TikTok
+  - RULE-SET,twitter,Twitter
+  - RULE-SET,meta,Meta
+  - RULE-SET,line,Line
+  - RULE-SET,netflix,Netflix
+  - RULE-SET,emby,Emby
+  - DOMAIN-SUFFIX,mb3admin.com,Emby
+  - DOMAIN-SUFFIX,nubebelle.com,Emby
+  - DOMAIN-KEYWORD,emby,Emby
+  - RULE-SET,pikpak,PikPak
+  - RULE-SET,spotify,Spotify
+  - RULE-SET,cryptocurrency,Crypto
+  - RULE-SET,paypal,PayPal
+  - RULE-SET,patreon,Patreon
+  - RULE-SET,ehentai,EHentai
+  - RULE-SET,geolocation-!cn,默认代理
+
+  # IP规则（直连）
+  - RULE-SET,cn_ip,直连
+  - RULE-SET,private_ip,直连
+
+  # IP规则（代理）
+  - RULE-SET,google_ip,Google
+  - RULE-SET,microsoft_ip,Microsoft
+  - RULE-SET,apple_ip,Apple
+  - RULE-SET,telegram_ip,Telegram
+  - RULE-SET,steam_ip,Steam
+  - RULE-SET,tiktok_ip,TikTok
+  - RULE-SET,twitter_ip,Twitter
+  - RULE-SET,facebook_ip,Meta
+  - RULE-SET,netflix_ip,Netflix
+  - RULE-SET,spotify_ip,Spotify
+  - MATCH,漏网之鱼
