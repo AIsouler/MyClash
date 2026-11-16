@@ -682,9 +682,6 @@ rules:
   - RULE-SET,line,Line
   - RULE-SET,netflix,Netflix
   - RULE-SET,emby,Emby
-  - DOMAIN-SUFFIX,mb3admin.com,Emby
-  - DOMAIN-SUFFIX,nubebelle.com,Emby
-  - DOMAIN-KEYWORD,emby,Emby
   - RULE-SET,pikpak,PikPak
   - RULE-SET,spotify,Spotify
   - RULE-SET,cryptocurrency,Crypto

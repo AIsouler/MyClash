@@ -667,12 +667,7 @@ const serviceConfigs = [
       },
     },
     icon: `${iconBaseUrl}Emby.svg`,
-    rules: [
-      'RULE-SET,emby,Emby',
-      'DOMAIN-SUFFIX,mb3admin.com,Emby',
-      'DOMAIN-SUFFIX,nubebelle.com,Emby',
-      'DOMAIN-KEYWORD,emby,Emby',
-    ],
+    rules: ['RULE-SET,emby,Emby'],
   },
   {
     name: 'PikPak',
