@@ -3,7 +3,7 @@
 #  作者：AIsouler
 #  原仓库：https://github.com/AIsouler/MyClash
 #  配置链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/concordConfigLite.yaml
-#  兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect）
+#  兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect、external-controller）
 #  友情推荐，非常好用、省电且内存占用低的代理软件：https://github.com/appshubcc/Bettbox
 #  ---------------------
 
@@ -61,14 +61,13 @@ unified-delay: true
 tcp-concurrent: true
 keep-alive-interval: 60
 find-process-mode: strict
-external-controller: '127.0.0.1:9090'
 
 profile:
   store-selected: true
   store-fake-ip: true
 
 # 国内外 DNS 定义
-dns_common:
+dns_common: &dns_common
   chinaDNS: &chinaDNS ['223.5.5.5#DIRECT', '119.29.29.29#DIRECT']
   foreignDNS: &foreignDNS ['https://cloudflare-dns.com/dns-query#默认代理', 'https://dns.google/dns-query#默认代理']
   defaultDNS: &defaultDNS ['114.114.114.114#DIRECT', 'tls://223.5.5.5#DIRECT', 'https://1.12.12.12/dns-query#DIRECT']
@@ -127,7 +126,7 @@ tun:
 # --- 规则集 ---
 
 # Rule Provider 通用配置
-rule_providers_common:
+rule_providers_common: &rule_providers_common
   rule_providers_domain: &rule_providers_domain { type: http, format: mrs, interval: 86400, behavior: domain }
   rule_providers_ip: &rule_providers_ip { type: http, format: mrs, interval: 86400, behavior: ipcidr }
 
@@ -225,7 +224,7 @@ rule-providers:
 # --- 策略组 (Proxy Groups) ---
 
 # 策略组通用配置
-group_common:
+group_common: &group_common
   group_common_select:
     &group_common_select {
       type: select,
@@ -252,7 +251,7 @@ group_common:
     }
 
 # 通用代理节点组
-proxies_common:
+proxies_common: &proxies_common
   proxies_default:
     &proxies_default {
       proxies:
@@ -295,7 +294,7 @@ proxies_common:
   proxies_reject: &proxies_reject { proxies: ['REJECT', 'REJECT-DROP', 'PASS'] }
 
 # 地区过滤器正则表达式定义
-group_filter:
+group_filter: &group_filter
   HK_filter: &HK_filter { filter: '(?i)(🇭🇰|香港|(?<![A-Za-z])HKG?(?![A-Za-z])|hong\s*kong)' }
   JP_filter: &JP_filter { filter: '(?i)(🇯🇵|日本|东京|大阪|京都|(?<![A-Za-z])JPN?(?![A-Za-z])|japan)' }
   US_filter:

@@ -3,7 +3,7 @@
  * 作者：AIsouler
  * 源仓库：https://github.com/AIsouler/MyClash
  * 脚本链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Script/concordScript.js
- * 兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect）
+ * 兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect、external-controller）
  * 友情推荐，非常好用、省电且内存占用低的代理软件：https://github.com/appshubcc/Bettbox
  */
 
@@ -1860,8 +1860,6 @@ function main(config) {
   newConfig['tcp-concurrent'] = true;
   newConfig['keep-alive-interval'] = 60;
   newConfig['find-process-mode'] = 'strict';
-
-  newConfig['external-controller'] = '127.0.0.1:9090';
 
   newConfig['profile'] = {
     'store-selected': true,

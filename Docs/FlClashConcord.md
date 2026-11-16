@@ -19,14 +19,17 @@
 
 concord 版本不是新写的配置，而是从 mihomo 版逐项裁剪而来，只删掉了 Concord 不读、或会直接报错的参数，其余策略组、规则集、DNS 方案完全一致。
 
-| 被移除的参数                     | 原因                                                 |
-| -------------------------------- | ---------------------------------------------------- |
-| 所有规则集的 `path-in-bundle`    | Concord 不支持，命中时**整份配置被拒绝**（不是警告） |
-| `bind-address`                   | Concord 不读取，忽略并告警                           |
-| `external-ui`、`external-ui-url` | Concord 没有内置面板，永不读取                       |
-| `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                    |
+| 被移除的参数                     | 原因                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| 所有规则集的 `path-in-bundle`    | Concord 不支持，命中时**整份配置被拒绝**（不是警告）                     |
+| `bind-address`                   | Concord 不读取，忽略并告警                                               |
+| `external-ui`、`external-ui-url` | Concord 没有内置面板，永不读取                                           |
+| `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                                        |
+| `external-controller`            | FlClash 内嵌内核时自己接管监听地址，写了只会多一条 `host_owned_key` 告警 |
 
-保留下来的 `external-controller` 只在独立运行 `concord run` 时生效；FlClash 内嵌内核时会自行接管监听地址和密钥，配置里的值被忽略并产生一条告警，不影响使用。
+另外，mihomo 版里那些只用来挂 YAML 锚点的顶层键（`dns_common`、`rule_providers_common`、`group_common`、`proxies_common`、`group_filter`）现在**自身也带上了锚点**。Concord 只把「自身带锚点」的顶层键当作模板键静默丢弃，否则每个键都会报一条 `unknown_key` 警告，FlClash 会弹出「配置警告」。
+
+如果你想独立运行 `concord run` 并用面板查看状态，自行加回 `external-controller: '127.0.0.1:9090'` 即可，此时它才生效。
 
 ---
 
