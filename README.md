@@ -1,6 +1,6 @@
 # MyClash
 
-基于 [Mihomo](https://github.com/MetaCubeX/mihomo/tree/Alpha) 的**覆写脚本与配置文件**，仅适用于 mihomo 内核的代理客户端
+基于 [Mihomo](https://github.com/MetaCubeX/mihomo/tree/Alpha) 的**覆写脚本与配置文件**，同时适配 mihomo 与 [Concord](https://github.com/chen08209/concord)（[FlClash](https://github.com/chen08209/FlClash) 新内核）两套内核
 
 > [!IMPORTANT]
 >
@@ -25,6 +25,17 @@
 
 - **全量版**：包含完整的分流策略组，适合需要精细分流的用户
 - **精简版**：仅保留常用分流策略组，配置更加简洁
+
+---
+
+## 内核适配
+
+| 内核 | 适用客户端 | 对应文件 |
+| --- | --- | --- |
+| mihomo | 绝大多数 mihomo 内核客户端 | `mihomoScript.js` / `Script.js`、`mihomoConfig.yaml` / `mihomoConfigLite.yaml` |
+| Concord | FlClash 新内核 | `concordScript.js` / `concordScriptLite.js`、`concordConfig.yaml` / `concordConfigLite.yaml` |
+
+FlClash 新版已切换为 Concord 内核，Concord 不读取的参数已从 concord 版本中移除。导入步骤、可配置项以及与 mihomo 的行为差异，见 **[FlClash（Concord 内核）使用说明](/Docs/FlClashConcord.md)**。
 
 ---
 
