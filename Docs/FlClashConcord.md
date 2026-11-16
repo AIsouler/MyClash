@@ -15,24 +15,6 @@
 
 ---
 
-## 与 mihomo 版的区别
-
-concord 版本不是新写的配置，而是从 mihomo 版逐项裁剪而来，只删掉了 Concord 不读、或会直接报错的参数，其余策略组、规则集、DNS 方案完全一致。
-
-| 被移除的参数                     | 原因                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------ |
-| 所有规则集的 `path-in-bundle`    | Concord 不支持，命中时**整份配置被拒绝**（不是警告）                     |
-| `bind-address`                   | Concord 不读取，忽略并告警                                               |
-| `external-ui`、`external-ui-url` | Concord 没有内置面板，永不读取                                           |
-| `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                                        |
-| `external-controller`            | FlClash 内嵌内核时自己接管监听地址，写了只会多一条 `host_owned_key` 告警 |
-
-另外，mihomo 版里那些只用来挂 YAML 锚点的顶层键（`dns_common`、`rule_providers_common`、`group_common`、`proxies_common`、`group_filter`）现在**自身也带上了锚点**。Concord 只把「自身带锚点」的顶层键当作模板键静默丢弃，否则每个键都会报一条 `unknown_key` 警告，FlClash 会弹出「配置警告」。
-
-如果你想独立运行 `concord run` 并用面板查看状态，自行加回 `external-controller: '127.0.0.1:9090'` 即可，此时它才生效。
-
----
-
 ## 用法一：覆写脚本（推荐）
 
 脚本会读取机场订阅的原始配置，再整体改写为带策略组、规则集和 DNS 方案的完整配置，所以它只适用于**覆写机场订阅**，不要拿去覆写自己手写的配置。
@@ -89,6 +71,24 @@ https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/concordConfigLite
 ```
 
 导入方式：配置页 → 导入 → 通过URL导入，粘贴上面的链接。导入后记得编辑配置，把 `proxy-providers` 里 `provider1` 的 `url` 换成你的订阅链接（订阅需要解密时再填 `age-secret-key`）。
+
+---
+
+## 与 mihomo 版的区别
+
+concord 版本不是新写的配置，而是从 mihomo 版逐项裁剪而来，只删掉了 Concord 不读、或会直接报错的参数，其余策略组、规则集、DNS 方案完全一致。
+
+| 被移除的参数                     | 原因                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| 所有规则集的 `path-in-bundle`    | Concord 不支持，命中时**整份配置被拒绝**（不是警告）                     |
+| `bind-address`                   | Concord 不读取，忽略并告警                                               |
+| `external-ui`、`external-ui-url` | Concord 没有内置面板，永不读取                                           |
+| `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                                        |
+| `external-controller`            | FlClash 内嵌内核时自己接管监听地址，写了只会多一条 `host_owned_key` 告警 |
+
+另外，mihomo 版里那些只用来挂 YAML 锚点的顶层键（`dns_common`、`rule_providers_common`、`group_common`、`proxies_common`、`group_filter`）现在**自身也带上了锚点**。Concord 只把「自身带锚点」的顶层键当作模板键静默丢弃，否则每个键都会报一条 `unknown_key` 警告，FlClash 会弹出「配置警告」。
+
+如果你想独立运行 `concord run` 并用面板查看状态，自行加回 `external-controller: '127.0.0.1:9090'` 即可，此时它才生效。
 
 ---
 
