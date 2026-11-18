@@ -3,7 +3,7 @@
 #  作者：AIsouler
 #  原仓库：https://github.com/AIsouler/MyClash
 #  配置链接：https://raw.githubusercontent.com/AIsouler/MyClash/main/Config/concordConfig.yaml
-#  兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、bind-address、external-ui、tun.auto-redirect、external-controller）
+#  兼容说明：已按 Concord 兼容性文档移除不支持的参数（path-in-bundle、external-ui、tun.auto-redirect、external-controller）
 #  友情推荐，非常好用、省电且内存占用低的代理软件：https://github.com/appshubcc/Bettbox
 #  ---------------------
 
@@ -57,6 +57,7 @@ allow-lan: true
 ipv6: true
 mode: rule
 log-level: info
+bind-address: '*'
 unified-delay: true
 tcp-concurrent: true
 keep-alive-interval: 60

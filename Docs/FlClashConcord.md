@@ -81,7 +81,6 @@ concord 版本不是新写的配置，而是从 mihomo 版逐项裁剪而来，�
 | 被移除的参数                     | 原因                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------ |
 | 所有规则集的 `path-in-bundle`    | Concord 不支持，命中时**整份配置被拒绝**（不是警告）                     |
-| `bind-address`                   | Concord 不读取，忽略并告警                                               |
 | `external-ui`、`external-ui-url` | Concord 没有内置面板，永不读取                                           |
 | `tun.auto-redirect`              | Concord 的 TUN 没有自动重定向开关                                        |
 | `external-controller`            | FlClash 内嵌内核时自己接管监听地址，写了只会多一条 `host_owned_key` 告警 |
