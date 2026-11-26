@@ -1559,7 +1559,6 @@ function main(config) {
 
   newConfig['tun'] = {
     enable: true,
-    stack: 'mips',
     'auto-route': true,
     'strict-route': true,
     'auto-detect-interface': true,
