@@ -89,6 +89,7 @@ dns:
   proxy-server-nameserver: *proxyServerDNS
   nameserver: *foreignDNS
   nameserver-policy:
+    '*': 'system'
     'rule-set:private': 'system'
     'rule-set:douyin': ['180.184.1.1#DIRECT', '180.184.2.2#DIRECT']
     'rule-set:cn': *chinaDNS
@@ -114,7 +115,7 @@ ntp:
   write-to-system: false
   server: 'ntp.aliyun.com'
   port: 123
-  interval: 60
+  interval: 360
 
 tun:
   enable: true
@@ -701,8 +702,8 @@ rules:
   - RULE-SET,category-ads,AdBlock
 
   # 私有网络直连
-  - RULE-SET,private,直连
-  - RULE-SET,private_ip,直连,no-resolve
+  - RULE-SET,private,DIRECT
+  - RULE-SET,private_ip,DIRECT,no-resolve
 
   # 国内直连
   - RULE-SET,geolocation-cn,直连
@@ -748,7 +749,7 @@ rules:
 
   # IP规则（直连）
   - RULE-SET,cn_ip,直连
-  - RULE-SET,private_ip,直连
+  - RULE-SET,private_ip,DIRECT
 
   # IP规则（代理）
   - RULE-SET,google_ip,Google

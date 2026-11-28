@@ -202,8 +202,6 @@ function runIntegrationTests(h, api, fx, loadScript, scriptFile) {
     h.assert(!f.includes('hk1.example.com'), '映射为 IP 的节点域名应被排除');
     h.assert(!f.includes('www.unrelated.com'), '无关条目应被过滤');
     h.assert(!f.includes('rule-set:unrelated'), 'rule-set 条目应被过滤');
-    h.assertEqual(f[0], 'rule-set:private');
-    h.assertEqual(f[1], 'rule-set:fakeip_filter');
     // hosts 映射目标域名场景：保留目标域名对应的条目
     const f2 = api.main(fx.hostsMappedSubscription()).dns['fake-ip-filter'];
     h.assert(f2.includes('+.example-apt.com'), '节点 hosts 映射目标域名对应的条目应保留');

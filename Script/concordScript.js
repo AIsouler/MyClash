@@ -66,8 +66,8 @@ const ruleOptionsEnable = {
 // 定义前置规则
 const prefixRules = [
   // 私有网络直连
-  'RULE-SET,private,直连',
-  'RULE-SET,private_ip,直连,no-resolve',
+  'RULE-SET,private,DIRECT',
+  'RULE-SET,private_ip,DIRECT,no-resolve',
 
   // 国内直连
   'RULE-SET,geolocation-cn,直连',
@@ -1910,6 +1910,7 @@ function buildDnsAndHostsConfig(config, filteredProxies) {
     }),
     nameserver: foreignDNS,
     'nameserver-policy': {
+      '*': 'system',
       'rule-set:private': 'system',
       'rule-set:douyin': ['180.184.1.1#DIRECT', '180.184.2.2#DIRECT'],
       'rule-set:cn': chinaDNS,
@@ -1975,7 +1976,7 @@ function main(config) {
     ...functionalRules,
     'RULE-SET,geolocation-!cn,默认代理',
     'RULE-SET,cn_ip,直连',
-    'RULE-SET,private_ip,直连',
+    'RULE-SET,private_ip,DIRECT',
     ...functionalIpRules,
     `MATCH,${ruleOptionsEnable.极简国内外分流模式 ? '默认代理' : '漏网之鱼'}`,
     'NETWORK,UDP,REJECT',
@@ -2002,7 +2003,7 @@ function main(config) {
     'write-to-system': false,
     server: 'ntp.aliyun.com',
     port: 123,
-    interval: 60,
+    interval: 360,
   };
 
   newConfig['tun'] = {
